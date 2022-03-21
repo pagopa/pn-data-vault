@@ -1,0 +1,403 @@
+openapi: 3.0.1
+info:
+  title: API for Confidential Information handling
+  version: v1
+  description: |
+      # Gestione informazioni Confidenziali in Piattaforma Notifiche 
+      Questo servizio ha due concetti base:
+      - Il mapping tra _externalId_ e _internalId_ 
+      - La suddivisione delle informazioni gestite tra confidenziali e altamente confidenziali
+
+      ## Il mapping tra _externalId_ e _internalId_ 
+      Tale mappatura è biunivoca quindi a un _externalId_ corrisponde uno e un solo _internalId_. 
+      Mentre l'operazione di mappatura da _externalId_ a _internalId_ è di uso comune l'operazione 
+      opposta, la conversione da _internalId_ a _externalId_ è considerata "riservata alla 
+      de-anonimizzazione".
+      __N.B.:__ l' _externalId_ è considerata informazione altamente confidenziale.
+
+      ## Suddivisione tra informazioni confidenziali (C) e altamente confidenziali (HC)
+      __N.B.:__ leggere [PagoPA Data Classification and Handling](https://pagopa.atlassian.net/wiki/spaces/EN/pages/357204284/Data+Classification+Handling)
+      Negli oggetti che che il servizio "Confidential Information" gestisce è presente una netta 
+      separazione tra 
+      - informazioni confidenziali, gestite come proprietà annidate del campo cFields di ogni 
+        oggetto e
+      - informazioni altamente confidenziali, gestite come proprietà annidate del campo hcFields.
+
+      ## Cancellazione.
+      Ogni oggetto è associato a una data di scadenza (campo expireTimestamp). Le informazioni 
+      e il mapping legati a tale oggetto verranno rimosse automaticamente in un momento successivo 
+      alla data di scadenza ma entro le 48 ore da essa.
+  license:
+    name: PagoPA PN license
+    url: http://pippo.pappo.it
+servers:
+  - url: https://servizio-anonimizzazione
+    description: finto
+tags:
+  - name: ByExternalId
+    description: Handle objects and externalId to internalId mappings
+  - name: ByInternalId
+    description: handle objects only
+paths:
+  '/datavault-private/v1/recipients/external/{recipientType}/{taxId}':
+    get:
+      operationId: ensureRecipientByExternalId
+      summary: Create an external to internal id mapping and associated object.
+      description: Create an external to internal id mapping, if needed. Create or overwrite the associated object.
+      tags:
+        - ByExternalId
+      parameters:
+        - name: recipientType
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecipientType'
+        - name: taxId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/TaxId'    
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalId'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  '/datavault-private/v1/recipients/internal/{internalId}/mandates':
+    get:
+      operationId: getRecipientMandatesByInternalId
+      summary: Read an object by internal id
+      tags:
+        - ByInternalId
+      parameters:
+        - name: internalId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/InternalId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientMandatesDto'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  '/datavault-private/v1/recipients/internal/{internalId}/mandates/{mandateId}':
+    put:
+      operationId: updateRecipientMandateByInternalId
+      summary: Update entire object replacing its cFields and hcFields values
+      tags:
+        - ByInternalId
+      parameters:
+        - name: internalId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/InternalId'
+        - name: mandateId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MandateId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalId'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  '/datavault-private/v1/recipients/internal/{internalId}/addresses':
+    get:
+      operationId: getRecipientAddressesByInternalId
+      summary: Read an object by internal id
+      tags:
+        - ByInternalId
+      parameters:
+        - name: internalId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/InternalId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipientAddressesDto'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  '/datavault-private/v1/recipients/internal/{internalId}/addresses/{addressId}':
+    put:
+      operationId: updateRecipientAddressByInternalId
+      summary: Update entire object replacing its cFields and hcFields values
+      tags:
+        - ByInternalId
+      parameters:
+        - name: internalId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/InternalId'
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/AddressId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalId'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  '/datavault-private/v1/notifications/{iun}/addresses':
+    parameters:
+      - name: iun
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Iun'
+    get:
+      operationId: getNotificationAddressesByIun
+      summary: Read an object by internal id
+      tags:
+        - ByInternalId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationAddressesDto'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+    
+    put:
+      operationId: updateNotificationAddressesByIun
+      summary: Update entire object replacing its cFields and hcFields values
+      tags:
+        - ByInternalId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationAddressesDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Iun'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+components:
+  schemas:
+    InternalId:
+      title: Unique Object Identifier
+      type: string
+      format: '[A-Za-z0-9~-_]*'
+      minLength: 1
+      maxLength: 100
+    RecipientType:
+      title: 'Tipo del destinatario: PF / PG'
+      type: string
+      enum:
+        - PF
+        - PG
+    TaxId:
+      title: Personal Identification Information that need to be mapped to an anonymous internal id.
+      description: URL encoded string
+      type: string
+    MandateId:
+      title: Identificativo della delega
+      type: string
+      pattern: '[A-Za-z0-9-_:]*'
+    RecipientMandatesDto:
+      title: Request for new object creation
+      type: object
+      required:
+        - expireTimestamp
+        - mandateAddresses
+      properties:
+        expireTimestamp:
+          type: string
+          format: date-time
+        mandateAddresses:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AddressDto'
+    AddressId:
+      title: Identificativo del recapito o domicilio digitale
+      type: string
+      pattern: '[A-Za-z0-9-_:]*'
+    RecipientAddressesDto:
+      title: Request for new object creation
+      type: object
+      required:
+        - expireTimestamp
+        - platformAddresses
+      properties:
+        expireTimestamp:
+          type: string
+          format: date-time
+        platformAddresses:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AddressDto'
+    AddressDto:
+      type: object
+      required:
+        - kind
+        - value
+      properties:
+        kind:
+          type: string
+          enum:
+            - email
+            - pec
+            - sms
+        value:
+          type: string
+    Iun:
+      type: string
+      pattern: '[A-Z0-9-]*'
+    NotificationAddressesDto:
+      type: array
+      items: 
+        $ref: '#/components/schemas/NotificationRecipientAddressesDto'
+    NotificationRecipientAddressesDto:
+      type: object
+      required:
+        - denomination
+      properties:
+        denomination:
+          type: string
+        digitalAddress:
+          $ref: '#/components/schemas/AddressDto'
+        physicalAddress:
+          $ref: '#/components/schemas/AnalogDomicile'
+    AnalogDomicile:
+      title: dettagli di un domicilio analogico; ovvero un indirizzo fisico
+      type: object
+      required:
+        - address
+        - cap
+        - municipality
+        - province
+      properties:
+        at:
+          type: string
+          example: 'presso famiglia Rossi'
+        address: 
+          type: string
+          example: 'Via senza Nome 15'
+        addressDetails:
+          type: string
+          example: 'scala A'
+        cap:
+          type: string
+          example: '40129'
+        municipality:
+          type: string
+          example: 'Bologna'
+        province:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: 'BO'
+        state:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: 'it'     

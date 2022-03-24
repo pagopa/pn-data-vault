@@ -1,0 +1,67 @@
+scenarios:
+  simplePutAndGet:
+    think-time: 0.1
+    requests:
+      - label: ensureRecipient
+        url: ${BASE_URL}/datavault-private/v1/recipients/external/PF/CF001
+        method: GET
+        headers:
+          accept: application/json
+          x-pagopa-user-id: LoggedUser
+        extract-jsonpath:
+          recipientInternalId: $
+
+      - label: putMandate1
+        url: ${BASE_URL}/datavault-private/v1/recipients/internal/${recipientInternalId}/mandates/m1
+        method: PUT
+        headers:
+          Content-Type: application/json
+          accept: application/json
+          x-pagopa-user-id: LoggedUser
+        body:
+          kind: pec
+          value: 'PF001M1@pec.net'
+      - label: putMandate2
+        url: ${BASE_URL}/datavault-private/v1/recipients/internal/${recipientInternalId}/mandates/m2
+        method: PUT
+        headers:
+          Content-Type: application/json
+          accept: application/json
+          x-pagopa-user-id: LoggedUser
+        body:
+          kind: pec
+          value: 'PF001M2@pec.net'
+      - label: getMandates
+        url: ${BASE_URL}/datavault-private/v1/recipients/internal/${recipientInternalId}/mandates
+        method: GET
+        headers:
+          accept: application/json
+          x-pagopa-user-id: LoggedUser
+
+      - label: putAddress1
+        url: ${BASE_URL}/datavault-private/v1/recipients/internal/${recipientInternalId}/addresses/RD_1
+        method: PUT
+        headers:
+          Content-Type: application/json
+          accept: application/json
+          x-pagopa-user-id: LoggedUser
+        body:
+          kind: pec
+          value: 'PF001rd1@pec.net'
+      - label: putAddress2
+        url: ${BASE_URL}/datavault-private/v1/recipients/internal/${recipientInternalId}/addresses/DD_1
+        method: PUT
+        headers:
+          Content-Type: application/json
+          accept: application/json
+          x-pagopa-user-id: LoggedUser
+        body:
+          kind: pec
+          value: 'PF001dd1@pec.net'
+      - label: getAddresses
+        url: ${BASE_URL}/datavault-private/v1/recipients/internal/${recipientInternalId}/addresses
+        method: GET
+        headers:
+          accept: application/json
+          x-pagopa-user-id: LoggedUser
+

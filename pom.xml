@@ -10,9 +10,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <relativePath/>
   </parent>
   <groupId>it.pagopa.pn.datavault</groupId>
-  <artifactId>pn-datavault</artifactId>
+  <artifactId>pn-data-vault</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>pn-datavault</name>
+  <name>pn-data-vault</name>
   <description>Handle Confidential Information</description>
 
   <dependencies>

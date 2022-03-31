@@ -1,31 +1,31 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: API for Confidential Information handling
   version: v1
   description: |
-      # Gestione informazioni Confidenziali in Piattaforma Notifiche 
+      # Gestione informazioni Confidenziali in Piattaforma Notifiche
       Questo servizio ha due concetti base:
-      - Il mapping tra _externalId_ e _internalId_ 
+      - Il mapping tra _externalId_ e _internalId_
       - La suddivisione delle informazioni gestite tra confidenziali e altamente confidenziali
 
-      ## Il mapping tra _externalId_ e _internalId_ 
-      Tale mappatura è biunivoca quindi a un _externalId_ corrisponde uno e un solo _internalId_. 
-      Mentre l'operazione di mappatura da _externalId_ a _internalId_ è di uso comune l'operazione 
-      opposta, la conversione da _internalId_ a _externalId_ è considerata "riservata alla 
+      ## Il mapping tra _externalId_ e _internalId_
+      Tale mappatura è biunivoca quindi a un _externalId_ corrisponde uno e un solo _internalId_.
+      Mentre l'operazione di mappatura da _externalId_ a _internalId_ è di uso comune l'operazione
+      opposta, la conversione da _internalId_ a _externalId_ è considerata "riservata alla
       de-anonimizzazione".
       __N.B.:__ l' _externalId_ è considerata informazione altamente confidenziale.
 
       ## Suddivisione tra informazioni confidenziali (C) e altamente confidenziali (HC)
       __N.B.:__ leggere [PagoPA Data Classification and Handling](https://pagopa.atlassian.net/wiki/spaces/EN/pages/357204284/Data+Classification+Handling)
-      Negli oggetti che che il servizio "Confidential Information" gestisce è presente una netta 
-      separazione tra 
-      - informazioni confidenziali, gestite come proprietà annidate del campo cFields di ogni 
+      Negli oggetti che che il servizio "Confidential Information" gestisce è presente una netta
+      separazione tra
+      - informazioni confidenziali, gestite come proprietà annidate del campo cFields di ogni
         oggetto e
       - informazioni altamente confidenziali, gestite come proprietà annidate del campo hcFields.
 
       ## Cancellazione.
-      Ogni oggetto è associato a una data di scadenza (campo expireTimestamp). Le informazioni 
-      e il mapping legati a tale oggetto verranno rimosse automaticamente in un momento successivo 
+      Ogni oggetto è associato a una data di scadenza (campo expireTimestamp). Le informazioni
+      e il mapping legati a tale oggetto verranno rimosse automaticamente in un momento successivo
       alla data di scadenza ma entro le 48 ore da essa.
   license:
     name: PagoPA PN license
@@ -128,7 +128,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddressDto'
+              $ref: '#/components/schemas/AddressAndDenominationDto'
       responses:
         '200':
           description: OK
@@ -316,7 +316,7 @@ components:
         mandateAddresses:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/AddressDto'
+            $ref: '#/components/schemas/AddressAndDenominationDto'
     AddressId:
       title: Identificativo del recapito o domicilio digitale
       type: string
@@ -335,6 +335,18 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/AddressDto'
+    
+    AddressAndDenominationDto:
+      allOf:
+        - $ref: '#/components/schemas/AddressDto'
+        - type: object
+          properties:            
+            destName: 
+              type: string
+            destSurname: 
+              type: string
+            destBusinessName: 
+              type: string
     AddressDto:
       type: object
       required:
@@ -346,6 +358,8 @@ components:
           enum:
             - email
             - pec
+            - iomsg
+            - iopec
             - sms
         value:
           type: string
@@ -370,11 +384,6 @@ components:
     AnalogDomicile:
       title: dettagli di un domicilio analogico; ovvero un indirizzo fisico
       type: object
-      required:
-        - address
-        - cap
-        - municipality
-        - province
       properties:
         at:
           type: string

@@ -38,7 +38,7 @@ public class PnDataVaultRestV1Controller implements ByExternalIdApi, ByInternalI
     }
 
     @Override
-    public Mono<ResponseEntity<String>> updateRecipientMandateByInternalId(String internalId, String mandateId, Mono<AddressDto> addressDtoMono, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<String>> updateRecipientMandateByInternalId(String internalId, String mandateId, Mono<AddressAndDenominationDto> addressDtoMono, ServerWebExchange exchange) {
         return addressDtoMono.flatMap( addressDto -> Mono.fromFuture(
                 svc.updateMandate( internalId, mandateId, addressDto )
                     .thenApply( returnedId -> ResponseEntity.ok( returnedId ))

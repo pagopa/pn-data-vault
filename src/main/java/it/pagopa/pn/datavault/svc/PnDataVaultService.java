@@ -36,7 +36,7 @@ public class PnDataVaultService {
         return objDao.getByInternalId(
                 Namespaces.MANDATES.getStrValue(),
                 internalId,
-                AddressDto.class
+                AddressAndDenominationDto.class
             )
             .thenApply( addresses -> {
                 RecipientMandatesDto dto = new RecipientMandatesDto();
@@ -45,7 +45,7 @@ public class PnDataVaultService {
             });
     }
 
-    public CompletableFuture<String> updateMandate(String internalId, String mandateId, AddressDto addressDto) {
+    public CompletableFuture<String> updateMandate(String internalId, String mandateId, AddressAndDenominationDto addressDto) {
         return objDao.updateFieldByInternalId(
                 Namespaces.MANDATES.getStrValue(),
                 internalId,

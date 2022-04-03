@@ -2,11 +2,11 @@ package it.pagopa.pn.datavault.dao;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -22,7 +22,7 @@ public class ConfidentialObjectDao {
         this.entity2dto = entity2dto;
     }
 
-    public <T> CompletableFuture<Map<String, T>> getByInternalId(String namespace, String internalId, Class<T> objType) {
+    public <T> Mono<Map<String, T>> getByInternalId(String namespace, String internalId, Class<T> objType) {
         log.info( "Retrieve object namespace={}, internalId={}", namespace, internalId);
 
         String hashKeyValue = buildHashKeyValue( namespace, internalId );
@@ -36,8 +36,8 @@ public class ConfidentialObjectDao {
                 ))
                 .build();
 
-        return dynamo.query( queryRequest )
-                .thenApply( queryResponse -> {
+        return Mono.fromFuture(dynamo.query( queryRequest ))
+                .map( queryResponse -> {
                     Map<String, T> results;
                     if( queryResponse.hasItems() ) {
                         log.info( "Retrieve object namespace={}, internalId={} result=FOUND", namespace, internalId);
@@ -54,7 +54,7 @@ public class ConfidentialObjectDao {
                 });
     }
 
-    public <T> CompletableFuture<String> updateFieldByInternalId(String namespace, String internalId, String fieldId, T valueObj) {
+    public <T> Mono<String> updateFieldByInternalId(String namespace, String internalId, String fieldId, T valueObj) {
         String hashKeyValue = buildHashKeyValue( namespace, internalId );
 
         PutItemRequest putItemRequest = PutItemRequest.builder()
@@ -62,8 +62,20 @@ public class ConfidentialObjectDao {
                 .item( entity2dto.dto2dynamoItem( hashKeyValue, fieldId, valueObj ) )
                 .build();
 
-        return dynamo.putItem( putItemRequest )
-                .thenApply( putItemResponse -> internalId );
+        return Mono.fromFuture( dynamo.putItem( putItemRequest ))
+                .map( putItemResponse -> internalId );
+    }
+
+    public Mono<String> deleteFieldByInternalId(String namespace, String internalId, String fieldId) {
+        String hashKeyValue = buildHashKeyValue( namespace, internalId );
+
+        DeleteItemRequest deleteItemRequest = DeleteItemRequest.builder()
+                .tableName( tableDef.getTableName() )
+                .key( entity2dto.dto2dynamoItemKey( hashKeyValue, fieldId ) )
+                .build();
+
+        return Mono.fromFuture( dynamo.deleteItem( deleteItemRequest ))
+                .map( deleteItemResponse -> internalId );
     }
 
 

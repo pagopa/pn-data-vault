@@ -3,6 +3,7 @@ package it.pagopa.pn.datavault.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -28,9 +29,7 @@ public class DynamoItem2ObjectDtoMapper {
 
     public <T> Map<String, AttributeValue> dto2dynamoItem(String hashKeyValue, String fieldId, T valueObj) {
         try {
-            Map<String, AttributeValue> item = new HashMap<>();
-            item.put( tableDef.getHashKeyAttributeName(), AttributeValue.builder().s( hashKeyValue ).build());
-            item.put( tableDef.getSortKeyAttributeName(), AttributeValue.builder().s( fieldId ).build());
+            Map<String, AttributeValue> item = dto2dynamoItemKey(hashKeyValue, fieldId);
 
             String jsonValue = jsonMapper.writeValueAsString( valueObj );
             item.put( tableDef.getValueAttributeName(), AttributeValue.builder().s( jsonValue ).build());
@@ -39,6 +38,13 @@ public class DynamoItem2ObjectDtoMapper {
         catch ( JsonProcessingException exc) {
             throw new RuntimeException( exc );
         }
+    }
+
+    public Map<String, AttributeValue> dto2dynamoItemKey(String hashKeyValue, String fieldId) {
+        Map<String, AttributeValue> item = new HashMap<>();
+        item.put( tableDef.getHashKeyAttributeName(), AttributeValue.builder().s(hashKeyValue).build());
+        item.put( tableDef.getSortKeyAttributeName(), AttributeValue.builder().s(fieldId).build());
+        return item;
     }
 
     public <T> Map<String, T> dynamoItem2dto(List<Map<String, AttributeValue>> items, Class<T> objType) {

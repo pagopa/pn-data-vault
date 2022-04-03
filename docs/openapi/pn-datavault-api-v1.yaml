@@ -1,32 +1,14 @@
 openapi: 3.0.3
 info:
-  title: API for Confidential Information handling
+  title: Anonimizzazione dati in Piattaforma Notifiche
   version: v1
   description: |
-      # Gestione informazioni Confidenziali in Piattaforma Notifiche
-      Questo servizio ha due concetti base:
-      - Il mapping tra _externalId_ e _internalId_
-      - La suddivisione delle informazioni gestite tra confidenziali e altamente confidenziali
-
-      ## Il mapping tra _externalId_ e _internalId_
-      Tale mappatura è biunivoca quindi a un _externalId_ corrisponde uno e un solo _internalId_.
-      Mentre l'operazione di mappatura da _externalId_ a _internalId_ è di uso comune l'operazione
-      opposta, la conversione da _internalId_ a _externalId_ è considerata "riservata alla
-      de-anonimizzazione".
-      __N.B.:__ l' _externalId_ è considerata informazione altamente confidenziale.
-
-      ## Suddivisione tra informazioni confidenziali (C) e altamente confidenziali (HC)
-      __N.B.:__ leggere [PagoPA Data Classification and Handling](https://pagopa.atlassian.net/wiki/spaces/EN/pages/357204284/Data+Classification+Handling)
-      Negli oggetti che che il servizio "Confidential Information" gestisce è presente una netta
-      separazione tra
-      - informazioni confidenziali, gestite come proprietà annidate del campo cFields di ogni
-        oggetto e
-      - informazioni altamente confidenziali, gestite come proprietà annidate del campo hcFields.
-
-      ## Cancellazione.
-      Ogni oggetto è associato a una data di scadenza (campo expireTimestamp). Le informazioni
-      e il mapping legati a tale oggetto verranno rimosse automaticamente in un momento successivo
-      alla data di scadenza ma entro le 48 ore da essa.
+      # Elenco entità logiche che contengono informazioni confidenziali
+        - Identificativi dei destinatari; possono essere persone fisiche o persone giuridiche
+        - Domicili e recapiti inseriti dai destinatari
+        - Informazioni di contatto inserite nelle deleghe
+        - Informazioni di contatto inserite nelle notifiche
+      
   license:
     name: PagoPA PN license
     url: http://pippo.pappo.it
@@ -34,25 +16,40 @@ servers:
   - url: https://servizio-anonimizzazione
     description: finto
 tags:
-  - name: ByExternalId
-    description: Handle objects and externalId to internalId mappings
-  - name: ByInternalId
-    description: handle objects only
+  - name: Recipients
+    description: Gestione destinatari
+  - name: AddressBook
+    description: Gestione Domicili & Recapiti
+  - name: Mandates
+    description: Gestione deleghe
+  - name: Notifications
+    description: Gestione Notifiche
 paths:
+
+  ###############################################################################################
+  ###                             REGISTRAZIONE NUOVI DESTINATARI                             ###
+  ###############################################################################################
+
   '/datavault-private/v1/recipients/external/{recipientType}/{taxId}':
     get:
       operationId: ensureRecipientByExternalId
-      summary: Create an external to internal id mapping and associated object.
-      description: Create an external to internal id mapping, if needed. Create or overwrite the associated object.
+      summary: Genera un id opaco
+      description: >-
+        Se _recipientType_ vale _PF_ richiede l'id opaco allo _UserRegistry_ connesso allo
+        _SpidHub_ del portale dedicato ai cittadini. <br/>
+        Se _recipientType_ vale _PG_ richiede l'id opaco a un istanza di _UserRegistry_ dedicata
+        alle persone giuridiche.
       tags:
-        - ByExternalId
+        - Recipients
       parameters:
         - name: recipientType
+          description: tipo di destinatario
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/RecipientType'
         - name: taxId
+          description: Codice Fiscale del destinatario
           in: path
           required: true
           schema:
@@ -70,96 +67,67 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'pn-errors.yaml#/components/schemas/Problem'
-        '500':
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
-  '/datavault-private/v1/recipients/internal/{internalId}/mandates':
+  
+  
+  ###############################################################################################
+  ###                                 LETTURA DATI DESTINATARI                                ###
+  ###############################################################################################
+
+  '/datavault-private/v1/recipients/internal':
     get:
-      operationId: getRecipientMandatesByInternalId
-      summary: Read an object by internal id
+      operationId: getRecipientDenominationByInternalId
+      summary: Deanonimizzazione destinatari
+      description: >-
+        __UTILIZZARE CON MOLTA PARSIMONIA__
       tags:
-        - ByInternalId
+        - Recipients
       parameters:
         - name: internalId
-          in: path
+          description: Elenco identificativi da deanonimizzare
+          in: query
           required: true
           schema:
-            $ref: '#/components/schemas/InternalId'
+            type: array
+            items:
+              $ref: '#/components/schemas/InternalId'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RecipientMandatesDto'
+                type: array
+                items:
+                  $ref: '#/components/schemas/BaseRecipientDto'
         '400':
           description: Invalid input
           content:
             application/problem+json:
               schema:
                 $ref: 'pn-errors.yaml#/components/schemas/Problem'
-        '500':
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
-  '/datavault-private/v1/recipients/internal/{internalId}/mandates/{mandateId}':
-    put:
-      operationId: updateRecipientMandateByInternalId
-      summary: Update entire object replacing its cFields and hcFields values
-      tags:
-        - ByInternalId
-      parameters:
-        - name: internalId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/InternalId'
-        - name: mandateId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/MandateId'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddressAndDenominationDto'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalId'
-        '400':
-          description: Invalid input
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
-        '500':
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  
+
+
+  ###############################################################################################
+  ###                         GESTIONE DATI CONFIDENZIALI ADDRESS BOOK                        ###
+  ###############################################################################################
+
   '/datavault-private/v1/recipients/internal/{internalId}/addresses':
+    parameters:
+      - name: internalId
+        description: Identificativo destinatario
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/InternalId'
     get:
       operationId: getRecipientAddressesByInternalId
-      summary: Read an object by internal id
+      summary: Elenca domicili e recapiti del destinatario
+      description: >-
+        Questa invocazione restituisce una mappa contenente tutti i domicili e i recapiti 
+        del destinatario
       tags:
-        - ByInternalId
-      parameters:
-        - name: internalId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/InternalId'
+        - AddressBook
       responses:
         '200':
           description: OK
@@ -173,65 +141,162 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'pn-errors.yaml#/components/schemas/Problem'
-        '500':
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  
   '/datavault-private/v1/recipients/internal/{internalId}/addresses/{addressId}':
+    parameters:
+      - name: internalId
+        description: Identificativo destinatario
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/InternalId'
+      - name: addressId
+        description: Identificativo domicilio o recapito
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/AddressId'
     put:
       operationId: updateRecipientAddressByInternalId
-      summary: Update entire object replacing its cFields and hcFields values
+      summary: Inserisce o modifica un domicilio o recapito
       tags:
-        - ByInternalId
-      parameters:
-        - name: internalId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/InternalId'
-        - name: addressId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/AddressId'
+        - AddressBook
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AddressDto'
       responses:
-        '200':
+        '204':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalId'
         '400':
           description: Invalid input
           content:
             application/problem+json:
               schema:
                 $ref: 'pn-errors.yaml#/components/schemas/Problem'
-        '500':
-          description: Internal Server Error
+    delete:
+      operationId: deleteRecipientAddressByInternalId
+      summary: Cancella un domicilio o recapito
+      tags:
+        - AddressBook
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
           content:
             application/problem+json:
               schema:
                 $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  
+
+  ###############################################################################################
+  ###                           GESTIONE DATI CONFIDENZIALI DELEGHE                           ###
+  ###############################################################################################
+
+  '/datavault-private/v1/mandates':
+    get:
+      operationId: getMandatesByIds
+      summary: Leggi Deleghe
+      description: >-
+        Permette di leggere i dati di contatto inseriti in un elenco di deleghe. Tale elenco è 
+        definito dal parametro _mandateId_
+      tags:
+        - Mandates
+      parameters:
+        - name: mandateId
+          description: elenco degli identificativi delle deleghe
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/MandateId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MandateDto'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+
+
+  '/datavault-private/v1/mandates/{mandateId}':
+    parameters:
+      - name: mandateId
+        description: identificativo di una delega
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/MandateId'
+    put:
+      operationId: updateMandateById
+      summary: Inserisci o modifica il recapito di una delega
+      tags:
+        - Mandates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressAndDenominationDto'
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+    delete:
+      operationId: deleteMandateById
+      summary: Elimina il recapito di una delega
+      tags:
+        - Mandates
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+  
+  
+
+
+  ###############################################################################################
+  ###                          GESTIONE DATI CONFIDENZIALI NPOTIFICHE                         ###
+  ###############################################################################################
+
+  
   '/datavault-private/v1/notifications/{iun}/addresses':
     parameters:
       - name: iun
+        description: Identificativo Unico Notifica
         in: path
         required: true
         schema:
           $ref: '#/components/schemas/Iun'
     get:
       operationId: getNotificationAddressesByIun
-      summary: Read an object by internal id
+      summary: leggi domicili destinatari
+      description: >-
+        Leggi i domicili digitali o fisici che la pubblica amministrazione ha indicato in fase 
+        di invio della notifica. <br/>
+        La risposta è costituita da un array: un elemento per ogni destinatario della notifica.
       tags:
-        - ByInternalId
+        - Notifications
       responses:
         '200':
           description: OK
@@ -244,109 +309,118 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
-        '500':
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
-    
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'    
     put:
       operationId: updateNotificationAddressesByIun
-      summary: Update entire object replacing its cFields and hcFields values
+      summary: Inserisci o aggiorna elenco domicili specificati in fase di invio di una notifica.
       tags:
-        - ByInternalId
+        - Notifications
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/NotificationAddressesDto'
       responses:
-        '200':
+        '204':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Iun'
         '400':
           description: Invalid input
           content:
             application/problem+json:
               schema:
                 $ref: 'pn-errors.yaml#/components/schemas/Problem'
-        '500':
-          description: Internal Server Error
+    
+    delete:
+      operationId: deleteNotificationAddressesByIun
+      summary: Elimina elenco domicili specificati in fase di invio di una notifica.
+      tags:
+        - Notifications
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
           content:
             application/problem+json:
               schema:
                 $ref: 'pn-errors.yaml#/components/schemas/Problem'
+
+
+
 components:
   schemas:
-    InternalId:
-      title: Unique Object Identifier
-      type: string
-      format: '[A-Za-z0-9~-_]*'
-      minLength: 1
-      maxLength: 100
+
+  ###############################################################################################
+  ###                                     DTO DESTINATARI                                     ###
+  ###############################################################################################
     RecipientType:
       title: 'Tipo del destinatario: PF / PG'
+      description: >-
+        ### Tipo del destinatario
+          - PF: Persona Fisica
+          - PG: Persomna Giuridica
       type: string
       enum:
         - PF
         - PG
+    
     TaxId:
-      title: Personal Identification Information that need to be mapped to an anonymous internal id.
-      description: URL encoded string
+      title: Codice Fiscale
+      description: Codice Fiscale del destinatario, del delagao o dlegante
       type: string
-    MandateId:
-      title: Identificativo della delega
+      example: CGNNMO01T10A944Q
+    
+    InternalId:
+      title: Identificativo anonimizzato
+      description: Identificativo Opaco di una persona Fisica o Giuridica
       type: string
-      pattern: '[A-Za-z0-9-_:]*'
-    RecipientMandatesDto:
-      title: Request for new object creation
+      format: '[A-Za-z0-9~-_]*'
+      minLength: 1
+      maxLength: 100
+      example: 123e4567-e89b-12d3-a456-426655440000
+    
+    BaseRecipientDto:
+      title: Decodicfica Identificativo Anonimo
+      description: >-
+        contiene i dati deanonimizzati riferiti a un InternalId
       type: object
-      required:
-        - expireTimestamp
-        - mandateAddresses
       properties:
-        expireTimestamp:
+        internalId:
+          $ref: '#/components/schemas/InternalId'
+        denomination:
+          description: Nome + cognome __oppure__ ragione sociale
           type: string
-          format: date-time
-        mandateAddresses:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/AddressAndDenominationDto'
+          example: PagoP.A. S.p.A.
+
+  
+  ###############################################################################################
+  ###                                      DTO INDIRIZZI                                      ###
+  ###############################################################################################
+  
     AddressId:
       title: Identificativo del recapito o domicilio digitale
       type: string
       pattern: '[A-Za-z0-9-_:]*'
+      example: DD_c_f205_1
+    
     RecipientAddressesDto:
       title: Request for new object creation
       type: object
       required:
-        - expireTimestamp
-        - platformAddresses
+        - addresses
       properties:
-        expireTimestamp:
-          type: string
-          format: date-time
-        platformAddresses:
+        addresses:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/AddressDto'
-    
-    AddressAndDenominationDto:
-      allOf:
-        - $ref: '#/components/schemas/AddressDto'
-        - type: object
-          properties:            
-            destName: 
-              type: string
-            destSurname: 
-              type: string
-            destBusinessName: 
-              type: string
+      example:
+        DD_c_f205_1:
+          kind: sms
+          value: '+39340123456'
+        RD_c_f205_2:
+          kind: email
+          value: 'io@unemail.it'
+
     AddressDto:
       type: object
       required:
@@ -363,13 +437,67 @@ components:
             - sms
         value:
           type: string
+    
+  
+  ###############################################################################################
+  ###                                       DTO DELEGHE                                       ###
+  ###############################################################################################
+    
+    MandateId:
+      title: Identificativo della delega
+      type: string
+      pattern: '[A-Za-z0-9-_:]*'
+      example: 423e4567-e89b-12d3-a456-426655449632
+    
+    MandateDto:
+      type: object
+      required:
+        - mandateId
+        - mandateAddresses
+      properties:
+        mandateId:
+          $ref: '#/components/schemas/MandateId'
+        info:
+          $ref: '#/components/schemas/AddressAndDenominationDto'
+    
+    AddressAndDenominationDto:
+      allOf:
+        - $ref: '#/components/schemas/AddressDto'
+        - type: object
+          properties:            
+            destName: 
+              type: string
+              example: Nome
+            destSurname: 
+              type: string
+              example: Cognome
+            destBusinessName: 
+              type: string
+              example: Ragione sociale
+      example:
+        kind: email
+        value: io@unemail.server.it
+        destName: Nome
+        destSurname: Cognome
+        destBusinessName: Ragione sociale
+
+  
+
+
+  ###############################################################################################
+  ###                                      DTO NOTIFICHE                                      ###
+  ###############################################################################################
+  
     Iun:
       type: string
       pattern: '[A-Z0-9-]*'
+      example: 'ABCD-XYWK-ASDF-LKJH-202209-1-X'
+    
     NotificationAddressesDto:
       type: array
       items: 
         $ref: '#/components/schemas/NotificationRecipientAddressesDto'
+    
     NotificationRecipientAddressesDto:
       type: object
       required:
@@ -377,10 +505,12 @@ components:
       properties:
         denomination:
           type: string
+          example: Nome Dott. Cognome
         digitalAddress:
           $ref: '#/components/schemas/AddressDto'
         physicalAddress:
           $ref: '#/components/schemas/AnalogDomicile'
+    
     AnalogDomicile:
       title: dettagli di un domicilio analogico; ovvero un indirizzo fisico
       type: object

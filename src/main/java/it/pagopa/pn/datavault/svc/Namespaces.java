@@ -3,7 +3,8 @@ package it.pagopa.pn.datavault.svc;
 public enum Namespaces {
     MANDATES("mandates"),
     ADDRESSES("addresses"),
-    NOTIFICATIONS( "notifications");
+    NOTIFICATIONS( "notifications"),
+    RECIPIENTS("recipients");
 
     private final String strValue;
 

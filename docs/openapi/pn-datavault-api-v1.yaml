@@ -279,7 +279,29 @@ paths:
   ###                          GESTIONE DATI CONFIDENZIALI NPOTIFICHE                         ###
   ###############################################################################################
 
-  
+  '/datavault-private/v1/notifications/{iun}':
+    parameters:
+      - name: iun
+        description: Identificativo Unico Notifica
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Iun'
+    delete:
+      operationId: deleteNotificationByIun
+      summary: Elimina informazioni confidenziali relative a una notifica.
+      tags:
+        - Notifications
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem' 
+    
   '/datavault-private/v1/notifications/{iun}/addresses':
     parameters:
       - name: iun
@@ -328,13 +350,83 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
-    
-    delete:
-      operationId: deleteNotificationAddressesByIun
-      summary: Elimina elenco domicili specificati in fase di invio di una notifica.
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'  
+  
+  '/datavault-private/v1/notifications/{iun}/timeline':
+    parameters:
+      - name: iun
+        description: Identificativo Unico Notifica
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Iun'
+    get:
+      operationId: getNotificationTimelineByIun
+      summary: leggi intera timeline di una notifica
+      description: >-
+        Leggi le informazioni confidenziali relative all'intera timeline di una notifica
       tags:
         - Notifications
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConfidentialTimelineElementDto'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'    
+  
+  '/datavault-private/v1/notifications/{iun}/timeline/{timelineElementId}':
+    parameters:
+      - name: iun
+        description: Identificativo Unico Notifica
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Iun'
+      - name: timelineElementId
+        description: Identificativo dell'elemento di timeline
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getNotificationTimelineByIunAndTimelineElementId
+      summary: leggi un elemento di timeline
+      description: >-
+        Leggi informazioni confidenziali relative a un elemento di timeline
+      tags:
+        - Notifications
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfidentialTimelineElementDto'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'    
+    put:
+      operationId: updateNotificationTimelineByIunAndTimelineElementId
+      summary: Inserisci o aggiorna elenco domicili specificati in fase di invio di una notifica.
+      tags:
+        - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfidentialTimelineElementDto'
       responses:
         '204':
           description: OK
@@ -343,10 +435,8 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
-
-
-
+                $ref: 'pn-errors.yaml#/components/schemas/Problem'  
+   
 components:
   schemas:
 
@@ -387,6 +477,10 @@ components:
       properties:
         internalId:
           $ref: '#/components/schemas/InternalId'
+        taxId:
+          $ref: '#/components/schemas/TaxId'
+        recipientType:
+          $ref: '#/components/schemas/RecipientType'
         denomination:
           description: Nome + cognome __oppure__ ragione sociale
           type: string
@@ -540,4 +634,16 @@ components:
           minLength: 2
           maxLength: 2
           example: 'it'     
+
+
+
+    ConfidentialTimelineElementDto:
+        type: object
+        properties:
+          timelineElementId:
+            type: string
+          digitalAddress:
+            $ref: '#/components/schemas/AddressDto'
+          physicalAddress: 
+            $ref: '#/components/schemas/AnalogDomicile'
 

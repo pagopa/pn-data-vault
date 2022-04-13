@@ -4,6 +4,7 @@ public enum Namespaces {
     MANDATES("mandates"),
     ADDRESSES("addresses"),
     NOTIFICATIONS( "notifications"),
+    NOTIFICATIONS_TIMELINES( "notifications_timelines"),
     RECIPIENTS("recipients");
 
     private final String strValue;

@@ -13,7 +13,7 @@ import static  it.pagopa.pn.datavault.dao.DynamoDbUtils.*;
 @Component
 public class ExternalToInternalIdMappingDao {
 
-    public static final AttributeValue FIXED_SORT_KEY = AttributeValue.builder().s("n/a").build();
+    public static final AttributeValue FIXED_SORT_KEY = AttributeValue.builder().s("N/A").build();
     private final DynamoDbAsyncClient dynamo;
     private final TableDefinition tableDef;
 

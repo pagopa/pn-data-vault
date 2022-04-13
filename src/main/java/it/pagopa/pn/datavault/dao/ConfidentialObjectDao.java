@@ -2,6 +2,7 @@ package it.pagopa.pn.datavault.dao;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
@@ -82,6 +83,15 @@ public class ConfidentialObjectDao {
 
     private String buildHashKeyValue(String namespace, String internalId) {
         return "OBJECT-" + namespace + "#" + internalId;
+    }
+
+    public Mono<String> deleteByInternalId(String namespace, String internalId) {
+        return getByInternalId(namespace, internalId, HashMap.class)
+                .flatMap( map ->
+                        Flux.fromIterable( map.keySet() )
+                            .flatMap( key -> deleteFieldByInternalId( namespace, internalId, key) )
+                            .reduce( (a, b) -> a+b)
+                );
     }
 
 }

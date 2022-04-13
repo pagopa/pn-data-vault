@@ -1,6 +1,7 @@
 package it.pagopa.pn.datavault.rest;
 
 import it.pagopa.pn.datavault.generated.openapi.server.v1.api.NotificationsApi;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.svc.PnDataVaultService;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +21,8 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
     }
 
     @Override
-    public Mono<ResponseEntity<Void>> deleteNotificationAddressesByIun(String iun, ServerWebExchange exchange) {
-        return this.svc.deleteNotificationAddressesByIun( iun )
+    public Mono<ResponseEntity<Void>> deleteNotificationByIun(String iun, ServerWebExchange exchange) {
+        return this.svc.deleteNotificationByIun( iun )
                 .map( result -> ResponseEntity.ok(null));
     }
 
@@ -46,4 +47,32 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
                     })
                     .map( updateResult -> ResponseEntity.ok(null));
     }
+
+    @Override
+    public Mono<ResponseEntity<Flux<ConfidentialTimelineElementDto>>> getNotificationTimelineByIun(String iun, ServerWebExchange exchange) {
+        return this.svc.getNotificationTimelineByIun( iun )
+                .map( optionalResult ->
+                        optionalResult
+                                .map( result -> ResponseEntity.ok( result ))
+                                .orElse( ResponseEntity.<Flux<NotificationRecipientAddressesDto>>notFound().build() )
+                );
+    }
+
+    @Override
+    public Mono<ResponseEntity<ConfidentialTimelineElementDto>> getNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, ServerWebExchange exchange) {
+        return this.svc.getNotificationTimelineByIunAndTimelineElementId( iun, timelineElementId )
+                .map( optionalResult ->
+                        optionalResult
+                                .map( result -> ResponseEntity.ok( result ))
+                                .orElse( ResponseEntity.<Flux<NotificationRecipientAddressesDto>>notFound().build() )
+                );
+    }
+
+    @Override
+    public Mono<ResponseEntity<Void>> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, Mono<ConfidentialTimelineElementDto> confidentialTimelineElementDto, ServerWebExchange exchange) {
+        return confidentialTimelineElementDto.flatMap( dto -> svc.updateNotificationTimelineByIunAndTimelineElementId( iun, timelineElementId, dto ))
+                .map( updateResult -> ResponseEntity.ok(null));
+    }
+
+
 }

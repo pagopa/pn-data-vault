@@ -3,7 +3,9 @@ package it.pagopa.pn.datavault.svc;
 import it.pagopa.pn.datavault.dao.ConfidentialObjectDao;
 import it.pagopa.pn.datavault.dao.ExternalToInternalIdMappingDao;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -171,12 +173,56 @@ public class PnDataVaultService {
         );
     }
 
-    public Mono<String> deleteNotificationAddressesByIun(String iun ) {
+    public Mono<String> deleteNotificationByIun(String iun ) {
         return objDao.deleteFieldByInternalId(
                 Namespaces.NOTIFICATIONS.getStrValue(),
                 iun,
                 NOT_APPLICABLE_SORT_KEY
-        );
+            )
+            .flatMap( result ->
+                objDao.deleteByInternalId(
+                    NOTIFICATIONS_TIMELINES.getStrValue(),
+                    iun
+                )
+            );
     }
 
+    public Mono<Optional<ConfidentialTimelineElementDto>> getNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId) {
+        return objDao.getByInternalId(
+                NOTIFICATIONS_TIMELINES.getStrValue(),
+                iun,
+                ConfidentialTimelineElementDto.class
+            )
+            .map( allFields ->  Optional.ofNullable( allFields.get( timelineElementId )));
+    }
+
+    public Mono<String> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, ConfidentialTimelineElementDto dto) {
+        dto.setTimelineElementId( timelineElementId );
+        return objDao.updateFieldByInternalId(
+                Namespaces.NOTIFICATIONS_TIMELINES.getStrValue(),
+                iun,
+                timelineElementId,
+                dto
+            );
+    }
+
+    public Mono<Optional<Flux<ConfidentialTimelineElementDto>>> getNotificationTimelineByIun(String iun) {
+        return objDao.getByInternalId(
+                Namespaces.NOTIFICATIONS_TIMELINES.getStrValue(),
+                iun,
+                ConfidentialTimelineElementDto.class
+            )
+            .map( allFields -> {
+                Optional<Flux<ConfidentialTimelineElementDto>> result;
+                if(allFields.isEmpty()) {
+                    result = Optional.empty();
+                }
+                else {
+                    Flux<ConfidentialTimelineElementDto> timeline;
+                    timeline = Flux.fromIterable( allFields.values() );
+                    result = Optional.of( timeline );
+                }
+                return result;
+            });
+    }
 }

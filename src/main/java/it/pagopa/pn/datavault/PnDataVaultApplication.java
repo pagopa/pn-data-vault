@@ -15,7 +15,7 @@ public class PnDataVaultApplication {
 	}
 
 
-	@Controller
+	@RestController
 	@RequestMapping("/")
 	public static class RootController {
 

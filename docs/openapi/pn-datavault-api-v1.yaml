@@ -35,10 +35,10 @@ paths:
       operationId: ensureRecipientByExternalId
       summary: Genera un id opaco
       description: >-
-        Se _recipientType_ vale _PF_ richiede l'id opaco allo _UserRegistry_ connesso allo
+        Se _recipientType_ vale _PF_ richiede l'id opaco al _Personal Data Vault_ connesso allo
         _SpidHub_ del portale dedicato ai cittadini. <br/>
-        Se _recipientType_ vale _PG_ richiede l'id opaco a un istanza di _UserRegistry_ dedicata
-        alle persone giuridiche.
+        Se _recipientType_ vale _PG_ richiede l'id opaco a un istanza di _Personal Data Vault_ 
+        dedicata alle persone giuridiche.
       tags:
         - Recipients
       parameters:
@@ -78,7 +78,9 @@ paths:
       operationId: getRecipientDenominationByInternalId
       summary: Deanonimizzazione destinatari
       description: >-
-        __UTILIZZARE CON MOLTA PARSIMONIA__
+        Servizio che dato un elenco di id anonimizzati permette di ottenere la denominazione
+        (nome e cognome o ragione sociale) e il tipo (PF o PG) del dei destinatari a i quali 
+        si riferiscono tali id anonimi.
       tags:
         - Recipients
       parameters:
@@ -247,7 +249,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddressAndDenominationDto'
+              $ref: '#/components/schemas/DenominationDto'
       responses:
         '204':
           description: OK
@@ -276,7 +278,7 @@ paths:
 
 
   ###############################################################################################
-  ###                          GESTIONE DATI CONFIDENZIALI NPOTIFICHE                         ###
+  ###                          GESTIONE DATI CONFIDENZIALI NOTIFICHE                          ###
   ###############################################################################################
 
   '/datavault-private/v1/notifications/{iun}':
@@ -518,17 +520,8 @@ components:
     AddressDto:
       type: object
       required:
-        - kind
         - value
       properties:
-        kind:
-          type: string
-          enum:
-            - email
-            - pec
-            - iomsg
-            - iopec
-            - sms
         value:
           type: string
     
@@ -552,25 +545,21 @@ components:
         mandateId:
           $ref: '#/components/schemas/MandateId'
         info:
-          $ref: '#/components/schemas/AddressAndDenominationDto'
+          $ref: '#/components/schemas/DenominationDto'
     
-    AddressAndDenominationDto:
-      allOf:
-        - $ref: '#/components/schemas/AddressDto'
-        - type: object
-          properties:            
-            destName: 
-              type: string
-              example: Nome
-            destSurname: 
-              type: string
-              example: Cognome
-            destBusinessName: 
-              type: string
-              example: Ragione sociale
+    DenominationDto:
+      type: object
+      properties:            
+        destName: 
+          type: string
+          example: Nome
+        destSurname: 
+          type: string
+          example: Cognome
+        destBusinessName: 
+          type: string
+          example: Ragione sociale
       example:
-        kind: email
-        value: io@unemail.server.it
         destName: Nome
         destSurname: Cognome
         destBusinessName: Ragione sociale
@@ -626,13 +615,9 @@ components:
           example: 'Bologna'
         province:
           type: string
-          minLength: 2
-          maxLength: 2
           example: 'BO'
         state:
           type: string
-          minLength: 2
-          maxLength: 2
           example: 'it'     
 
 

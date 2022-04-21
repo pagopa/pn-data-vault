@@ -106,7 +106,7 @@ public class PnDataVaultService {
         return objDao.getByInternalId(
                 Namespaces.MANDATES.getStrValue(),
                 mandateId,
-                AddressAndDenominationDto.class
+                DenominationDto.class
             )
             .map( all ->
                     Optional.ofNullable( all.get( NOT_APPLICABLE_SORT_KEY ) )
@@ -129,7 +129,7 @@ public class PnDataVaultService {
     }
 
 
-    public Mono<String> updateMandateByInternalId(String mandateId, AddressAndDenominationDto addressDto) {
+    public Mono<String> updateMandateByInternalId(String mandateId, DenominationDto addressDto) {
         return objDao.updateFieldByInternalId(
                 Namespaces.MANDATES.getStrValue(),
                 mandateId,

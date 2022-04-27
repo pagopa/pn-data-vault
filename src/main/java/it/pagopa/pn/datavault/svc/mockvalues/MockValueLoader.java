@@ -20,7 +20,6 @@ import java.io.InputStream;
 @Slf4j
 public class MockValueLoader {
 
-    @Value("${pn.datavault.mock-values-file:}")
     private String mockValuesFile;
 
     private final ApplicationContext ctx;

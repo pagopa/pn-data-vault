@@ -1,4 +1,4 @@
-package it.pagopa.pn.datavault.dao;
+package it.pagopa.pn.datavault.middleware.db;
 
 
 import lombok.Getter;
@@ -13,7 +13,6 @@ import javax.annotation.PostConstruct;
 @Slf4j
 public class TableDefinition {
 
-    @Value("${pn.data-vault.dynamodb.table-name}")
     private String tableName;
 
     private String hashKeyAttributeName = "hashKey";

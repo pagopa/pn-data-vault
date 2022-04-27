@@ -1,13 +1,12 @@
 package it.pagopa.pn.datavault;
 
-import it.pagopa.pn.commons.configs.PnSpringBootApplication;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.reactive.result.view.RedirectView;
 
-@PnSpringBootApplication
+@SpringBootApplication
 public class PnDataVaultApplication {
 
 	public static void main(String[] args) {

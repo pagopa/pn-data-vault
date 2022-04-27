@@ -1,14 +1,14 @@
-package it.pagopa.pn.datavault.dao;
+package it.pagopa.pn.datavault.middleware.db;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static  it.pagopa.pn.datavault.dao.DynamoDbUtils.*;
+import static it.pagopa.pn.datavault.middleware.db.DynamoDbUtils.*;
 
 @Component
 public class ExternalToInternalIdMappingDao {
@@ -17,9 +17,9 @@ public class ExternalToInternalIdMappingDao {
     private final DynamoDbAsyncClient dynamo;
     private final TableDefinition tableDef;
 
-    public ExternalToInternalIdMappingDao(DynamoDbAsyncClient dynamo, TableDefinition tableDef) {
-        this.dynamo = dynamo;
-        this.tableDef = tableDef;
+    public ExternalToInternalIdMappingDao() {
+        this.dynamo = null;
+        this.tableDef = null;
     }
 
     public CompletableFuture<Optional<String>> getObjectMapping(String externalId ) {

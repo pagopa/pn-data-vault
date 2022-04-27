@@ -1,9 +1,8 @@
-package it.pagopa.pn.datavault.dao;
+package it.pagopa.pn.datavault.middleware.db;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -12,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.datavault.dao.DynamoDbUtils.*;
+import static it.pagopa.pn.datavault.middleware.db.DynamoDbUtils.*;
 
 @Component
 public class DynamoItem2ObjectDtoMapper {
@@ -22,9 +21,9 @@ public class DynamoItem2ObjectDtoMapper {
 
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
-    public DynamoItem2ObjectDtoMapper(DynamoDbAsyncClient dynamo, TableDefinition tableDef) {
-        this.dynamo = dynamo;
-        this.tableDef = tableDef;
+    public DynamoItem2ObjectDtoMapper() {
+        this.dynamo = null;
+        this.tableDef = null;
     }
 
     public <T> Map<String, AttributeValue> dto2dynamoItem(String hashKeyValue, String fieldId, T valueObj) {

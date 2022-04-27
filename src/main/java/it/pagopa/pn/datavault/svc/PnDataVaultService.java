@@ -1,11 +1,9 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.dao.ConfidentialObjectDao;
-import it.pagopa.pn.datavault.dao.ExternalToInternalIdMappingDao;
+import it.pagopa.pn.datavault.middleware.db.ConfidentialObjectDao;
+import it.pagopa.pn.datavault.middleware.db.ExternalToInternalIdMappingDao;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

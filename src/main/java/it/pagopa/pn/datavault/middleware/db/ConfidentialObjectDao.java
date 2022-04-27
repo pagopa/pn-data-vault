@@ -1,4 +1,4 @@
-package it.pagopa.pn.datavault.dao;
+package it.pagopa.pn.datavault.middleware.db;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,14 +13,11 @@ import java.util.*;
 @Slf4j
 public class ConfidentialObjectDao {
 
-    private final DynamoDbAsyncClient dynamo;
-    private final TableDefinition tableDef;
-    private final DynamoItem2ObjectDtoMapper entity2dto;
+    private final DynamoDbAsyncClient dynamo = null;
+    private final TableDefinition tableDef = null;
+    private final DynamoItem2ObjectDtoMapper entity2dto = null;
 
-    public ConfidentialObjectDao(DynamoDbAsyncClient dynamo, TableDefinition tableDef, DynamoItem2ObjectDtoMapper entity2dto) {
-        this.dynamo = dynamo;
-        this.tableDef = tableDef;
-        this.entity2dto = entity2dto;
+    public ConfidentialObjectDao() {
     }
 
     public <T> Mono<Map<String, T>> getByInternalId(String namespace, String internalId, Class<T> objType) {

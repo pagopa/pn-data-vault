@@ -1,4 +1,4 @@
-package it.pagopa.pn.datavault.dao;
+package it.pagopa.pn.datavault.middleware.db;
 
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 

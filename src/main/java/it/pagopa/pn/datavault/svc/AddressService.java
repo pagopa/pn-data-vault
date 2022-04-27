@@ -23,7 +23,7 @@ public class AddressService {
 
     public Mono<RecipientAddressesDto> getAddressByInternalId(String id) {
         return objDao.listAddressesById(id)
-                .collectMap(AddressEntity::getInternalId, addressesMapper::toDto)
+                .collectMap(AddressEntity::getAddressId, addressesMapper::toDto)
                 .map(m -> {
                     RecipientAddressesDto r = new RecipientAddressesDto();
                     r.addresses(m);

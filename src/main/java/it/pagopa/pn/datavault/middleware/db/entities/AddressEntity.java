@@ -19,9 +19,9 @@ public class AddressEntity {
 
     public AddressEntity(){}
 
-    public AddressEntity(String uid, String addressid){
+    public AddressEntity(String uid, String addressId){
         this.setInternalId(uid);
-        this.setSk(addressid);
+        this.setAddressId(addressId);
     }
 
     @DynamoDbIgnore
@@ -35,7 +35,7 @@ public class AddressEntity {
     }
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;
-    @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String sk;
+    @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String addressId;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_VALUE)})) private String value;
 }

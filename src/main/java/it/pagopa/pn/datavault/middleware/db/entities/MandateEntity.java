@@ -33,8 +33,8 @@ public class MandateEntity {
     }
 
     @DynamoDbIgnore
-    public String setMandateId(String mandateId){
-        return this.pk = MANDATE_PREFIX + mandateId;
+    public void setMandateId(String mandateId){
+        this.pk = MANDATE_PREFIX + mandateId;
     }
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;

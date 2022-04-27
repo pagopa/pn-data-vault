@@ -19,19 +19,19 @@ public class AddressEntity {
 
     public AddressEntity(){}
 
-    public AddressEntity(String uid){
-        this.setAddressId(uid);
-        this.setSk(ADDRESS_PREFIX);
+    public AddressEntity(String uid, String addressid){
+        this.setInternalId(uid);
+        this.setSk(addressid);
     }
 
     @DynamoDbIgnore
-    public String getAddressId(){
+    public String getInternalId(){
         return this.pk.replace(ADDRESS_PREFIX, "");
     }
 
     @DynamoDbIgnore
-    public String setAddressId(String uid){
-        return this.pk = ADDRESS_PREFIX + uid;
+    public void setInternalId(String uid){
+        this.pk = ADDRESS_PREFIX + uid;
     }
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;

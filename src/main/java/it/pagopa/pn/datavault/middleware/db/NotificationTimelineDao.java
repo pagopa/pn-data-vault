@@ -1,7 +1,6 @@
 package it.pagopa.pn.datavault.middleware.db;
 
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
-import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -47,8 +46,8 @@ public class NotificationTimelineDao extends BaseDao {
         if (log.isInfoEnabled())
             log.info("quering list-by-id id:{}", iun);
 
-        NotificationEntity ne = new NotificationEntity(iun, "");
-        QueryConditional queryConditional = QueryConditional.sortBeginsWith(getKeyBuild(ne.getPk(), ""));
+        NotificationTimelineEntity ne = new NotificationTimelineEntity(iun, "");
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ne.getPk()));
 
         QueryEnhancedRequest qeRequest = QueryEnhancedRequest
                 .builder()

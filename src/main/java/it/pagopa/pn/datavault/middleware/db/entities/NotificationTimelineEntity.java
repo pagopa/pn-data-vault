@@ -39,5 +39,5 @@ public class NotificationTimelineEntity {
     @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String timelineElementId;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_ADDRESS)})) private String digitalAddress;
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHYSICAL_ADDRESS)})) private PhysicalAddress physicalAddress;
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHYSICAL_ADDRESS), @DynamoDbConvertedBy(PhysicalAddressTypeConverter.class)})) private PhysicalAddress physicalAddress;
 }

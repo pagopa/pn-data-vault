@@ -68,7 +68,7 @@ public class NotificationDao extends BaseDao {
             log.info("quering list-by-id id:{}", iun);
 
         NotificationEntity ne = new NotificationEntity(iun, "");
-        QueryConditional queryConditional = QueryConditional.sortBeginsWith(getKeyBuild(ne.getPk(), ""));
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ne.getPk()));
 
         QueryEnhancedRequest qeRequest = QueryEnhancedRequest
                 .builder()

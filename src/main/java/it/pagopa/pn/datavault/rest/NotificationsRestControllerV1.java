@@ -23,15 +23,15 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
     @Override
     public Mono<ResponseEntity<Void>> deleteNotificationByIun(String iun, ServerWebExchange exchange) {
         return this.svc.deleteNotificationByIun( iun )
-                .map( result -> ResponseEntity.ok(null));
+                .map( result -> ResponseEntity.noContent().build());
     }
 
     @Override
     public Mono<ResponseEntity<Flux<NotificationRecipientAddressesDto>>> getNotificationAddressesByIun(String iun, ServerWebExchange exchange) {
         return this.svc.getNotificationAddressesByIun( iun )
                 .collectList()
-                .map( result -> ResponseEntity.ok(Flux.fromIterable(result)))
-                .switchIfEmpty(Mono.just(ResponseEntity.<Flux<NotificationRecipientAddressesDto>>notFound().build()));
+                .map( result -> result.isEmpty()?ResponseEntity.notFound().build():
+                        ResponseEntity.ok(Flux.fromIterable(result)));
     }
 
     @Override
@@ -43,15 +43,15 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
                         dtoArray = dtoList.toArray( new NotificationRecipientAddressesDto[0] );
                         return svc.updateNotificationAddressesByIun( iun, dtoArray );
                     })
-                    .map( updateResult -> ResponseEntity.ok(null));
+                    .map( updateResult -> ResponseEntity.noContent().build());
     }
 
     @Override
     public Mono<ResponseEntity<Flux<ConfidentialTimelineElementDto>>> getNotificationTimelineByIun(String iun, ServerWebExchange exchange) {
         return this.svc.getNotificationTimelineByIun( iun )
                 .collectList()
-                .map( result -> ResponseEntity.ok(Flux.fromIterable(result)))
-                .switchIfEmpty(Mono.just(ResponseEntity.<Flux<NotificationRecipientAddressesDto>>notFound().build()));
+                .map( result -> result.isEmpty()?ResponseEntity.notFound().build():
+                        ResponseEntity.ok(Flux.fromIterable(result)));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
     @Override
     public Mono<ResponseEntity<Void>> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, Mono<ConfidentialTimelineElementDto> confidentialTimelineElementDto, ServerWebExchange exchange) {
         return confidentialTimelineElementDto.flatMap( dto -> svc.updateNotificationTimelineByIunAndTimelineElementId( iun, timelineElementId, dto ))
-                .map( updateResult -> ResponseEntity.ok(null));
+                .map( updateResult -> ResponseEntity.noContent().build());
     }
 
 

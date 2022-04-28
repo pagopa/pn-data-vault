@@ -12,7 +12,6 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 @Repository
 @Slf4j
@@ -23,7 +22,6 @@ public class AddressDao extends BaseDao {
 
 
     public AddressDao(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                      DynamoDbAsyncClient dynamoDbAsyncClient,
                       PnDatavaultConfig pnDatavaultConfig) {
         this.addressTable = dynamoDbEnhancedAsyncClient.table(pnDatavaultConfig.getDynamodbTableName(), TableSchema.fromBean(AddressEntity.class));
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
@@ -40,7 +38,7 @@ public class AddressDao extends BaseDao {
             log.info("quering list-by-ids id:{}", internalId);
 
         AddressEntity ae = new AddressEntity(internalId, "");
-        QueryConditional queryConditional = QueryConditional.sortBeginsWith(getKeyBuild(ae.getPk(), ""));
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ae.getPk()));
 
         QueryEnhancedRequest qeRequest = QueryEnhancedRequest
                 .builder()

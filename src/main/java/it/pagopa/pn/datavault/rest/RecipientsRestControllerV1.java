@@ -3,7 +3,7 @@ package it.pagopa.pn.datavault.rest;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.api.RecipientsApi;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
-import it.pagopa.pn.datavault.middleware.wsclient.PnDataVaultClient;
+import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -16,9 +16,9 @@ import java.util.List;
 @RestController
 public class RecipientsRestControllerV1 implements RecipientsApi {
 
-    private final PnDataVaultClient client;
+    private final PersonalDataVaultClient client;
 
-    public RecipientsRestControllerV1(PnDataVaultClient client) {
+    public RecipientsRestControllerV1(PersonalDataVaultClient client) {
         this.client = client;
     }
 

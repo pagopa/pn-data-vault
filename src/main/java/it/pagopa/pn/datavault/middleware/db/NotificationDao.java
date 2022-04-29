@@ -55,6 +55,7 @@ public class NotificationDao extends BaseDao {
         return  listNotificationRecipientAddressesDtoById(iun)
                 .collectList()
                 .map(list -> {
+                    log.debug("deleting {} notifications", list.size());
                     var delRequestBuilder = TransactWriteItemsEnhancedRequest.builder();
                     list.forEach(n -> delRequestBuilder.addDeleteItem(notificationTable, TransactDeleteItemEnhancedRequest.builder()
                             .key(getKeyBuild(n.getPk(), n.getRecipientIndex()))

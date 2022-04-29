@@ -1,6 +1,6 @@
 package it.pagopa.pn.datavault.middleware.db;
 
-import it.pagopa.pn.datavault.middleware.db.entities.MandateEntity;
+import it.pagopa.pn.datavault.middleware.db.entities.AddressEntity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,55 +26,56 @@ import static org.junit.jupiter.api.Assertions.fail;
         "aws.endpoint-url=http://localhost:4566"
 })
 @SpringBootTest
-public class MandateDaoTestIT {
+public
+class AddressDaoTestIT {
+
 
     @Autowired
-    private MandateDao mandateDao;
+    private AddressDao addressDao;
 
     @Autowired
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
-    TestDao<MandateEntity> testDao;
+    TestDao<AddressEntity> testDao;
 
     @BeforeEach
     void setup( @Value("${pn.data-vault.dynamodb_table-name}") String table) {
-        testDao = new TestDao<MandateEntity>( dynamoDbEnhancedAsyncClient, table, MandateEntity.class);
+        testDao = new TestDao<AddressEntity>( dynamoDbEnhancedAsyncClient, table, AddressEntity.class);
     }
 
     @Test
-    void listMandatesByIds() {
+    void listAddressesById() {
         //Given
-        List<String> ids = new ArrayList<>();
-        List<MandateEntity> mandateEntities = new ArrayList<>();
+        List<AddressEntity> addressesEntities = new ArrayList<>();
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            MandateEntity mandateToInsert = newMandate(false);
-            mandateToInsert.setPk(mandateToInsert.getPk() + "_"+i);
-            ids.add(mandateToInsert.getMandateId());
-            mandateEntities.add(mandateToInsert);
+            AddressEntity ae = newAddress();
+            ae.setAddressId(ae.getAddressId() + "_" + i);
+            addressesEntities.add(ae);
         }
 
 
 
         try {
-            mandateEntities.forEach(m -> {
+            addressesEntities.forEach(m -> {
                 try {
-                    testDao.delete(m.getPk(), m.getSk());
+                    testDao.delete(m.getPk(), m.getAddressId());
                 } catch (ExecutionException e) {
                     System.out.println("Nothing to remove");
                 } catch (InterruptedException e) {
                     System.out.println("Nothing to remove");
                     Thread.currentThread().interrupt();
                 }
-                mandateDao.updateMandate(m).block(Duration.ofMillis(3000));
+                addressDao.updateAddress(m).block(Duration.ofMillis(3000));
             });
         } catch (Exception e) {
             System.out.println("Nothing to remove");
         }
 
         //When
-        List<MandateEntity> results = mandateDao.listMandatesByIds(ids).collectList().block(Duration.ofMillis(3000));
+        // basta cercare per un internalid qualsiasi
+        List<AddressEntity> results = addressDao.listAddressesById(addressesEntities.get(0).getInternalId()).collectList().block(Duration.ofMillis(3000));
 
         //Then
         try {
@@ -82,15 +83,15 @@ public class MandateDaoTestIT {
             Assertions.assertEquals(N, results.size());
             for(int i = 0;i<N;i++)
             {
-                Assertions.assertTrue(results.contains(mandateEntities.get(i)));
+                Assertions.assertTrue(results.contains(addressesEntities.get(i)));
             }
         } catch (Exception e) {
             throw new RuntimeException();
         } finally {
             try {
-                mandateEntities.forEach(m -> {
+                addressesEntities.forEach(m -> {
                     try {
-                        testDao.delete(m.getPk(), m.getSk());
+                        testDao.delete(m.getPk(), m.getAddressId());
                     } catch (ExecutionException e) {
                         System.out.println("Nothing to remove");
                     } catch (InterruptedException e) {
@@ -105,61 +106,30 @@ public class MandateDaoTestIT {
     }
 
     @Test
-    void updateMandatePF() {
+    void updateAddress() {
         //Given
-        MandateEntity mandateToInsert = newMandate(true);
+        AddressEntity addresToInsert = newAddress();
 
         try {
-            testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
+            testDao.delete(addresToInsert.getPk(), addresToInsert.getAddressId());
         } catch (Exception e) {
             System.out.println("Nothing to remove");
         }
 
         //When
-        mandateDao.updateMandate(mandateToInsert).block(Duration.ofMillis(3000));
+        addressDao.updateAddress(addresToInsert).block(Duration.ofMillis(3000));
 
         //Then
         try {
-            MandateEntity elementFromDb = testDao.get(mandateToInsert.getPk(), mandateToInsert.getSk());
+            AddressEntity elementFromDb = testDao.get(addresToInsert.getPk(), addresToInsert.getAddressId());
 
             Assertions.assertNotNull( elementFromDb);
-            Assertions.assertEquals( mandateToInsert, elementFromDb);
+            Assertions.assertEquals( addresToInsert, elementFromDb);
         } catch (Exception e) {
             fail(e);
         } finally {
             try {
-                testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
-            } catch (Exception e) {
-                System.out.println("Nothing to remove");
-            }
-        }
-    }
-
-    @Test
-    void updateMandatePG() {
-        //Give
-        MandateEntity mandateToInsert = newMandate(false);
-
-        try {
-            testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
-        } catch (Exception e) {
-            System.out.println("Nothing to remove");
-        }
-
-        //When
-        mandateDao.updateMandate(mandateToInsert).block(Duration.ofMillis(3000));
-
-        //Then
-        try {
-            MandateEntity elementFromDb = testDao.get(mandateToInsert.getPk(), mandateToInsert.getSk());
-
-            Assertions.assertNotNull( elementFromDb);
-            Assertions.assertEquals( mandateToInsert, elementFromDb);
-        } catch (Exception e) {
-            fail(e);
-        } finally {
-            try {
-                testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
+                testDao.delete(addresToInsert.getPk(), addresToInsert.getAddressId());
             } catch (Exception e) {
                 System.out.println("Nothing to remove");
             }
@@ -168,30 +138,30 @@ public class MandateDaoTestIT {
 
 
     @Test
-    void deleteMandateId() {
+    void deleteAddressId() {
         //Given
-        MandateEntity mandateToInsert = newMandate(true);
+        AddressEntity addresToInsert = newAddress();
 
         try {
-            testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
-            mandateDao.updateMandate(mandateToInsert).block(Duration.ofMillis(3000));
+            testDao.delete(addresToInsert.getPk(), addresToInsert.getAddressId());
+            addressDao.updateAddress(addresToInsert).block(Duration.ofMillis(3000));
         } catch (Exception e) {
             System.out.println("Nothing to remove");
         }
 
         //When
-        mandateDao.deleteMandateId(mandateToInsert.getMandateId()).block(Duration.ofMillis(3000));
+        addressDao.deleteAddressId(addresToInsert.getInternalId(), addresToInsert.getAddressId()).block(Duration.ofMillis(3000));
 
         //Then
         try {
-            MandateEntity elementFromDb = testDao.get(mandateToInsert.getPk(), mandateToInsert.getSk());
+            AddressEntity elementFromDb = testDao.get(addresToInsert.getPk(), addresToInsert.getAddressId());
 
             Assertions.assertNull( elementFromDb);
         } catch (Exception e) {
             fail(e);
         } finally {
             try {
-                testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
+                testDao.delete(addresToInsert.getPk(), addresToInsert.getAddressId());
             } catch (Exception e) {
                 System.out.println("Nothing to remove");
             }
@@ -199,17 +169,9 @@ public class MandateDaoTestIT {
     }
 
 
-    public static MandateEntity newMandate(boolean pf) {
-        MandateEntity me = new MandateEntity("425e4567-e89b-12d3-a456-426655449631");
-        if (pf)
-        {
-            me.setName("mario");
-            me.setSurname("rossi");
-        }
-        else
-            me.setBusinessName("ragione sociale");
-
-        return me;
+    public static AddressEntity newAddress() {
+        AddressEntity ae = new AddressEntity("425e4567-e89b-12d3-a456-426655449631", "DD_c_f205_1");
+        ae.setValue("test@test.it");
+        return  ae;
     }
-
 }

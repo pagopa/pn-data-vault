@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 class NotificationServiceTest {
 
 
+    Duration d = Duration.ofMillis(3000);
 
     @InjectMocks
     private NotificationService privateService;
@@ -55,7 +56,7 @@ class NotificationServiceTest {
 
         //When
         assertDoesNotThrow(() -> {
-            privateService.deleteNotificationByIun(notificationEntity.getInternalId()).block(Duration.ofMillis(3000));
+            privateService.deleteNotificationByIun(notificationEntity.getInternalId()).block(d);
         });
 
         //Then
@@ -67,7 +68,8 @@ class NotificationServiceTest {
         //Given
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.deleteNotificationByIun(null).block(Duration.ofMillis(3000)));
+        Mono<Object>  m =  privateService.deleteNotificationByIun(null);
+        assertThrows(InvalidInputException.class, () -> m.block(d));
 
         //Then
         // nothing
@@ -84,7 +86,7 @@ class NotificationServiceTest {
         when(mapper.toDto(Mockito.any())).thenReturn(new NotificationRecipientAddressesDto());
 
         //When
-        List<NotificationRecipientAddressesDto> result = privateService.getNotificationAddressesByIun("").collectList().block(Duration.ofMillis(3000));
+        List<NotificationRecipientAddressesDto> result = privateService.getNotificationAddressesByIun("").collectList().block(d);
 
         //Then
         assertNotNull(result);
@@ -108,7 +110,7 @@ class NotificationServiceTest {
 
         //When
         assertDoesNotThrow(() -> {
-            privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0])).block(Duration.ofMillis(3000));
+            privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0])).block(d);
         });
 
         //Then
@@ -130,7 +132,8 @@ class NotificationServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0])).block(Duration.ofMillis(3000)));
+        Mono<Object> m =  privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]));
+        assertThrows(InvalidInputException.class, () -> m.block(d));
 
         //Then
         // nothing
@@ -151,7 +154,8 @@ class NotificationServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0])).block(Duration.ofMillis(3000)));
+        Mono<Object> m = privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]));
+        assertThrows(InvalidInputException.class, () -> m.block(d));
 
         //Then
         // nothing
@@ -172,7 +176,8 @@ class NotificationServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0])).block(Duration.ofMillis(3000)));
+        Mono<Object> m = privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]));
+        assertThrows(InvalidInputException.class, () -> m.block(d));
 
         //Then
         // nothing
@@ -189,7 +194,7 @@ class NotificationServiceTest {
         when(mappertimeline.toDto(Mockito.any())).thenReturn(new ConfidentialTimelineElementDto());
 
         //When
-        List<ConfidentialTimelineElementDto> result = privateService.getNotificationTimelineByIun("").collectList().block(Duration.ofMillis(3000));
+        List<ConfidentialTimelineElementDto> result = privateService.getNotificationTimelineByIun("").collectList().block(d);
 
         //Then
         assertNotNull(result);
@@ -205,7 +210,7 @@ class NotificationServiceTest {
         when(mappertimeline.toDto(Mockito.any())).thenReturn(new ConfidentialTimelineElementDto());
 
         //When
-        ConfidentialTimelineElementDto result = privateService.getNotificationTimelineByIunAndTimelineElementId(notificationEntity.getInternalId(), notificationEntity.getTimelineElementId()).block(Duration.ofMillis(3000));
+        ConfidentialTimelineElementDto result = privateService.getNotificationTimelineByIunAndTimelineElementId(notificationEntity.getInternalId(), notificationEntity.getTimelineElementId()).block(d);
 
         //Then
         assertNotNull(result);
@@ -225,7 +230,7 @@ class NotificationServiceTest {
 
         //When
         assertDoesNotThrow(() -> {
-            privateService.updateNotificationTimelineByIunAndTimelineElementId(notificationEntity.getInternalId(), notificationEntity.getTimelineElementId(), dto).block(Duration.ofMillis(3000));
+            privateService.updateNotificationTimelineByIunAndTimelineElementId(notificationEntity.getInternalId(), notificationEntity.getTimelineElementId(), dto).block(d);
         });
 
         //Then

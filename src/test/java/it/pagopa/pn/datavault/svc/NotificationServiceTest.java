@@ -1,12 +1,16 @@
 package it.pagopa.pn.datavault.svc;
 
 import it.pagopa.pn.datavault.exceptions.InvalidInputException;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.*;
-import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AnalogDomicile;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
-import it.pagopa.pn.datavault.middleware.db.*;
-import it.pagopa.pn.datavault.middleware.db.entities.AddressEntity;
+import it.pagopa.pn.datavault.middleware.db.NotificationDao;
+import it.pagopa.pn.datavault.middleware.db.NotificationDaoTestIT;
+import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
+import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDaoTestIT;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import org.junit.jupiter.api.Test;
@@ -68,8 +72,7 @@ class NotificationServiceTest {
         //Given
 
         //When
-        Mono<Object>  m =  privateService.deleteNotificationByIun(null);
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        assertThrows(InvalidInputException.class, () -> privateService.deleteNotificationByIun(null));
 
         //Then
         // nothing
@@ -132,8 +135,9 @@ class NotificationServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
-        Mono<Object> m =  privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]));
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = notificationEntity.getInternalId();
+        NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
+        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
 
         //Then
         // nothing
@@ -154,8 +158,9 @@ class NotificationServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
-        Mono<Object> m = privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]));
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = notificationEntity.getInternalId();
+        NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
+        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
 
         //Then
         // nothing
@@ -176,8 +181,9 @@ class NotificationServiceTest {
         when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
-        Mono<Object> m = privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]));
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = notificationEntity.getInternalId();
+        NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
+        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
 
         //Then
         // nothing

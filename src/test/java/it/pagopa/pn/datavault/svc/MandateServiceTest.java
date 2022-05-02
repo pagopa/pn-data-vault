@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 class MandateServiceTest {
 
+    Duration d = Duration.ofMillis(3000);
+
     @InjectMocks
     private MandateService privateService;
 
@@ -53,7 +55,7 @@ class MandateServiceTest {
         when(mapper.toDto(Mockito.any())).thenReturn(new MandateDto());
 
         //When
-        List<MandateDto> result = privateService.getMandatesByInternalIds(listids).collectList().block(Duration.ofMillis(3000));
+        List<MandateDto> result = privateService.getMandatesByInternalIds(listids).collectList().block(d);
 
         //Then
         assertNotNull(result);
@@ -73,7 +75,7 @@ class MandateServiceTest {
 
         //When
         assertDoesNotThrow(() -> {
-            privateService.updateMandateByInternalId(mandateEntity.getMandateId(), dto).block(Duration.ofMillis(3000));
+            privateService.updateMandateByInternalId(mandateEntity.getMandateId(), dto).block(d);
         });
 
         //Then
@@ -90,7 +92,7 @@ class MandateServiceTest {
 
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto).block(Duration.ofMillis(3000)));
+        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -102,7 +104,8 @@ class MandateServiceTest {
         MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(mandateEntity.getMandateId(), null).block(Duration.ofMillis(3000)));
+        String mid = mandateEntity.getMandateId();
+        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(mid, null));
 
         //Then
         // nothing
@@ -117,7 +120,7 @@ class MandateServiceTest {
 
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto).block(Duration.ofMillis(3000)));
+        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -132,7 +135,7 @@ class MandateServiceTest {
 
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto).block(Duration.ofMillis(3000)));
+        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -141,11 +144,10 @@ class MandateServiceTest {
     @Test
     void updateMandateByInternalIdInvalidDto2() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
         DenominationDto dto = new DenominationDto();
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto).block(Duration.ofMillis(3000)));
+        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -161,7 +163,7 @@ class MandateServiceTest {
 
         //When
         assertDoesNotThrow(() -> {
-            privateService.deleteMandateByInternalId(mandateEntity.getMandateId()).block(Duration.ofMillis(3000));
+            privateService.deleteMandateByInternalId(mandateEntity.getMandateId()).block(d);
         });
 
         //Then
@@ -173,7 +175,7 @@ class MandateServiceTest {
         //Given
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.deleteMandateByInternalId(null).block(Duration.ofMillis(3000)));
+        assertThrows(InvalidInputException.class, () -> privateService.deleteMandateByInternalId(null));
 
         //Then
         // nothing

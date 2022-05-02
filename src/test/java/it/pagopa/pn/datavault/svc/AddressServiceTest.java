@@ -82,8 +82,9 @@ class AddressServiceTest {
         dto.setValue(null);
 
         //When
-        Mono<String> m = privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), dto);
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = addressEntity.getInternalId();
+        String addr = addressEntity.getAddressId();
+        assertThrows(InvalidInputException.class, () ->privateService.updateAddressByInternalId(iun, addr, dto));
 
         //Then
         // nothing
@@ -97,8 +98,9 @@ class AddressServiceTest {
         dto.setValue("");
 
         //When
-        Mono<String> m = privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), dto);
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = addressEntity.getInternalId();
+        String addr = addressEntity.getAddressId();
+        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, dto));
 
         //Then
         // nothing
@@ -110,8 +112,9 @@ class AddressServiceTest {
         AddressEntity addressEntity = AddressDaoTestIT.newAddress();
 
         //When
-        Mono<String> m = privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), null);
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = addressEntity.getInternalId();
+        String addr = addressEntity.getAddressId();
+        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, null));
 
         //Then
         // nothing
@@ -125,8 +128,8 @@ class AddressServiceTest {
         dto.setValue("test@test.it");
 
         //When
-        Mono<String> m = privateService.updateAddressByInternalId(null, addressEntity.getAddressId(), dto);
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String addr = addressEntity.getAddressId();
+        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(null, addr, dto));
 
         //Then
         // nothing
@@ -140,8 +143,8 @@ class AddressServiceTest {
         dto.setValue("test@test.it");
 
         //When
-        Mono<String> m = privateService.updateAddressByInternalId(addressEntity.getInternalId(), null, dto);
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = addressEntity.getInternalId();
+        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, null, dto));
 
         //Then
         // nothing
@@ -169,8 +172,8 @@ class AddressServiceTest {
         AddressEntity addressEntity = AddressDaoTestIT.newAddress();
 
         //When
-        Mono<String> m = privateService.deleteAddressByInternalId(null, addressEntity.getAddressId());
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String add = addressEntity.getAddressId();
+        assertThrows(InvalidInputException.class, () ->privateService.deleteAddressByInternalId(null, add));
 
         //Then
         // nothing
@@ -182,8 +185,8 @@ class AddressServiceTest {
         AddressEntity addressEntity = AddressDaoTestIT.newAddress();
 
         //When
-        Mono<String> m = privateService.deleteAddressByInternalId(addressEntity.getInternalId(), null);
-        assertThrows(InvalidInputException.class, () -> m.block(d));
+        String iun = addressEntity.getInternalId();
+        assertThrows(InvalidInputException.class, () -> privateService.deleteAddressByInternalId(iun, null));
 
         //Then
         // nothing

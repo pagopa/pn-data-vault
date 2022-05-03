@@ -12,4 +12,6 @@ import org.springframework.context.annotation.Configuration;
 public class PnDatavaultConfig {
 
     private String dynamodbTableName;
+    private String clientTokenizerBasepath;
+    private String clientUserregistryBasepath;
 }

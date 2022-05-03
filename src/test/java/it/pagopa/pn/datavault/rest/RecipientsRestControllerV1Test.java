@@ -1,18 +1,13 @@
 package it.pagopa.pn.datavault.rest;
 
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
-import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
-import it.pagopa.pn.datavault.mapper.MandateEntityMandateDtoMapper;
-import it.pagopa.pn.datavault.middleware.db.MandateDaoTestIT;
-import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultClient;
-import it.pagopa.pn.datavault.svc.MandateService;
+import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultTokenizerClient;
+import it.pagopa.pn.datavault.svc.RecipientService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
@@ -20,8 +15,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 
 @WebFluxTest(controllers = {RecipientsRestControllerV1.class})
@@ -32,7 +25,7 @@ class RecipientsRestControllerV1Test {
     WebTestClient webTestClient;
 
     @MockBean
-    private PersonalDataVaultClient privateService;
+    private RecipientService privateService;
 
     @Test
     void ensureRecipientByExternalId() {

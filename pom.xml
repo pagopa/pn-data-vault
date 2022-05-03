@@ -59,6 +59,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
       <version>${software.amazon.awssdk-version}</version>
     </dependency>
     <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>1.6.5</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>3.0.2</version>
@@ -78,6 +83,17 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <dependency>
       <groupId>io.projectreactor</groupId>
       <artifactId>reactor-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mock-server</groupId>
+      <artifactId>mockserver-junit-jupiter</artifactId>
+      <version>5.11.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mock-server</groupId>
+      <artifactId>mockserver-netty</artifactId>
+      <version>5.11.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -121,6 +137,52 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
                 <skipDefaultInterface>false</skipDefaultInterface>
                 <useTags>true</useTags>
               </configOptions>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-client-tokenizer</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <inputSpec>${project.basedir}/docs/wsclient/pdv-ms-tokenizer-v1.yaml</inputSpec>
+              <generatorName>java</generatorName>
+              <library>webclient</library>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <configOptions>
+                <swaggerAnnotations>false</swaggerAnnotations>
+                <openApiNullable>false</openApiNullable>
+              </configOptions>
+              <modelPackage>${project.groupId}.mandate.microservice.msclient.generated.tokenizer.v1.dto</modelPackage>
+              <apiPackage>${project.groupId}.mandate.microservice.msclient.generated.tokenizer.v1.api</apiPackage>
+             <modelNameSuffix>Dto</modelNameSuffix>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-client-user-registry</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <inputSpec>${project.basedir}/docs/wsclient/pdv-ms-user-registry-v1.yaml</inputSpec>
+              <generatorName>java</generatorName>
+              <library>webclient</library>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <configOptions>
+                <swaggerAnnotations>false</swaggerAnnotations>
+                <openApiNullable>false</openApiNullable>
+              </configOptions>
+              <modelPackage>${project.groupId}.mandate.microservice.msclient.generated.userregistry.v1.dto</modelPackage>
+              <apiPackage>${project.groupId}.mandate.microservice.msclient.generated.userregistry.v1.api</apiPackage>
+              <modelNameSuffix>Dto</modelNameSuffix>
             </configuration>
           </execution>
         </executions>

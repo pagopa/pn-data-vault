@@ -28,8 +28,8 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         // creo 2 istanze diverse, una per PF e l'altra per PG, perchè la differenza
         // sta in un header che viene spedito. Tale header, che è una costante
         // vien definita in fase di creazione, e quindi evito ogni volta di scriverlo.
-        this.tokenApiPF = new TokenApi(initApiClient(true, pnDatavaultConfig.getClientTokenizerBasepath()));
-        this.tokenApiPG = new TokenApi(initApiClient(false, pnDatavaultConfig.getClientTokenizerBasepath()));
+        this.tokenApiPF = new TokenApi(initApiClient(pnDatavaultConfig.getPdvApiKeyPf(), pnDatavaultConfig.getClientTokenizerBasepath()));
+        this.tokenApiPG = new TokenApi(initApiClient(pnDatavaultConfig.getPdvApiKeyPg(), pnDatavaultConfig.getClientTokenizerBasepath()));
     }
 
     /**
@@ -78,9 +78,9 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
             return this.tokenApiPG;
     }
 
-    private ApiClient initApiClient(boolean isPF, String basepath)
+    private ApiClient initApiClient(String apiKey, String basepath)
     {
-         ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), isPF));
+         ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), apiKey));
          apiClient.setBasePath(basepath);
          return  apiClient;
     }

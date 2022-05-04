@@ -14,4 +14,7 @@ public class PnDatavaultConfig {
     private String dynamodbTableName;
     private String clientTokenizerBasepath;
     private String clientUserregistryBasepath;
+
+    private String pdvApiKeyPf;
+    private String pdvApiKeyPg;
 }

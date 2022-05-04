@@ -23,7 +23,9 @@ import static org.mockserver.model.HttpResponse.response;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        "pn.data-vault.client_tokenizer_basepath=http://localhost:9999"
+        "pn.data-vault.client_tokenizer_basepath=http://localhost:9999",
+        "pn.data-vault.pdv_api_key_pf=pf",
+        "pn.data-vault.pdv_api_key_pg=pg"
 })
 class PersonalDataVaultTokenizerClientTest {
 

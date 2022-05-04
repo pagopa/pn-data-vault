@@ -30,8 +30,8 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     private final UserApi userClientPG;
 
     public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig){
-        this.userClientPF = new UserApi(initApiClient(true, pnDatavaultConfig.getClientUserregistryBasepath()));
-        this.userClientPG = new UserApi(initApiClient(false, pnDatavaultConfig.getClientUserregistryBasepath()));
+        this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getPdvApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
+        this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getPdvApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
     }
 
 
@@ -55,7 +55,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
 
     private UUID getUUIDFromInternalId(String internalId)
     {
-        internalId = internalId.substring(3, internalId.length());
+        internalId = internalId.substring(3);
         return UUID.fromString(internalId);
     }
 
@@ -80,9 +80,9 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
             return this.userClientPG;
     }
 
-    private ApiClient initApiClient(boolean isPF, String basepath)
+    private ApiClient initApiClient(String apiKey, String basepath)
     {
-        ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), isPF));
+        ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), apiKey));
         apiClient.setBasePath(basepath);
         return  apiClient;
     }

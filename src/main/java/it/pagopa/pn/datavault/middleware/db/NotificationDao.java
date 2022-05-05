@@ -10,7 +10,6 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 import java.util.List;
 
@@ -35,6 +34,13 @@ public class NotificationDao extends BaseDao {
      */
     public Mono<Object> updateNotifications(List<NotificationEntity> entities)
     {
+        if (entities.size() == 1)
+            log.info("updating notification internalid:{}", entities.get(0).getInternalId());
+        else
+            log.info("updating notification entities size:{}", entities.size());
+
+
+
         var updRequestBuilder = TransactWriteItemsEnhancedRequest.builder();
         entities.forEach(n -> updRequestBuilder.addUpdateItem(notificationTable, TransactUpdateItemEnhancedRequest.builder(NotificationEntity.class)
                         .item(n).build()));
@@ -49,6 +55,8 @@ public class NotificationDao extends BaseDao {
      * @return l'entity eliminata
      */
     public Mono<Object> deleteNotificationByIun(String iun) {
+        log.info("deleting notification internalid:{}",iun);
+
         // dato che devo cancellare TUTTI gli indirizzi per un certo iun
         // devo necessariamente chiedere quali sono con una query, e poi
         // ricavarmi dai risultati le chiavi per poter eseguire la cancellazione
@@ -65,8 +73,7 @@ public class NotificationDao extends BaseDao {
     }
 
     public Flux<NotificationEntity> listNotificationRecipientAddressesDtoById(String iun) {
-        if (log.isInfoEnabled())
-            log.info("quering list-by-id id:{}", iun);
+        log.debug("quering notifications list-by-id internalid:{}", iun);
 
         NotificationEntity ne = new NotificationEntity(iun, "");
         QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ne.getPk()));

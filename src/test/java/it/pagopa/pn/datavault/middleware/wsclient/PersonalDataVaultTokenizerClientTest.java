@@ -24,8 +24,8 @@ import static org.mockserver.model.HttpResponse.response;
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
         "pn.data-vault.client_tokenizer_basepath=http://localhost:9999",
-        "pn.data-vault.pdv_api_key_pf=pf",
-        "pn.data-vault.pdv_api_key_pg=pg"
+        "pn.data-vault.tokenizer_api_key_pf=pf",
+        "pn.data-vault.tokenizer_api_key_pg=pg"
 })
 class PersonalDataVaultTokenizerClientTest {
 
@@ -47,7 +47,7 @@ class PersonalDataVaultTokenizerClientTest {
 
 
     @Test
-    void ensureRecipientByExternalId() {
+    void ensureRecipientByExternalIdPF() {
         //Given
         String cf = "RSSMRA85T10A562S";
         String iuid = "425e4567-e89b-12d3-a456-426655449631";
@@ -69,6 +69,35 @@ class PersonalDataVaultTokenizerClientTest {
 
         //When
         String result = client.ensureRecipientByExternalId(RecipientType.PF, cf).block(Duration.ofMillis(3000));
+
+        //Then
+        assertNotNull(result);
+        assertEquals(expectediuid, result);
+    }
+
+    @Test
+    void ensureRecipientByExternalIdPG() {
+        //Given
+        String cf = "123456789";
+        String iuid = "425e4567-e89b-12d3-a456-426655449631";
+        String expectediuid = "PG-"+iuid;
+
+
+        new MockServerClient("localhost", 9999)
+                .when(request()
+                        .withMethod("PUT")
+                        .withHeader("x-api-key", "pg")
+                        .withPath("/tokens"))
+                .respond(response()
+                        .withBody("{" +
+                                "\"" + TokenResourceDto.JSON_PROPERTY_ROOT_TOKEN + "\": " + "\"" + iuid + "\"," +
+                                "\"" + TokenResourceDto.JSON_PROPERTY_TOKEN + "\": " + "\"" + iuid + "\"" +
+                                "}")
+                        .withContentType(MediaType.APPLICATION_JSON)
+                        .withStatusCode(200));
+
+        //When
+        String result = client.ensureRecipientByExternalId(RecipientType.PG, cf).block(Duration.ofMillis(3000));
 
         //Then
         assertNotNull(result);

@@ -8,6 +8,7 @@ import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.api.TokenApi;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.PiiResourceDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -19,6 +20,7 @@ import java.time.Duration;
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff
  */
 @Component
+@Slf4j
 public class PersonalDataVaultTokenizerClient extends BaseClient {
 
     private final TokenApi tokenApiPF;
@@ -28,8 +30,8 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         // creo 2 istanze diverse, una per PF e l'altra per PG, perchè la differenza
         // sta in un header che viene spedito. Tale header, che è una costante
         // vien definita in fase di creazione, e quindi evito ogni volta di scriverlo.
-        this.tokenApiPF = new TokenApi(initApiClient(pnDatavaultConfig.getPdvApiKeyPf(), pnDatavaultConfig.getClientTokenizerBasepath()));
-        this.tokenApiPG = new TokenApi(initApiClient(pnDatavaultConfig.getPdvApiKeyPg(), pnDatavaultConfig.getClientTokenizerBasepath()));
+        this.tokenApiPF = new TokenApi(initApiClient(pnDatavaultConfig.getTokenizerApiKeyPf(), pnDatavaultConfig.getClientTokenizerBasepath()));
+        this.tokenApiPG = new TokenApi(initApiClient(pnDatavaultConfig.getTokenizerApiKeyPg(), pnDatavaultConfig.getClientTokenizerBasepath()));
     }
 
     /**
@@ -40,6 +42,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
      */
     public Mono<String> ensureRecipientByExternalId(RecipientType recipientType, String taxId)
     {
+        log.trace("[enter]");
         PiiResourceDto pii = new PiiResourceDto();
         pii.setPii(taxId);
         return this.getTokeApiForRecipientType(recipientType)
@@ -48,7 +51,11 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                             Retry.backoff(2, Duration.ofMillis(25))
                                     .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                     )
-                    .map(r -> encapsulateRecipientType(recipientType, r.getToken().toString()));
+                    .map(r -> {
+                        String res = encapsulateRecipientType(recipientType, r.getToken().toString());
+                        log.trace("[exit] token:{}", res);
+                        return  res;
+                    });
     }
 
     /**

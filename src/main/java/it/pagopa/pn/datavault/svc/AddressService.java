@@ -6,11 +6,13 @@ import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddresses
 import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.AddressDao;
 import it.pagopa.pn.datavault.middleware.db.entities.AddressEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 @Service
+@Slf4j
 public class AddressService {
 
     private final AddressDao objDao;
@@ -22,17 +24,20 @@ public class AddressService {
     }
 
     public Mono<RecipientAddressesDto> getAddressByInternalId(String id) {
+        log.trace("[enter]");
         return objDao.listAddressesById(id)
                 .collectMap(AddressEntity::getAddressId, addressesMapper::toDto)
                 .map(m -> {
                     RecipientAddressesDto r = new RecipientAddressesDto();
                     r.addresses(m);
+                    log.trace("[exit]");
                     return r;
                 } );
     }
 
 
     public Mono<String> updateAddressByInternalId(String internalId, String addressId, AddressDto addressDto) {
+        log.trace("[enter]");
         if (!StringUtils.hasText(internalId))
             throw new InvalidInputException();
         if (!StringUtils.hasText(addressId))
@@ -47,6 +52,7 @@ public class AddressService {
     }
 
     public Mono<String> deleteAddressByInternalId(String internalId, String addressId ) {
+        log.trace("[enter]");
         if (!StringUtils.hasText(internalId))
             throw new InvalidInputException();
         if (!StringUtils.hasText(addressId))

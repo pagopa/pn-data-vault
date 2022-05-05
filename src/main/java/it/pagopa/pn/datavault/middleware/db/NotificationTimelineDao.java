@@ -34,17 +34,20 @@ public class NotificationTimelineDao extends BaseDao {
      */
     public Mono<Object> updateNotification(NotificationTimelineEntity entity)
     {
+        log.info("deleting notification timeline internalid:{} timelineelementid:{}",entity.getInternalId(), entity.getTimelineElementId());
+
         return Mono.fromFuture(timelineTable.updateItem(entity));
     }
 
     public Mono<NotificationTimelineEntity> getNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId)
     {
+        log.debug("get notification timeline internalid:{} timelineelementid:{}", iun, timelineElementId);
+
         return Mono.fromFuture(timelineTable.getItem(new NotificationTimelineEntity(iun, timelineElementId)));
     }
 
     public Flux<NotificationTimelineEntity> getNotificationTimelineByIun(String iun) {
-        if (log.isInfoEnabled())
-            log.info("quering list-by-id id:{}", iun);
+        log.info("quering notifications timelines list-by-id internalid:{}", iun);
 
         NotificationTimelineEntity ne = new NotificationTimelineEntity(iun, "");
         QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ne.getPk()));

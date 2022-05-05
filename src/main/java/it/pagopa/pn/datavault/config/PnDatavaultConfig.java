@@ -15,6 +15,9 @@ public class PnDatavaultConfig {
     private String clientTokenizerBasepath;
     private String clientUserregistryBasepath;
 
-    private String pdvApiKeyPf;
-    private String pdvApiKeyPg;
+    private String tokenizerApiKeyPf;
+    private String tokenizerApiKeyPg;
+
+    private String userregistryApiKeyPf;
+    private String userregistryApiKeyPg;
 }

@@ -30,8 +30,8 @@ import static org.mockserver.model.HttpResponse.response;
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
         "pn.data-vault.client_userregistry_basepath=http://localhost:9999",
-        "pn.data-vault.pdv_api_key_pf=pf",
-        "pn.data-vault.pdv_api_key_pg=pg"
+        "pn.data-vault.userregistry_api_key_pf=pf",
+        "pn.data-vault.userregistry_api_key_pg=pg"
 })
 class PersonalDataVaultUserRegistryClientTest {
 
@@ -53,7 +53,7 @@ class PersonalDataVaultUserRegistryClientTest {
 
 
     @Test
-    void getRecipientDenominationByInternalId() {
+    void getRecipientDenominationByInternalIdPF() {
         //Given
         String name = "mario";
         String surname = "rossi";
@@ -69,47 +69,7 @@ class PersonalDataVaultUserRegistryClientTest {
                         .withQueryStringParameters(Map.of("fl", Arrays.asList("familyName", "name")))
                         .withPath("/users/" + iuid))
                 .respond(response()
-                        .withBody("{\n" +
-                                "  \"birthDate\": {\n" +
-                                "    \"certification\": \"NONE\",\n" +
-                                "    \"value\": \"2022-05-03\"\n" +
-                                "  },\n" +
-                                "  \"email\": {\n" +
-                                "    \"certification\": \"NONE\",\n" +
-                                "    \"value\": \"string\"\n" +
-                                "  },\n" +
-                                "  \"familyName\": {\n" +
-                                "    \"certification\": \"NONE\",\n" +
-                                "    \"value\": \"string\"\n" +
-                                "  },\n" +
-                                "  \"fiscalCode\": \"string\",\n" +
-                                "  \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n" +
-                                "  \"name\": {\n" +
-                                "    \"certification\": \"NONE\",\n" +
-                                "    \"value\": \"string\"\n" +
-                                "  },\n" +
-                                "  \"workContacts\": {\n" +
-                                "    \"additionalProp1\": {\n" +
-                                "      \"email\": {\n" +
-                                "        \"certification\": \"NONE\",\n" +
-                                "        \"value\": \"string\"\n" +
-                                "      }\n" +
-                                "    },\n" +
-                                "    \"additionalProp2\": {\n" +
-                                "      \"email\": {\n" +
-                                "        \"certification\": \"NONE\",\n" +
-                                "        \"value\": \"string\"\n" +
-                                "      }\n" +
-                                "    },\n" +
-                                "    \"additionalProp3\": {\n" +
-                                "      \"email\": {\n" +
-                                "        \"certification\": \"NONE\",\n" +
-                                "        \"value\": \"string\"\n" +
-                                "      }\n" +
-                                "    }\n" +
-                                "  }\n" +
-                                "}")
-                        /*.withBody("{" +
+                        .withBody("{" +
                                 "\"" + UserResourceDto.JSON_PROPERTY_ID + "\": \"" + iuid + "\"," +
                                 "\"" + UserResourceDto.JSON_PROPERTY_FAMILY_NAME + "\": {" +
                                     "\"certification\": \"NONE\", " +
@@ -120,7 +80,7 @@ class PersonalDataVaultUserRegistryClientTest {
                                     "\"value\": \"" + name + "\"" +
                                 "}," +
                                 "\"workContacts\":{}" +
-                                 "}")*/
+                                 "}")
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(200));
 
@@ -131,6 +91,50 @@ class PersonalDataVaultUserRegistryClientTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(name + " " + surname, result.get(0).getDenomination());
+        assertEquals(expectediuid, result.get(0).getInternalId());
+
+    }
+
+
+    @Test
+    void getRecipientDenominationByInternalIdPG() {
+        //Given
+        String name = "";
+        String surname = "mario rossi srl";
+        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String expectediuid = "PG-"+iuid;
+        List<String> ids = Arrays.asList(expectediuid);
+
+
+        new MockServerClient("localhost", 9999)
+                .when(request()
+                        .withMethod("GET")
+                        .withHeader("x-api-key", "pg")
+                        .withQueryStringParameters(Map.of("fl", Arrays.asList("familyName", "name")))
+                        .withPath("/users/" + iuid))
+                .respond(response()
+                        .withBody("{" +
+                                "\"" + UserResourceDto.JSON_PROPERTY_ID + "\": \"" + iuid + "\"," +
+                                "\"" + UserResourceDto.JSON_PROPERTY_FAMILY_NAME + "\": {" +
+                                "\"certification\": \"NONE\", " +
+                                "\"value\": \"" + surname + "\"" +
+                                "}," +
+                                "\"" + UserResourceDto.JSON_PROPERTY_NAME + "\": {" +
+                                "\"certification\": \"NONE\", " +
+                                "\"value\": \"\"" +
+                                "}," +
+                                "\"workContacts\":{}" +
+                                "}")
+                        .withContentType(MediaType.APPLICATION_JSON)
+                        .withStatusCode(200));
+
+        //When
+        List<BaseRecipientDto> result = client.getRecipientDenominationByInternalId(ids).collectList().block(Duration.ofMillis(3000));
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(surname, result.get(0).getDenomination());
         assertEquals(expectediuid, result.get(0).getInternalId());
 
     }

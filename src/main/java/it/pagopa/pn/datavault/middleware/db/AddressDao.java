@@ -34,8 +34,7 @@ public class AddressDao extends BaseDao {
      * @return lista delle deleghe
      */
     public Flux<AddressEntity> listAddressesById(String internalId) {
-        if (log.isInfoEnabled())
-            log.info("quering list-by-ids id:{}", internalId);
+        log.debug("quering addresses list-by-ids internalid:{}", internalId);
 
         AddressEntity ae = new AddressEntity(internalId, "");
         QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ae.getPk()));
@@ -59,6 +58,7 @@ public class AddressDao extends BaseDao {
      */
     public Mono<AddressEntity> updateAddress(AddressEntity entity)
     {
+        log.info("updating address internalid:{} addressid:{}",entity.getInternalId(), entity.getAddressId());
         return Mono.fromFuture(addressTable.updateItem(entity));
     }
 
@@ -70,6 +70,8 @@ public class AddressDao extends BaseDao {
      * @return l'entity eliminata
      */
     public Mono<AddressEntity> deleteAddressId(String internalId, String addressId) {
+        log.info("deleting address internalid:{} addressid:{}",internalId, addressId);
+
         AddressEntity me = new AddressEntity(internalId, addressId);
         return Mono.fromFuture(addressTable.deleteItem(me));
     }

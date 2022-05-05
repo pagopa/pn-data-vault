@@ -37,8 +37,7 @@ public class MandateDao extends BaseDao {
      * @return lista delle deleghe
      */
     public Flux<MandateEntity> listMandatesByIds(@NonNull List<String> ids) {
-        if (log.isInfoEnabled())
-            log.info("quering list-by-ids ids size:{}", ids.size());
+        log.debug("quering mandates list-by-ids ids size:{}", ids.size());
 
         var rbb = ReadBatch.builder(MandateEntity.class)
             .mappedTableResource(mandateTable);
@@ -58,10 +57,14 @@ public class MandateDao extends BaseDao {
 
     public Mono<MandateEntity> updateMandate(MandateEntity entity)
     {
+        log.info("updating mandate mandateid:{}",entity.getMandateId());
+
         return Mono.fromFuture(mandateTable.updateItem(entity));
     }
 
     public Mono<MandateEntity> deleteMandateId(String mandateId) {
+        log.info("deleting mandate mandateid:{}",mandateId);
+
         MandateEntity me = new MandateEntity(mandateId);
         return Mono.fromFuture(mandateTable.deleteItem(me));
     }

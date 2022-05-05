@@ -24,7 +24,6 @@ public class AddressService {
     }
 
     public Mono<RecipientAddressesDto> getAddressByInternalId(String id) {
-        log.trace("[enter]");
         return objDao.listAddressesById(id)
                 .collectMap(AddressEntity::getAddressId, addressesMapper::toDto)
                 .map(m -> {
@@ -37,7 +36,6 @@ public class AddressService {
 
 
     public Mono<String> updateAddressByInternalId(String internalId, String addressId, AddressDto addressDto) {
-        log.trace("[enter]");
         if (!StringUtils.hasText(internalId))
             throw new InvalidInputException();
         if (!StringUtils.hasText(addressId))
@@ -52,7 +50,6 @@ public class AddressService {
     }
 
     public Mono<String> deleteAddressByInternalId(String internalId, String addressId ) {
-        log.trace("[enter]");
         if (!StringUtils.hasText(internalId))
             throw new InvalidInputException();
         if (!StringUtils.hasText(addressId))

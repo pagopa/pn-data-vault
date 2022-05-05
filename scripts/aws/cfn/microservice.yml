@@ -73,6 +73,12 @@ Resources:
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'PN_DATAVAULT_DYNAMODB_TABLENAME=${ConfidentialObjectsDynamoTableName}'
+        ContainerEnvEntry3: !Sub 'PN_DATAVAULT_CLIENT_TOKENIZER_BASEPATH=${???????}'
+        ContainerEnvEntry4: !Sub 'PN_DATAVAULT_CLIENT_USERREGISTRY_BASEPATH=${???????}'
+        ContainerEnvEntry5: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PF=${???????}'
+        ContainerEnvEntry6: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PG=${???????}'
+        ContainerEnvEntry7: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PF=${???????}'
+        ContainerEnvEntry8: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PG=${???????}'
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

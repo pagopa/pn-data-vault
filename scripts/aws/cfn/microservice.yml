@@ -59,6 +59,14 @@ Parameters:
     Type: String
     Description: 'ARN of dynamodb table containing fake confidentials informations'
 
+  PDVTokenizerBasePath:
+    Type: String
+    Description: 'Path base di invocazione al servizio di tokenizer'
+
+  PDVUserRegistryBasePath:
+    Type: String
+    Description: 'Path base di invocazione al servizio di user registry'
+
 Resources:
 
   # PN-Delivery microservice
@@ -73,12 +81,12 @@ Resources:
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'PN_DATAVAULT_DYNAMODB_TABLENAME=${ConfidentialObjectsDynamoTableName}'
-        ContainerEnvEntry3: !Sub 'PN_DATAVAULT_CLIENT_TOKENIZER_BASEPATH=${???????}'
-        ContainerEnvEntry4: !Sub 'PN_DATAVAULT_CLIENT_USERREGISTRY_BASEPATH=${???????}'
-        ContainerEnvEntry5: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PF=${???????}'
-        ContainerEnvEntry6: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PG=${???????}'
-        ContainerEnvEntry7: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PF=${???????}'
-        ContainerEnvEntry8: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PG=${???????}'
+        ContainerEnvEntry3: !Sub 'PN_DATAVAULT_CLIENT_TOKENIZER_BASEPATH=${PDVTokenizerBasePath}'
+        ContainerEnvEntry4: !Sub 'PN_DATAVAULT_CLIENT_USERREGISTRY_BASEPATH=${PDVUserRegistryBasePath}'
+        ContainerEnvEntry5: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PF={{resolve:ssm-secure:PDVTokenizerApiKeyForPF}}'
+        ContainerEnvEntry6: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PG={{resolve:ssm-secure:PDVTokenizerApiKeyForPG}}'
+        ContainerEnvEntry7: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PF={{resolve:ssm-secure:PDVUserRegistryApiKeyForPF}}'
+        ContainerEnvEntry8: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PG={{resolve:ssm-secure:PDVUserRegistryApiKeyForPG}}'
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

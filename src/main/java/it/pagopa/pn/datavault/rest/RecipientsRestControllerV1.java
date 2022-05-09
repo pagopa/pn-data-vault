@@ -1,14 +1,10 @@
 package it.pagopa.pn.datavault.rest;
 
-import it.pagopa.pn.datavault.generated.openapi.server.v1.api.AddressBookApi;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.api.MandatesApi;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.api.NotificationsApi;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.api.RecipientsApi;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddressesDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
-import it.pagopa.pn.datavault.svc.PnDataVaultService;
+import it.pagopa.pn.datavault.svc.RecipientService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -19,24 +15,32 @@ import java.util.List;
 
 
 @RestController
+@Slf4j
 public class RecipientsRestControllerV1 implements RecipientsApi {
 
-    private final PnDataVaultService svc;
+    private final RecipientService svc;
 
-    public RecipientsRestControllerV1(PnDataVaultService svc) {
+    public RecipientsRestControllerV1(RecipientService svc) {
         this.svc = svc;
     }
 
     @Override
     public Mono<ResponseEntity<String>> ensureRecipientByExternalId(RecipientType recipientType, String taxId, ServerWebExchange exchange) {
+        log.debug("[enter]");
         return svc.ensureRecipientByExternalId( recipientType, taxId )
-                .map( internalId -> ResponseEntity.ok( internalId ));
+                .map(body -> {
+                    log.trace("[exit]");
+                    return ResponseEntity.ok(body);
+                });
     }
 
     @Override
     public Mono<ResponseEntity<Flux<BaseRecipientDto>>> getRecipientDenominationByInternalId(List<String> internalId, ServerWebExchange exchange) {
-        return Mono.fromSupplier( () ->
-           ResponseEntity.ok( svc.getRecipientsDenominationsByInternalIds( internalId ) )
+        log.debug("[enter]");
+        return Mono.fromSupplier( () -> {
+                    log.trace("[exit]");
+                    return ResponseEntity.ok(svc.getRecipientDenominationByInternalId(internalId));
+                }
         );
     }
 

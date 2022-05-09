@@ -12,7 +12,6 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.ReadBatch;
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
 
 import java.util.List;
 

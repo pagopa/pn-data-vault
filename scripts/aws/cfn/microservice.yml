@@ -83,10 +83,10 @@ Resources:
         ContainerEnvEntry2: !Sub 'PN_DATAVAULT_DYNAMODB_TABLENAME=${ConfidentialObjectsDynamoTableName}'
         ContainerEnvEntry3: !Sub 'PN_DATAVAULT_CLIENT_TOKENIZER_BASEPATH=${PDVTokenizerBasePath}'
         ContainerEnvEntry4: !Sub 'PN_DATAVAULT_CLIENT_USERREGISTRY_BASEPATH=${PDVUserRegistryBasePath}'
-        ContainerEnvEntry5: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PF={{resolve:secretsmanager:PersonalDataVault:SecretString:TokenizerApiKeyForPF}}'
-        ContainerEnvEntry6: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PG={{resolve:secretsmanager:PersonalDataVault:SecretString:TokenizerApiKeyForPG}}'
-        ContainerEnvEntry7: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PF={{resolve:secretsmanager:PersonalDataVault:SecretString:UserRegistryApiKeyForPF}}'
-        ContainerEnvEntry8: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PG={{resolve:secretsmanager:PersonalDataVault:SecretString:UserRegistryApiKeyForPG}}'
+        ContainerEnvEntry5: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PF={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:TokenizerApiKeyForPF}}'
+        ContainerEnvEntry6: !Sub 'PN_DATAVAULT_TOKENIZER_API_KEY_PG={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:TokenizerApiKeyForPG}}'
+        ContainerEnvEntry7: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PF={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:UserRegistryApiKeyForPF}}'
+        ContainerEnvEntry8: !Sub 'PN_DATAVAULT_USERREGISTRY_API_KEY_PG={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:UserRegistryApiKeyForPG}}'
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

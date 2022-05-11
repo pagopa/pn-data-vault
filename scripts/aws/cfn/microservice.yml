@@ -80,7 +80,7 @@ Resources:
         MemoryAmount: 2GB
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
-        ContainerEnvEntry2: !Sub 'PN_DATA_VAULT_DYNAMODB_TABLENAME=${ConfidentialObjectsDynamoTableName}'
+        ContainerEnvEntry2: !Sub 'PN_DATA_VAULT_DYNAMODB_TABLE_NAME=${ConfidentialObjectsDynamoTableName}'
         ContainerEnvEntry3: !Sub 'PN_DATA_VAULT_CLIENT_TOKENIZER_BASEPATH=${PDVTokenizerBasePath}'
         ContainerEnvEntry4: !Sub 'PN_DATA_VAULT_CLIENT_USERREGISTRY_BASEPATH=${PDVUserRegistryBasePath}'
         ContainerEnvEntry5: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:TokenizerApiKeyForPF}}'

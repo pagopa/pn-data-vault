@@ -11,7 +11,17 @@ public class ExceptionHelper {
     public static final String MDC_TRACE_ID_KEY = "trace_id";
 
     private ExceptionHelper(){}
-    
+
+
+    public static HttpStatus getHttpStatusFromException(Throwable ex){
+        if (ex instanceof PnException)
+        {
+            return HttpStatus.resolve(((PnException) ex).getStatus());
+        }
+        else
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
     public static Problem handleException(Throwable ex, HttpStatus statusError){
         // gestione exception e generazione fault
         Problem res = new Problem();
@@ -27,12 +37,15 @@ public class ExceptionHelper {
             res.setTitle(ex.getMessage());
             res.setDetail(((PnException)ex).getDescription());
             res.setStatus(((PnException) ex).getStatus());
+            log.warn("pn-exception catched", ex);
+
         }
         else
         {
             // nascondo all'utente l'errore
             res.title("Errore generico");
             res.detail("Qualcosa è andato storto, ritenta più tardi");
+            log.error("exception catched", ex);
         }
 
         return res;

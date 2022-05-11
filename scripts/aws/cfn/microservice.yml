@@ -115,6 +115,7 @@ Resources:
               - dynamodb:TransactGetItems
               - dynamodb:TransactWriteItems
               - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
             Resource:
               - !Ref ConfidentialObjectsDynamoTableArn
 

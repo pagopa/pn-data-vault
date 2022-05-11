@@ -1,6 +1,7 @@
 package it.pagopa.pn.datavault.middleware.db;
 
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
+import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.PhysicalAddress;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,17 +30,24 @@ import static org.junit.jupiter.api.Assertions.fail;
 @SpringBootTest
 public class NotificationDaoTestIT {
 
+    private final Duration d = Duration.ofMillis(3000);
+    
     @Autowired
     private NotificationDao notificationDao;
+
+    @Autowired
+    private NotificationTimelineDao notificationTimelineDao;
 
     @Autowired
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
     TestDao<NotificationEntity> testDao;
+    TestDao<NotificationTimelineEntity> testNotificationDao;
 
     @BeforeEach
     void setup( @Value("${pn.data-vault.dynamodb_table-name}") String table) {
-        testDao = new TestDao<NotificationEntity>( dynamoDbEnhancedAsyncClient, table, NotificationEntity.class);
+        testDao = new TestDao<>(dynamoDbEnhancedAsyncClient, table, NotificationEntity.class);
+        testNotificationDao = new TestDao<>(dynamoDbEnhancedAsyncClient, table, NotificationTimelineEntity.class);
     }
 
     @Test
@@ -56,7 +64,7 @@ public class NotificationDaoTestIT {
         }
 
         //When
-        notificationDao.updateNotifications(l).block(Duration.ofMillis(3000));
+        notificationDao.updateNotifications(l).block(d);
 
         //Then
         try {
@@ -105,7 +113,7 @@ public class NotificationDaoTestIT {
         }
 
         //When
-        notificationDao.updateNotifications(notificationsEntities).block(Duration.ofMillis(3000));
+        notificationDao.updateNotifications(notificationsEntities).block(d);
 
         //Then
         try {
@@ -113,9 +121,7 @@ public class NotificationDaoTestIT {
                 NotificationEntity elementFromDb = null;
                 try {
                     elementFromDb = testDao.get(a.getPk(), a.getRecipientIndex());
-                } catch (ExecutionException e) {
-                    fail("get exception");
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     fail("get exception");
                 }
 
@@ -152,7 +158,7 @@ public class NotificationDaoTestIT {
 
         try {
             testDao.delete(addresToInsert.getPk(), addresToInsert.getRecipientIndex());
-            notificationDao.updateNotifications(l).block(Duration.ofMillis(3000));
+            notificationDao.updateNotifications(l).block(d);
             NotificationEntity elementFromDb = testDao.get(addresToInsert.getPk(), addresToInsert.getRecipientIndex());
             Assertions.assertNotNull( elementFromDb);
         } catch (Exception e) {
@@ -160,7 +166,7 @@ public class NotificationDaoTestIT {
         }
 
         //When
-        notificationDao.deleteNotificationByIun(addresToInsert.getInternalId()).block(Duration.ofMillis(3000));
+        notificationDao.deleteNotificationByIun(addresToInsert.getInternalId()).block(d);
 
         //Then
         try {
@@ -203,14 +209,14 @@ public class NotificationDaoTestIT {
                 }
 
             });
-            notificationDao.updateNotifications(notificationsEntities).block(Duration.ofMillis(3000));
+            notificationDao.updateNotifications(notificationsEntities).block(d);
         } catch (Exception e) {
             System.out.println("Nothing to remove");
         }
 
         //When
         // basta cercare per un internalid qualsiasi
-        notificationDao.deleteNotificationByIun(notificationsEntities.get(0).getInternalId()).block(Duration.ofMillis(3000));
+        notificationDao.deleteNotificationByIun(notificationsEntities.get(0).getInternalId()).block(d);
 
         //Then
         try {
@@ -224,6 +230,105 @@ public class NotificationDaoTestIT {
                 notificationsEntities.forEach(m -> {
                     try {
                         testDao.delete(m.getPk(), m.getRecipientIndex());
+                    } catch (ExecutionException e) {
+                        System.out.println("Nothing to remove");
+                    } catch (InterruptedException e) {
+                        System.out.println("Nothing to remove");
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+
+    @Test
+    void deleteNotificationByIunMultipleWithTimeline() {
+        //Given
+        List<NotificationEntity> notificationsEntities = new ArrayList<>();
+        int N = 4;
+        for(int i = 0;i<N;i++)
+        {
+            NotificationEntity ae = newNotification();
+            ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
+            notificationsEntities.add(ae);
+        }
+        List<NotificationTimelineEntity> notificationsTimelineEntities = new ArrayList<>();
+        for(int i = 0;i<N;i++)
+        {
+            NotificationTimelineEntity ae = NotificationTimelineDaoTestIT.newNotification();
+            ae.setTimelineElementId(ae.getTimelineElementId() + "_" + i);
+            notificationsTimelineEntities.add(ae);
+        }
+
+
+        try {
+            notificationsEntities.forEach(m -> {
+                try {
+                    testDao.delete(m.getPk(), m.getRecipientIndex());
+                } catch (ExecutionException e) {
+                    System.out.println("Nothing to remove");
+                } catch (InterruptedException e) {
+                    System.out.println("Nothing to remove");
+                    Thread.currentThread().interrupt();
+                }
+
+            });
+            notificationDao.updateNotifications(notificationsEntities).block(d);
+            notificationsTimelineEntities.forEach(m -> {
+                try {
+                    testDao.delete(m.getPk(), m.getTimelineElementId());
+                    notificationTimelineDao.updateNotification(m).block(d);
+                } catch (ExecutionException e) {
+                    System.out.println("Nothing to remove");
+                } catch (InterruptedException e) {
+                    System.out.println("Nothing to remove");
+                    Thread.currentThread().interrupt();
+                }
+            });
+
+            // controllo che siano stati creati
+            NotificationEntity elementFromDb = testDao.get(notificationsEntities.get(0).getPk(), notificationsEntities.get(0).getRecipientIndex());
+            Assertions.assertNotNull( elementFromDb);
+
+            NotificationTimelineEntity elementFromDb1 = testNotificationDao.get(notificationsTimelineEntities.get(0).getPk(), notificationsTimelineEntities.get(0).getTimelineElementId());
+            Assertions.assertNotNull( elementFromDb1);
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        // basta cercare per un internalid qualsiasi
+        notificationDao.deleteNotificationByIun(notificationsEntities.get(0).getInternalId()).block(d);
+
+        //Then
+        try {
+            NotificationEntity elementFromDb = testDao.get(notificationsEntities.get(0).getPk(), notificationsEntities.get(0).getRecipientIndex());
+
+            Assertions.assertNull( elementFromDb);
+
+            NotificationTimelineEntity elementFromDb1 = testNotificationDao.get(notificationsTimelineEntities.get(0).getPk(), notificationsTimelineEntities.get(0).getTimelineElementId());
+
+            Assertions.assertNull( elementFromDb1);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        } finally {
+            try {
+                notificationsEntities.forEach(m -> {
+                    try {
+                        testDao.delete(m.getPk(), m.getRecipientIndex());
+                    } catch (ExecutionException e) {
+                        System.out.println("Nothing to remove");
+                    } catch (InterruptedException e) {
+                        System.out.println("Nothing to remove");
+                        Thread.currentThread().interrupt();
+                    }
+                });
+                notificationsTimelineEntities.forEach(m -> {
+                    try {
+                        testDao.delete(m.getPk(), m.getTimelineElementId());
                     } catch (ExecutionException e) {
                         System.out.println("Nothing to remove");
                     } catch (InterruptedException e) {
@@ -262,14 +367,14 @@ public class NotificationDaoTestIT {
                 }
 
             });
-            notificationDao.updateNotifications(notificationsEntities).block(Duration.ofMillis(3000));
+            notificationDao.updateNotifications(notificationsEntities).block(d);
         } catch (Exception e) {
             System.out.println("Nothing to remove");
         }
 
         //When
         // basta cercare per un internalid qualsiasi
-        List<NotificationEntity> results = notificationDao.listNotificationRecipientAddressesDtoById(notificationsEntities.get(0).getInternalId()).collectList().block(Duration.ofMillis(3000));
+        List<NotificationEntity> results = notificationDao.listNotificationRecipientAddressesDtoById(notificationsEntities.get(0).getInternalId()).collectList().block(d);
 
         //Then
         try {

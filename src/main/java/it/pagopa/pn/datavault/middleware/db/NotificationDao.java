@@ -19,12 +19,14 @@ public class NotificationDao extends BaseDao {
 
     DynamoDbAsyncTable<NotificationEntity> notificationTable;
     DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
-
+    NotificationTimelineDao notificationTimelineDao;
 
     public NotificationDao(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                           PnDatavaultConfig pnDatavaultConfig) {
+                           PnDatavaultConfig pnDatavaultConfig,
+                           NotificationTimelineDao notificationTimelineDao) {
         this.notificationTable = dynamoDbEnhancedAsyncClient.table(pnDatavaultConfig.getDynamodbTableName(), TableSchema.fromBean(NotificationEntity.class));
         this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
+        this.notificationTimelineDao = notificationTimelineDao;
     }
 
     /**
@@ -35,9 +37,9 @@ public class NotificationDao extends BaseDao {
     public Mono<Object> updateNotifications(List<NotificationEntity> entities)
     {
         if (entities.size() == 1)
-            log.info("updating notification internalid:{}", entities.get(0).getInternalId());
+            log.debug("updateNotifications notification internalid:{}", entities.get(0).getInternalId());
         else
-            log.info("updating notification entities size:{}", entities.size());
+            log.debug("updateNotifications notification entities size:{}", entities.size());
 
 
 
@@ -55,25 +57,30 @@ public class NotificationDao extends BaseDao {
      * @return l'entity eliminata
      */
     public Mono<Object> deleteNotificationByIun(String iun) {
-        log.info("deleting notification internalid:{}",iun);
+        log.debug("deleteNotificationByIun notification internalid:{}",iun);
 
-        // dato che devo cancellare TUTTI gli indirizzi per un certo iun
+        // dato che devo cancellare TUTTI gli indirizzi e le timeline per un certo iun
         // devo necessariamente chiedere quali sono con una query, e poi
         // ricavarmi dai risultati le chiavi per poter eseguire la cancellazione
         return  listNotificationRecipientAddressesDtoById(iun)
                 .collectList()
-                .map(list -> {
-                    log.debug("deleting {} notifications", list.size());
+                .zipWith(notificationTimelineDao.getNotificationTimelineByIun(iun).collectList()
+                , (listaddresses,listtimeline) -> {
+                    log.debug("deleting notifications tot:{} timeline tot:{}", listaddresses.size(), listtimeline.size());
                     var delRequestBuilder = TransactWriteItemsEnhancedRequest.builder();
-                    list.forEach(n -> delRequestBuilder.addDeleteItem(notificationTable, TransactDeleteItemEnhancedRequest.builder()
+                    listaddresses.forEach(n -> delRequestBuilder.addDeleteItem(notificationTable, TransactDeleteItemEnhancedRequest.builder()
                             .key(getKeyBuild(n.getPk(), n.getRecipientIndex()))
                             .build()));
-                    return dynamoDbEnhancedAsyncClient.transactWriteItems(delRequestBuilder.build());
-                });
+                    listtimeline.forEach(n -> delRequestBuilder.addDeleteItem(notificationTable, TransactDeleteItemEnhancedRequest.builder()
+                            .key(getKeyBuild(n.getPk(), n.getTimelineElementId()))
+                            .build()));
+                    return delRequestBuilder;
+                })
+                .map(r -> dynamoDbEnhancedAsyncClient.transactWriteItems(r.build()));
     }
 
     public Flux<NotificationEntity> listNotificationRecipientAddressesDtoById(String iun) {
-        log.debug("quering notifications list-by-id internalid:{}", iun);
+        log.debug("listNotificationRecipientAddressesDtoById notifications list-by-id internalid:{}", iun);
 
         NotificationEntity ne = new NotificationEntity(iun, "");
         QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ne.getPk()));

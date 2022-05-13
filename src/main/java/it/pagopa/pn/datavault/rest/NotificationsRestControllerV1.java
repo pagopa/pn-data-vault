@@ -27,7 +27,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
         log.info("[enter] internalid:{}", iun);
         return this.svc.deleteNotificationByIun( iun )
                 .map( result -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.noContent().build();
                 });
     }
@@ -38,7 +38,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
         return this.svc.getNotificationAddressesByIun( iun )
                 .collectList()
                 .map( result -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return result.isEmpty() ? ResponseEntity.notFound().build() :
                             ResponseEntity.ok(Flux.fromIterable(result));
                 });
@@ -55,7 +55,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
                         return svc.updateNotificationAddressesByIun( iun, dtoArray );
                     })
                     .map( updateResult -> {
-                        log.trace("[exit]");
+                        log.debug("[exit]");
                         return ResponseEntity.noContent().build();
                     });
     }
@@ -66,7 +66,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
         return this.svc.getNotificationTimelineByIun( iun )
                 .collectList()
                 .map( result -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return result.isEmpty() ? ResponseEntity.notFound().build() :
                             ResponseEntity.ok(Flux.fromIterable(result));
                 });
@@ -77,7 +77,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
         log.info("[enter] internalid:{} timeelementid:{}", iun, timelineElementId);
         return this.svc.getNotificationTimelineByIunAndTimelineElementId( iun, timelineElementId )
                 .map(body -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.ok(body);
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.<Flux<NotificationRecipientAddressesDto>>notFound().build()));
@@ -88,7 +88,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
         log.info("[enter] internalid:{} timeelementid:{}", iun, timelineElementId);
         return confidentialTimelineElementDto.flatMap( dto -> svc.updateNotificationTimelineByIunAndTimelineElementId( iun, timelineElementId, dto ))
                 .map( updateResult -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.noContent().build();
                 });
     }

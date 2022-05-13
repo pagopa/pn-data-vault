@@ -8,6 +8,7 @@ import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.api.TokenApi;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.PiiResourceDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
+import it.pagopa.pn.datavault.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -25,13 +26,15 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
 
     private final TokenApi tokenApiPF;
     private final TokenApi tokenApiPG;
+    private final PnDatavaultConfig pnDatavaultConfig;
 
-    public PersonalDataVaultTokenizerClient(PnDatavaultConfig pnDatavaultConfig){
+    public PersonalDataVaultTokenizerClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1){
         // creo 2 istanze diverse, una per PF e l'altra per PG, perchè la differenza
         // sta in un header che viene spedito. Tale header, che è una costante
         // vien definita in fase di creazione, e quindi evito ogni volta di scriverlo.
         this.tokenApiPF = new TokenApi(initApiClient(pnDatavaultConfig.getTokenizerApiKeyPf(), pnDatavaultConfig.getClientTokenizerBasepath()));
         this.tokenApiPG = new TokenApi(initApiClient(pnDatavaultConfig.getTokenizerApiKeyPg(), pnDatavaultConfig.getClientTokenizerBasepath()));
+        this.pnDatavaultConfig = pnDatavaultConfig1;
     }
 
     /**
@@ -42,7 +45,13 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
      */
     public Mono<String> ensureRecipientByExternalId(RecipientType recipientType, String taxId)
     {
-        log.trace("[enter]");
+        log.debug("[enter] ensureRecipientByExternalId taxid: {}", LogUtils.maskTaxId(taxId));
+        if (pnDatavaultConfig.isDevelopment())
+        {
+            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
+            return Mono.just(encapsulateRecipientType(recipientType, reverseString(taxId)));
+        }
+
         PiiResourceDto pii = new PiiResourceDto();
         pii.setPii(taxId);
         return this.getTokeApiForRecipientType(recipientType)
@@ -53,7 +62,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                     )
                     .map(r -> {
                         String res = encapsulateRecipientType(recipientType, r.getToken().toString());
-                        log.trace("[exit] token:{}", res);
+                        log.trace("[exit] ensureRecipientByExternalId token:{}", res);
                         return  res;
                     });
     }
@@ -92,4 +101,12 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
          return  apiClient;
     }
 
+    private String reverseString(String inputvalue) {
+        byte[] strAsByteArray = inputvalue.getBytes();
+        byte[] resultoutput = new byte[strAsByteArray.length];
+        for (int i = 0; i < strAsByteArray.length; i++)
+            resultoutput[i] = strAsByteArray[strAsByteArray.length - i - 1];
+
+        return new String(resultoutput);
+    }
 }

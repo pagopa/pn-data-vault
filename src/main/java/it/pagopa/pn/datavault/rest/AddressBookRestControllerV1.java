@@ -29,7 +29,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
                             svc.updateAddressByInternalId( internalId, addressId, addressDtoValue)
                     )
                     .map( updateResult -> {
-                        log.trace("[exit]");
+                        log.debug("[exit]");
                         return ResponseEntity.noContent().build();
                     } );
     }
@@ -39,7 +39,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
         log.info("[enter] internalid:{}", internalId);
         return svc.getAddressByInternalId( internalId )
                 .map(body -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.ok(body);
                 });
     }
@@ -49,7 +49,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
         log.info("[enter] internalid:{} addressid:{}", internalId, addressId);
         return svc.deleteAddressByInternalId( internalId, addressId )
                 .map( dto -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.noContent().build();
                 });
     }

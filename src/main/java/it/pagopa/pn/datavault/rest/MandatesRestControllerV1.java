@@ -30,7 +30,7 @@ public class MandatesRestControllerV1 implements MandatesApi {
         return addressAndDenominationDto
                 .flatMap( dtoValue -> svc.updateMandateByInternalId( mandateId, dtoValue))
                 .map( updateResult -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.noContent().build();
                 });
     }
@@ -39,7 +39,7 @@ public class MandatesRestControllerV1 implements MandatesApi {
     public Mono<ResponseEntity<Flux<MandateDto>>> getMandatesByIds(List<String> mandateId, ServerWebExchange exchange) {
         log.info("[enter] mandateid:{}", mandateId);
         return Mono.fromSupplier( () -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.ok(svc.getMandatesByInternalIds(mandateId));
                 }
         );
@@ -50,7 +50,7 @@ public class MandatesRestControllerV1 implements MandatesApi {
         log.info("[enter] mandateid:{}", mandateId);
         return svc.deleteMandateByInternalId( mandateId )
                 .map( result -> {
-                    log.trace("[exit]");
+                    log.debug("[exit]");
                     return ResponseEntity.noContent().build();
                 });
     }

@@ -32,16 +32,29 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     public static final String FILTER_NAME = "name";
     private final UserApi userClientPF;
     private final UserApi userClientPG;
+    private final PnDatavaultConfig pnDatavaultConfig;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig){
+    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
+        this.pnDatavaultConfig = pnDatavaultConfig1;
     }
 
 
     public Flux<BaseRecipientDto> getRecipientDenominationByInternalId(List<String> internalIds)
     {
-        log.trace("[enter]");
+        if (pnDatavaultConfig.isDevelopment())
+        {
+            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
+            return Flux.fromIterable(internalIds).map(r -> {
+                BaseRecipientDto brd = new BaseRecipientDto();
+                brd.setDenomination("Nome cognome"+r);
+                brd.setInternalId(r);
+                return brd;
+            });
+        }
+
+        log.debug("[enter] getRecipientDenominationByInternalId internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.getUserApiForRecipientType(getRecipientTypeFromInternalId(uid))
                         .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME))
@@ -53,7 +66,6 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
                            BaseRecipientDto brd = new BaseRecipientDto();
                            brd.setInternalId(uid);
                            brd.setDenomination(buildDenomination(r));
-                           log.trace("[exit]");
                            return brd;
                        }));
     }

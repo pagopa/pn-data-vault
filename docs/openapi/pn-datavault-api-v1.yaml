@@ -631,4 +631,6 @@ components:
             $ref: '#/components/schemas/AddressDto'
           physicalAddress: 
             $ref: '#/components/schemas/AnalogDomicile'
+          newPhysicalAddress:
+            $ref: '#/components/schemas/AnalogDomicile'
 

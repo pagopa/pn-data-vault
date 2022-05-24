@@ -17,6 +17,7 @@ public class NotificationTimelineEntity {
     public static final String COL_SK = "sortKey";
     public static final String COL_DIGITAL_ADDRESS = "digitalAddress";
     public static final String COL_PHYSICAL_ADDRESS = "physicalAddress";
+    public static final String COL_NEW_PHYSICAL_ADDRESS = "newPhysicalAddress";
 
     public NotificationTimelineEntity(){}
 
@@ -39,5 +40,7 @@ public class NotificationTimelineEntity {
     @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String timelineElementId;
 
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_ADDRESS)})) private String digitalAddress;
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHYSICAL_ADDRESS), @DynamoDbConvertedBy(PhysicalAddressTypeConverter.class)})) private PhysicalAddress physicalAddress;
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHYSICAL_ADDRESS)})) private PhysicalAddress physicalAddress;
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_NEW_PHYSICAL_ADDRESS)})) private PhysicalAddress newPhysicalAddress;
+
 }

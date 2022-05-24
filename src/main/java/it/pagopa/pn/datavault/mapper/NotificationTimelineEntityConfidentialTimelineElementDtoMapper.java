@@ -20,7 +20,12 @@ public class NotificationTimelineEntityConfidentialTimelineElementDtoMapper  ext
         final NotificationTimelineEntity target = new NotificationTimelineEntity();
         target.setTimelineElementId(dto.getTimelineElementId());
         target.setDigitalAddress(dto.getDigitalAddress().getValue());
-        target.setPhysicalAddress(toPhysicalAddress(dto.getPhysicalAddress()));
+        if(dto.getPhysicalAddress() != null){
+            target.setPhysicalAddress(toPhysicalAddress(dto.getPhysicalAddress()));
+        }
+        if(dto.getNewPhysicalAddress() != null){
+            target.setNewPhysicalAddress(toPhysicalAddress(dto.getNewPhysicalAddress()));
+        }
         return target;
     }
 
@@ -31,7 +36,12 @@ public class NotificationTimelineEntityConfidentialTimelineElementDtoMapper  ext
         AddressDto addressDto = new AddressDto();
         addressDto.setValue(entity.getDigitalAddress());
         target.setDigitalAddress(addressDto);
-        target.setPhysicalAddress(toAnalogDomicile(entity.getPhysicalAddress()));
+        if(entity.getPhysicalAddress() != null){
+            target.setPhysicalAddress(toAnalogDomicile(entity.getPhysicalAddress()));
+        }
+        if(entity.getNewPhysicalAddress() != null){
+            target.setNewPhysicalAddress(toAnalogDomicile(entity.getNewPhysicalAddress()));
+        }
         return target;
     }
 }

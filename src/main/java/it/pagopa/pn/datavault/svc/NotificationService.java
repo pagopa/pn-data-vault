@@ -37,7 +37,7 @@ public class NotificationService {
 
     public Mono<Object> deleteNotificationByIun(String iun) {
         if (!StringUtils.hasText(iun))
-            throw new InvalidInputException();
+            throw new InvalidInputException("iun is required");
 
         return notificationDao.deleteNotificationByIun(iun);
     }
@@ -81,10 +81,8 @@ public class NotificationService {
 
     private void validate(NotificationRecipientAddressesDto dto) {
         if (!StringUtils.hasText(dto.getDenomination()))
-            throw new InvalidInputException();
-        if (dto.getDigitalAddress() == null || !StringUtils.hasText(dto.getDigitalAddress().getValue()))
-            throw new InvalidInputException();
-        if (dto.getPhysicalAddress() == null)
-            throw new InvalidInputException();
+            throw new InvalidInputException("denomination is required");
+        if (!StringUtils.hasText(dto.getDigitalAddress().getValue()))
+            throw new InvalidInputException("digitalAddress.value is required");
     }
 }

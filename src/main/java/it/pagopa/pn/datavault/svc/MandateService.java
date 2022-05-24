@@ -32,7 +32,7 @@ public class MandateService {
 
     public Mono<String> updateMandateByInternalId(String mandateId, DenominationDto addressDto) {
         if (!StringUtils.hasText(mandateId))
-            throw new InvalidInputException();
+            throw new InvalidInputException("mandateId is required");
         if (addressDto == null
                 || (!StringUtils.hasText(addressDto.getDestName())
                     && !StringUtils.hasText(addressDto.getDestSurname())
@@ -42,7 +42,7 @@ public class MandateService {
                 || (StringUtils.hasText(addressDto.getDestName())
                     && !StringUtils.hasText(addressDto.getDestName()))
                 )
-            throw new InvalidInputException();
+            throw new InvalidInputException("destName is required");
 
 
         MandateEntity me = new MandateEntity(mandateId);
@@ -55,7 +55,7 @@ public class MandateService {
 
     public Mono<String> deleteMandateByInternalId(String mandateId ) {
         if (!StringUtils.hasText(mandateId))
-            throw new InvalidInputException();
+            throw new InvalidInputException("mandateId is required");
 
         return objDao.deleteMandateId(mandateId).map(r -> "OK");
     }

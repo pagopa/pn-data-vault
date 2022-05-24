@@ -166,7 +166,8 @@ public class NotificationDaoTestIT {
         }
 
         //When
-        notificationDao.deleteNotificationByIun(addresToInsert.getInternalId()).block(d);
+        String internalId = addresToInsert.getInternalId();
+        notificationDao.deleteNotificationByIun(internalId).block(d);
 
         //Then
         try {
@@ -405,7 +406,7 @@ public class NotificationDaoTestIT {
     }
 
     public static NotificationEntity newNotification(){
-        NotificationEntity ne = new NotificationEntity("425e4567-e89b-12d3-a456-426655449631", "mario rossi");
+        NotificationEntity ne = new NotificationEntity("425e4567-e89b-12d3-a456-426655449631", "000");
         ne.setDigitalAddress("mario.rossi@test.it");
         PhysicalAddress pa = new PhysicalAddress();
         pa.setAddress("via casa sua");

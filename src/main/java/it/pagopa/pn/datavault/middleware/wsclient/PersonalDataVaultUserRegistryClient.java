@@ -12,14 +12,15 @@ import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Classe wrapper di personal-data-vault, con gestione del backoff
@@ -34,11 +35,13 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     private final UserApi userClientPF;
     private final UserApi userClientPG;
     private final PnDatavaultConfig pnDatavaultConfig;
+    private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1){
+    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.pnDatavaultConfig = pnDatavaultConfig1;
+        this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
     }
 
 
@@ -64,6 +67,8 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
                                Retry.backoff(2, Duration.ofMillis(25))
                                        .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                        )
+                        .onErrorResume(WebClientResponseException.class,
+                                ex -> ex.getRawStatusCode() == 404 ? this.personalDataVaultTokenizerClient.findPii(uid): Mono.error(ex))
                        .map(r -> {
                            BaseRecipientDto brd = new BaseRecipientDto();
                            brd.setInternalId(uid);
@@ -88,19 +93,6 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
             return "";
     }
 
-    private UUID getUUIDFromInternalId(String internalId)
-    {
-        internalId = internalId.substring(3);
-        return UUID.fromString(internalId);
-    }
-
-    private RecipientType getRecipientTypeFromInternalId(String internalId)
-    {
-        if (internalId.startsWith(RecipientType.PF.getValue()))
-            return RecipientType.PF;
-        else
-            return RecipientType.PG;
-    }
 
     /**
      * Ritorna il client corretto in base al tipo di utente

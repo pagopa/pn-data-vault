@@ -3,10 +3,12 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 import io.netty.handler.timeout.TimeoutException;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.ApiClient;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.api.TokenApi;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.PiiResourceDto;
+import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import it.pagopa.pn.datavault.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import reactor.util.retry.Retry;
 
 import java.net.ConnectException;
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff
@@ -65,6 +68,24 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                         log.trace("[exit] ensureRecipientByExternalId token:{}", res);
                         return  res;
                     });
+    }
+
+    public Mono<UserResourceDto> findPii(String internalId)
+    {
+        log.debug("[enter] findPii token: {}", internalId);
+        return this.getTokeApiForRecipientType(getRecipientTypeFromInternalId(internalId))
+                .findPiiUsingGET(getUUIDFromInternalId(internalId))
+                .retryWhen(
+                        Retry.backoff(2, Duration.ofMillis(25))
+                                .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                )
+                .map(r -> {
+                    UserResourceDto brd = new UserResourceDto();
+                    brd.setId(getUUIDFromInternalId(internalId));
+                    brd.setFiscalCode(r.getPii());
+                    log.trace("[exit] findPii token:{}", LogUtils.maskTaxId(r.getPii()));
+                    return  brd;
+                });
     }
 
     /**

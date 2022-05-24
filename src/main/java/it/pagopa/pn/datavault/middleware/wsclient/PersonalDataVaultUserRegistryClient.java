@@ -30,6 +30,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
 
     public static final String FILTER_FAMILY_NAME = "familyName";
     public static final String FILTER_NAME = "name";
+    public static final String FILTER_FISCAL_CODE = "fiscalCode";
     private final UserApi userClientPF;
     private final UserApi userClientPG;
     private final PnDatavaultConfig pnDatavaultConfig;
@@ -49,6 +50,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
             return Flux.fromIterable(internalIds).map(r -> {
                 BaseRecipientDto brd = new BaseRecipientDto();
                 brd.setDenomination("Nome cognome"+r);
+                brd.setTaxId(reverseString(r.replace("PF-","").replace("PG-","")));
                 brd.setInternalId(r);
                 return brd;
             });
@@ -57,7 +59,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         log.debug("[enter] getRecipientDenominationByInternalId internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.getUserApiForRecipientType(getRecipientTypeFromInternalId(uid))
-                        .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME))
+                       .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
                        .retryWhen(
                                Retry.backoff(2, Duration.ofMillis(25))
                                        .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
@@ -66,6 +68,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
                            BaseRecipientDto brd = new BaseRecipientDto();
                            brd.setInternalId(uid);
                            brd.setDenomination(buildDenomination(r));
+                           brd.setTaxId(r.getFiscalCode());
                            return brd;
                        }));
     }
@@ -117,5 +120,15 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), apiKey));
         apiClient.setBasePath(basepath);
         return  apiClient;
+    }
+
+
+    private String reverseString(String inputvalue) {
+        byte[] strAsByteArray = inputvalue.getBytes();
+        byte[] resultoutput = new byte[strAsByteArray.length];
+        for (int i = 0; i < strAsByteArray.length; i++)
+            resultoutput[i] = strAsByteArray[strAsByteArray.length - i - 1];
+
+        return new String(resultoutput);
     }
 }

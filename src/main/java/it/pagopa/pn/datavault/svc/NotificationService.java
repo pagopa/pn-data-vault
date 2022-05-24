@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class NotificationService {
@@ -37,7 +38,7 @@ public class NotificationService {
 
     public Mono<Object> deleteNotificationByIun(String iun) {
         if (!StringUtils.hasText(iun))
-            throw new InvalidInputException();
+            throw new InvalidInputException("iun is required");
 
         return notificationDao.deleteNotificationByIun(iun);
     }
@@ -50,11 +51,14 @@ public class NotificationService {
     public Mono<Object> updateNotificationAddressesByIun(String iun, NotificationRecipientAddressesDto[] dtoArray) {
 
         List<NotificationEntity> nelist = new ArrayList<>();
+
+        AtomicInteger recipientIndex = new AtomicInteger( 0 );
         Arrays.stream(dtoArray).forEach(dto -> {
             // valida l'oggetto
             validate(dto);
 
             NotificationEntity ne = mappingsDao.toEntity(dto);
+            ne.setRecipientIndex( String.format("%03d", recipientIndex.getAndIncrement() ) );
             ne.setInternalId(iun);  // il mapping non può mappare l'internalid, non è presente nel dto
             nelist.add(ne);
         });
@@ -81,10 +85,8 @@ public class NotificationService {
 
     private void validate(NotificationRecipientAddressesDto dto) {
         if (!StringUtils.hasText(dto.getDenomination()))
-            throw new InvalidInputException();
-        if (dto.getDigitalAddress() == null || !StringUtils.hasText(dto.getDigitalAddress().getValue()))
-            throw new InvalidInputException();
-        if (dto.getPhysicalAddress() == null)
-            throw new InvalidInputException();
+            throw new InvalidInputException("denomination is required");
+        if (!StringUtils.hasText(dto.getDigitalAddress().getValue()))
+            throw new InvalidInputException("digitalAddress.value is required");
     }
 }

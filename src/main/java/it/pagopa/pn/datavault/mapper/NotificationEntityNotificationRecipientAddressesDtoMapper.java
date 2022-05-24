@@ -18,8 +18,8 @@ public class NotificationEntityNotificationRecipientAddressesDtoMapper extends P
     @Override
     public NotificationEntity toEntity(NotificationRecipientAddressesDto dto) {
         final NotificationEntity target = new NotificationEntity();
-        target.setRecipientIndex(dto.getDenomination());
-        target.setDigitalAddress(dto.getDigitalAddress().getValue());
+        target.setDenomination( dto.getDenomination() );
+        target.setDigitalAddress(dto.getDigitalAddress() == null ? null : dto.getDigitalAddress().getValue());
         target.setPhysicalAddress(toPhysicalAddress(dto.getPhysicalAddress()));
         return target;
     }

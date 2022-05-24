@@ -37,11 +37,11 @@ public class AddressService {
 
     public Mono<String> updateAddressByInternalId(String internalId, String addressId, AddressDto addressDto) {
         if (!StringUtils.hasText(internalId))
-            throw new InvalidInputException();
+            throw new InvalidInputException("internalId is required");
         if (!StringUtils.hasText(addressId))
-            throw new InvalidInputException();
+            throw new InvalidInputException("addressId is required");
         if (addressDto == null || !StringUtils.hasText(addressDto.getValue()))
-            throw new InvalidInputException();
+            throw new InvalidInputException("address.value is required");
 
         AddressEntity me = new AddressEntity(internalId, addressId);
         me.setValue(addressDto.getValue());
@@ -51,9 +51,9 @@ public class AddressService {
 
     public Mono<String> deleteAddressByInternalId(String internalId, String addressId ) {
         if (!StringUtils.hasText(internalId))
-            throw new InvalidInputException();
+            throw new InvalidInputException("internalId is required");
         if (!StringUtils.hasText(addressId))
-            throw new InvalidInputException();
+            throw new InvalidInputException("addressId is required");
 
         return objDao.deleteAddressId(internalId, addressId).map(r -> "OK");
     }

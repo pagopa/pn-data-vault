@@ -1,5 +1,7 @@
 package it.pagopa.pn.datavault.middleware.wsclient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.TokenResourceDto;
 import org.junit.jupiter.api.AfterAll;
@@ -14,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
@@ -47,11 +50,17 @@ class PersonalDataVaultTokenizerClientTest {
 
 
     @Test
-    void ensureRecipientByExternalIdPF() {
+    void ensureRecipientByExternalIdPF() throws JsonProcessingException {
         //Given
         String cf = "RSSMRA85T10A562S";
         String iuid = "425e4567-e89b-12d3-a456-426655449631";
         String expectediuid = "PF-"+iuid;
+        TokenResourceDto response = new TokenResourceDto();
+        response.setToken(UUID.fromString(iuid));
+        response.setRootToken(UUID.fromString(iuid));
+        ObjectMapper mapper = new ObjectMapper();
+        String respjson = mapper.writeValueAsString(response);
+
 
 
         new MockServerClient("localhost", 9999)
@@ -60,10 +69,7 @@ class PersonalDataVaultTokenizerClientTest {
                         .withHeader("x-api-key", "pf")
                         .withPath("/tokens"))
                 .respond(response()
-                        .withBody("{" +
-                                "\"" + TokenResourceDto.JSON_PROPERTY_ROOT_TOKEN + "\": " + "\"" + iuid + "\"," +
-                                "\"" + TokenResourceDto.JSON_PROPERTY_TOKEN + "\": " + "\"" + iuid + "\"" +
-                                "}")
+                        .withBody(respjson)
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(200));
 
@@ -76,11 +82,16 @@ class PersonalDataVaultTokenizerClientTest {
     }
 
     @Test
-    void ensureRecipientByExternalIdPG() {
+    void ensureRecipientByExternalIdPG() throws JsonProcessingException {
         //Given
         String cf = "123456789";
         String iuid = "425e4567-e89b-12d3-a456-426655449631";
         String expectediuid = "PG-"+iuid;
+        TokenResourceDto response = new TokenResourceDto();
+        response.setToken(UUID.fromString(iuid));
+        response.setRootToken(UUID.fromString(iuid));
+        ObjectMapper mapper = new ObjectMapper();
+        String respjson = mapper.writeValueAsString(response);
 
 
         new MockServerClient("localhost", 9999)
@@ -89,10 +100,7 @@ class PersonalDataVaultTokenizerClientTest {
                         .withHeader("x-api-key", "pg")
                         .withPath("/tokens"))
                 .respond(response()
-                        .withBody("{" +
-                                "\"" + TokenResourceDto.JSON_PROPERTY_ROOT_TOKEN + "\": " + "\"" + iuid + "\"," +
-                                "\"" + TokenResourceDto.JSON_PROPERTY_TOKEN + "\": " + "\"" + iuid + "\"" +
-                                "}")
+                        .withBody(respjson)
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(200));
 

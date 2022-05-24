@@ -126,7 +126,7 @@ class NotificationServiceTest {
         NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
         List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
         NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
-        dto.setDenomination("sig rossi");
+        //dto.setDenomination("sig rossi");
         dto.setDigitalAddress(new AddressDto());
         dto.setPhysicalAddress(new AnalogDomicile());
         listdto.add(dto);
@@ -143,51 +143,6 @@ class NotificationServiceTest {
         // nothing
     }
 
-    @Test
-    void updateNotificationAddressesByIunInvalid2() {
-        //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
-        List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
-        NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
-        dto.setDenomination("sig rossi");
-        dto.setDigitalAddress(new AddressDto());
-        dto.getDigitalAddress().setValue("rossi@test.it");
-        listdto.add(dto);
-
-        when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
-        when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
-
-        //When
-        String iun = notificationEntity.getInternalId();
-        NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
-        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
-
-        //Then
-        // nothing
-    }
-
-    @Test
-    void updateNotificationAddressesByIunInvalid3() {
-        //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
-        List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
-        NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
-        dto.setDigitalAddress(new AddressDto());
-        dto.getDigitalAddress().setValue("rossi@test.it");
-        dto.setPhysicalAddress(new AnalogDomicile());
-        listdto.add(dto);
-
-        when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
-        when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
-
-        //When
-        String iun = notificationEntity.getInternalId();
-        NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
-        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
-
-        //Then
-        // nothing
-    }
 
     @Test
     void getNotificationTimelineByIun() {

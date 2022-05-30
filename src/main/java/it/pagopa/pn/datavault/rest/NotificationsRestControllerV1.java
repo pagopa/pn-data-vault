@@ -24,21 +24,21 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
 
     @Override
     public Mono<ResponseEntity<Void>> deleteNotificationByIun(String iun, ServerWebExchange exchange) {
-        log.info("[enter] internalid:{}", iun);
+        log.info("[enter] deleteNotificationByIun internalid:{}", iun);
         return this.svc.deleteNotificationByIun( iun )
                 .map( result -> {
-                    log.debug("[exit]");
+                    log.debug("[exit] deleteNotificationByIun");
                     return ResponseEntity.noContent().build();
                 });
     }
 
     @Override
     public Mono<ResponseEntity<Flux<NotificationRecipientAddressesDto>>> getNotificationAddressesByIun(String iun, ServerWebExchange exchange) {
-        log.info("[enter] internalid:{}", iun);
+        log.info("[enter] getNotificationAddressesByIun internalid:{}", iun);
         return this.svc.getNotificationAddressesByIun( iun )
                 .collectList()
                 .map( result -> {
-                    log.debug("[exit]");
+                    log.debug("[exit] getNotificationAddressesByIun");
                     return result.isEmpty() ? ResponseEntity.notFound().build() :
                             ResponseEntity.ok(Flux.fromIterable(result));
                 });
@@ -46,7 +46,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
 
     @Override
     public Mono<ResponseEntity<Void>> updateNotificationAddressesByIun(String iun, Flux<NotificationRecipientAddressesDto> notificationRecipientAddressesDto, ServerWebExchange exchange) {
-        log.info("[enter] internalid:{}", iun);
+        log.info("[enter] updateNotificationAddressesByIun internalid:{}", iun);
         return notificationRecipientAddressesDto
                     .collectList()
                     .flatMap( dtoList -> {
@@ -55,39 +55,38 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
                         return svc.updateNotificationAddressesByIun( iun, dtoArray );
                     })
                     .map( updateResult -> {
-                        log.debug("[exit]");
+                        log.debug("[exit] updateNotificationAddressesByIun");
                         return ResponseEntity.noContent().build();
                     });
     }
 
     @Override
     public Mono<ResponseEntity<Flux<ConfidentialTimelineElementDto>>> getNotificationTimelineByIun(String iun, ServerWebExchange exchange) {
-        log.info("[enter] internalid:{}", iun);
+        log.info("[enter] getNotificationTimelineByIun internalid:{}", iun);
         return this.svc.getNotificationTimelineByIun( iun )
                 .collectList()
                 .map( result -> {
-                    log.debug("[exit]");
+                    log.debug("[exit] getNotificationTimelineByIun");
                     return ResponseEntity.ok(Flux.fromIterable(result));
                 });
     }
 
     @Override
     public Mono<ResponseEntity<ConfidentialTimelineElementDto>> getNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, ServerWebExchange exchange) {
-        log.info("[enter] internalid:{} timeelementid:{}", iun, timelineElementId);
+        log.info("[enter] getNotificationTimelineByIunAndTimelineElementId internalid:{} timeelementid:{}", iun, timelineElementId);
         return this.svc.getNotificationTimelineByIunAndTimelineElementId( iun, timelineElementId )
                 .map(body -> {
-                    log.debug("[exit]");
+                    log.debug("[exit] getNotificationTimelineByIunAndTimelineElementId");
                     return ResponseEntity.ok(body);
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.<Flux<NotificationRecipientAddressesDto>>notFound().build()));
+                });
     }
 
     @Override
     public Mono<ResponseEntity<Void>> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, Mono<ConfidentialTimelineElementDto> confidentialTimelineElementDto, ServerWebExchange exchange) {
-        log.info("[enter] internalid:{} timeelementid:{}", iun, timelineElementId);
+        log.info("[enter] updateNotificationTimelineByIunAndTimelineElementId internalid:{} timeelementid:{}", iun, timelineElementId);
         return confidentialTimelineElementDto.flatMap( dto -> svc.updateNotificationTimelineByIunAndTimelineElementId( iun, timelineElementId, dto ))
                 .map( updateResult -> {
-                    log.debug("[exit]");
+                    log.debug("[exit] updateNotificationTimelineByIunAndTimelineElementId");
                     return ResponseEntity.noContent().build();
                 });
     }

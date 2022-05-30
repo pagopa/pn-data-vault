@@ -19,7 +19,7 @@ public class NotificationTimelineEntityConfidentialTimelineElementDtoMapper  ext
     public NotificationTimelineEntity toEntity(ConfidentialTimelineElementDto dto) {
         final NotificationTimelineEntity target = new NotificationTimelineEntity();
         target.setTimelineElementId(dto.getTimelineElementId());
-        target.setDigitalAddress(dto.getDigitalAddress().getValue());
+        target.setDigitalAddress(dto.getDigitalAddress()!=null?dto.getDigitalAddress().getValue():null);
         if(dto.getPhysicalAddress() != null){
             target.setPhysicalAddress(toPhysicalAddress(dto.getPhysicalAddress()));
         }

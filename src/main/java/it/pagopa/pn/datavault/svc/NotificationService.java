@@ -86,7 +86,7 @@ public class NotificationService {
     private void validate(NotificationRecipientAddressesDto dto) {
         if (!StringUtils.hasText(dto.getDenomination()))
             throw new InvalidInputException("denomination is required");
-        if (!StringUtils.hasText(dto.getDigitalAddress().getValue()))
+        if (dto.getDigitalAddress() != null && !StringUtils.hasText(dto.getDigitalAddress().getValue()))
             throw new InvalidInputException("digitalAddress.value is required");
     }
 }

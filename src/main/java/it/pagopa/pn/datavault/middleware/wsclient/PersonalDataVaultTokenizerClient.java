@@ -83,7 +83,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                     UserResourceDto brd = new UserResourceDto();
                     brd.setId(getUUIDFromInternalId(internalId));
                     brd.setFiscalCode(r.getPii());
-                    log.trace("[exit] findPii token:{}", LogUtils.maskTaxId(r.getPii()));
+                    log.debug("[exit] findPii token:{}", LogUtils.maskTaxId(r.getPii()));
                     return  brd;
                 });
     }

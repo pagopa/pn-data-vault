@@ -65,7 +65,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                     )
                     .map(r -> {
                         String res = encapsulateRecipientType(recipientType, r.getToken().toString());
-                        log.trace("[exit] ensureRecipientByExternalId token:{}", res);
+                        log.debug("[exit] ensureRecipientByExternalId token:{}", res);
                         return  res;
                     });
     }

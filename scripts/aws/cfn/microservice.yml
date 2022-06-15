@@ -7,6 +7,10 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
+  AlarmSNSTopicArn:
+    Type: String
+    Description: ARN of alarm topic
+  
   # ApiDnsName:
   #   Type: String
   #   Description: 'The DNS name used for B2B rest API.'
@@ -78,6 +82,7 @@ Resources:
         MicroServiceUniqueName: !Sub '${ProjectName}-data-vault'
         CpuValue: 1024
         MemoryAmount: 2GB
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'PN_DATA_VAULT_DYNAMODB_TABLE_NAME=${ConfidentialObjectsDynamoTableName}'

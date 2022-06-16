@@ -30,8 +30,8 @@ paths:
   ###                             REGISTRAZIONE NUOVI DESTINATARI                             ###
   ###############################################################################################
 
-  '/datavault-private/v1/recipients/external/{recipientType}/{taxId}':
-    get:
+  '/datavault-private/v1/recipients/external/{recipientType}':
+    post:
       operationId: ensureRecipientByExternalId
       summary: Genera un id opaco
       description: >-
@@ -48,12 +48,12 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/RecipientType'
-        - name: taxId
-          description: Codice Fiscale del destinatario
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/TaxId'    
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              $ref: '#/components/schemas/TaxId'
       responses:
         '200':
           description: OK

@@ -1,7 +1,6 @@
 package it.pagopa.pn.datavault.rest;
 
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
-import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultTokenizerClient;
 import it.pagopa.pn.datavault.svc.RecipientService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,9 +29,8 @@ class RecipientsRestControllerV1Test {
     @Test
     void ensureRecipientByExternalId() {
         //Given
-        String url = "/datavault-private/v1/recipients/external/{recipientType}/{taxId}"
-                .replace("{recipientType}", "PF")
-                .replace("{taxId}", "RSSMRA85T10A562S");
+        String url = "/datavault-private/v1/recipients/external/{recipientType}"
+                .replace("{recipientType}", "PF");
 
 
         //When
@@ -40,8 +38,9 @@ class RecipientsRestControllerV1Test {
                 .thenReturn(Mono.just("1234567890"));
 
         //Then
-        webTestClient.get()
+        webTestClient.post()
                 .uri(url)
+                .bodyValue("RSSMRA85T10A562S")
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk();

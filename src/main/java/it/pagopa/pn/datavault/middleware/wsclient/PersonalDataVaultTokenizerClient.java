@@ -48,7 +48,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
      */
     public Mono<String> ensureRecipientByExternalId(RecipientType recipientType, String taxId)
     {
-        log.debug("[enter] ensureRecipientByExternalId taxid: {}", LogUtils.maskTaxId(taxId));
+        log.info("[enter] ensureRecipientByExternalId taxid={}", LogUtils.maskTaxId(taxId));
         if (pnDatavaultConfig.isDevelopment())
         {
             log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
@@ -65,14 +65,14 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                     )
                     .map(r -> {
                         String res = encapsulateRecipientType(recipientType, r.getToken().toString());
-                        log.debug("[exit] ensureRecipientByExternalId token:{}", res);
+                        log.debug("[exit] ensureRecipientByExternalId token={}", res);
                         return  res;
                     });
     }
 
     public Mono<UserResourceDto> findPii(String internalId)
     {
-        log.debug("[enter] findPii token: {}", internalId);
+        log.info("[enter] findPii token={}", internalId);
         return this.getTokeApiForRecipientType(getRecipientTypeFromInternalId(internalId))
                 .findPiiUsingGET(getUUIDFromInternalId(internalId))
                 .retryWhen(
@@ -83,7 +83,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                     UserResourceDto brd = new UserResourceDto();
                     brd.setId(getUUIDFromInternalId(internalId));
                     brd.setFiscalCode(r.getPii());
-                    log.debug("[exit] findPii token:{}", LogUtils.maskTaxId(r.getPii()));
+                    log.debug("[exit] findPii token={}", LogUtils.maskTaxId(r.getPii()));
                     return  brd;
                 });
     }

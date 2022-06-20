@@ -26,6 +26,8 @@ public class PnDatavaultConfig {
     private String userregistryApiKeyPf;
     private String userregistryApiKeyPg;
 
+    private int cacheExpireAfterMinutes;
+
     @Value("${pn.env.runtime}")
     private String envRuntime;
 

@@ -41,26 +41,26 @@ public class RecipientService {
     }
 
     public Mono<String> ensureRecipientByExternalId(RecipientType recipientType, String taxId) {
-        log.info("[enter] ensureRecipientByExternalId recipientType={} taxid={}", recipientType.getValue(), LogUtils.maskTaxId(taxId));
+        log.debug("[enter] ensureRecipientByExternalId recipientType={} taxid={}", recipientType.getValue(), LogUtils.maskTaxId(taxId));
         final String extId = encapsulateTaxId(recipientType, taxId);
         if (cacheEnabled)
             return Mono.fromFuture(this.cacheExtToIntIds.get(extId,
                 (s, executor) -> client.ensureRecipientByExternalId(recipientType, taxId).toFuture()))
                 .map(r -> {
-                    log.info("[exit] ensureRecipientByExternalId internalId={}",r);
+                    log.debug("[exit] ensureRecipientByExternalId internalId={}",r);
                     return r;
                 });
         else
             return client.ensureRecipientByExternalId(recipientType, taxId)
                     .map(r -> {
-                        log.info("[exit] ensureRecipientByExternalId internalId={}",r);
+                        log.debug("[exit] ensureRecipientByExternalId internalId={}",r);
                         return r;
                     });
     }
 
 
     public Flux<BaseRecipientDto> getRecipientDenominationByInternalId(List<String> internalId) {
-        log.info("[enter] getRecipientDenominationByInternalId internalId={}", internalId);
+        log.debug("[enter] getRecipientDenominationByInternalId internalId={}", internalId);
         if (internalId.size() == 1)
         {
             if (cacheEnabled)
@@ -70,7 +70,7 @@ public class RecipientService {
                 return Mono.fromFuture(this.cacheIntToExtIds.get(internalId.get(0),
                                 (s, executor) -> userClient.getRecipientDenominationByInternalId(internalId).take(1).next().toFuture()))
                         .map(baseRecipientDto -> {
-                            log.info("[exit] getRecipientDenominationByInternalId taxId={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()));
+                            log.debug("[exit] getRecipientDenominationByInternalId taxId={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()));
                             return baseRecipientDto;
                         })
                         .flux();

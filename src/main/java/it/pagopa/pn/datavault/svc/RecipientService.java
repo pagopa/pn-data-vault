@@ -33,9 +33,11 @@ public class RecipientService {
         this.userClient = userClient;
         this.cacheExtToIntIds = Caffeine.newBuilder()
                 .expireAfterAccess(pnDatavaultConfig.getCacheExpireAfterMinutes(), TimeUnit.MINUTES)
+                .maximumSize(pnDatavaultConfig.getCacheMaxSize())
                 .buildAsync();
         this.cacheIntToExtIds = Caffeine.newBuilder()
                 .expireAfterAccess(pnDatavaultConfig.getCacheExpireAfterMinutes(), TimeUnit.MINUTES)
+                .maximumSize(pnDatavaultConfig.getCacheMaxSize())
                 .buildAsync();
         this.cacheEnabled = pnDatavaultConfig.getCacheExpireAfterMinutes() > 0;
     }

@@ -30,6 +30,7 @@ public class PnDatavaultConfig {
     private String userregistryApiKeyPg;
 
     private int cacheExpireAfterMinutes;
+    private int cacheMaxSize;
 
     @Value("${pn.env.runtime}")
     private String envRuntime;

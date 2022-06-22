@@ -65,7 +65,10 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                     )
                     .map(r -> {
                         if (r == null)
+                        {
+                            log.error("Invalid empty response from tokenizer");
                             throw new NotFoundException();
+                        }
 
                         String res = encapsulateRecipientType(recipientType, r.getToken().toString());
                         log.debug("[exit] ensureRecipientByExternalId token={}", res);

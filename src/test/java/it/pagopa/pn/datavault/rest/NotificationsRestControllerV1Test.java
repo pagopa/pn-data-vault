@@ -44,7 +44,7 @@ class NotificationsRestControllerV1Test {
     void deleteNotificationByIun() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}"
-                .replace("{iun}", "123e4567-e89b-12d3-a456-426655440000");
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
         //When
         Mockito.when( privateService.deleteNotificationByIun( Mockito.anyString()))
@@ -62,7 +62,7 @@ class NotificationsRestControllerV1Test {
     void getNotificationAddressesByIun() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/addresses"
-                .replace("{iun}", "123e4567-e89b-12d3-a456-426655440000");
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
         NotificationRecipientAddressesDto dto = mapper.toDto(NotificationDaoTestIT.newNotification());
         List<NotificationRecipientAddressesDto> list = new ArrayList<>();
@@ -85,7 +85,7 @@ class NotificationsRestControllerV1Test {
     void updateNotificationAddressesByIun() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/addresses"
-                .replace("{iun}", "123e4567-e89b-12d3-a456-426655440000");
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
         //When
         Mockito.when( privateService.updateNotificationAddressesByIun( Mockito.anyString(), Mockito.any() ))
@@ -103,7 +103,7 @@ class NotificationsRestControllerV1Test {
     void getNotificationTimelineByIun() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/timeline"
-                .replace("{iun}", "123e4567-e89b-12d3-a456-426655440000");
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
         ConfidentialTimelineElementDto dto = mappertimeline.toDto(NotificationTimelineDaoTestIT.newNotification());
         List<ConfidentialTimelineElementDto> list = new ArrayList<>();
@@ -125,7 +125,7 @@ class NotificationsRestControllerV1Test {
     void getNotificationTimelineByIunAndTimelineElementId() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/timeline/{timelineElementId}"
-                .replace("{iun}", "123e4567-e89b-12d3-a456-426655440000")
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1")
                 .replace("{timelineElementId}", "abcd");
 
         ConfidentialTimelineElementDto dto = mappertimeline.toDto(NotificationTimelineDaoTestIT.newNotification());
@@ -147,7 +147,7 @@ class NotificationsRestControllerV1Test {
     void updateNotificationTimelineByIunAndTimelineElementId() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/timeline/{timelineElementId}"
-                .replace("{iun}", "123e4567-e89b-12d3-a456-426655440000")
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1")
                 .replace("{timelineElementId}", "mario rossi");
         ConfidentialTimelineElementDto dto = mappertimeline.toDto(NotificationTimelineDaoTestIT.newNotification());
 

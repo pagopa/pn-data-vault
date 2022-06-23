@@ -2,15 +2,15 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 
 import io.netty.handler.timeout.TimeoutException;
+import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
+import it.pagopa.pn.datavault.exceptions.NotFoundException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.ApiClient;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.api.TokenApi;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.PiiResourceDto;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
-import it.pagopa.pn.datavault.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -18,7 +18,6 @@ import reactor.util.retry.Retry;
 
 import java.net.ConnectException;
 import java.time.Duration;
-import java.util.UUID;
 
 /**
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff
@@ -30,6 +29,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
     private final TokenApi tokenApiPF;
     private final TokenApi tokenApiPG;
     private final PnDatavaultConfig pnDatavaultConfig;
+
 
     public PersonalDataVaultTokenizerClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1){
         // creo 2 istanze diverse, una per PF e l'altra per PG, perchè la differenza
@@ -64,6 +64,12 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                                     .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                     )
                     .map(r -> {
+                        if (r == null)
+                        {
+                            log.error("Invalid empty response from tokenizer");
+                            throw new NotFoundException();
+                        }
+
                         String res = encapsulateRecipientType(recipientType, r.getToken().toString());
                         log.debug("[exit] ensureRecipientByExternalId token={}", res);
                         return  res;

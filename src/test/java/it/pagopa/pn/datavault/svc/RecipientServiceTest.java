@@ -1,9 +1,11 @@
 package it.pagopa.pn.datavault.svc;
 
+import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultTokenizerClient;
 import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultUserRegistryClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -35,6 +37,14 @@ class RecipientServiceTest {
 
     @Mock
     PersonalDataVaultUserRegistryClient userClient;
+
+    @Mock
+    PnDatavaultConfig pnDatavaultConfig;
+
+    @BeforeEach
+    private void init(){
+        when(pnDatavaultConfig.getCacheExpireAfterMinutes()).thenReturn(5);
+    }
 
     @Test
     void ensureRecipientByExternalIdPF() {

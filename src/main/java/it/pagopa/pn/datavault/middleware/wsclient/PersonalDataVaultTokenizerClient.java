@@ -60,7 +60,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         return this.getTokeApiForRecipientType(recipientType)
                     .saveUsingPUT(pii)
                     .retryWhen(
-                            Retry.backoff(2, Duration.ofMillis(25))
+                            Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
                                     .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                     )
                     .map(r -> {
@@ -82,7 +82,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         return this.getTokeApiForRecipientType(getRecipientTypeFromInternalId(internalId))
                 .findPiiUsingGET(getUUIDFromInternalId(internalId))
                 .retryWhen(
-                        Retry.backoff(2, Duration.ofMillis(25))
+                        Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                 )
                 .map(r -> {

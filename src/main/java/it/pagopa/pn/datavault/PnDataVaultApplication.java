@@ -13,6 +13,10 @@ public class PnDataVaultApplication {
 		SpringApplication.run(PnDataVaultApplication.class, args);
 	}
 
+	public PnDataVaultApplication(){
+		// impostazione cache ttl
+		java.security.Security.setProperty("networkaddress.cache.ttl" , "1");
+	}
 
 	@RestController
 	@RequestMapping("/")

@@ -64,7 +64,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
                 .flatMap(uid -> this.getUserApiForRecipientType(getRecipientTypeFromInternalId(uid))
                        .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
                        .retryWhen(
-                               Retry.backoff(2, Duration.ofMillis(25))
+                               Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
                                        .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
                        )
                         .onErrorResume(WebClientResponseException.class,

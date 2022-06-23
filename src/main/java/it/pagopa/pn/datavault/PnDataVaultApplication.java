@@ -10,12 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class PnDataVaultApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PnDataVaultApplication.class, args);
-	}
-
-	public PnDataVaultApplication(){
 		// impostazione cache ttl
 		java.security.Security.setProperty("networkaddress.cache.ttl" , "1");
+		java.security.Security.setProperty("networkaddress.cache.negative.ttl", "1");
+		System.out.println("setted network cache");
+		SpringApplication.run(PnDataVaultApplication.class, args);
 	}
 
 	@RestController
@@ -27,5 +26,4 @@ public class PnDataVaultApplication {
 			return "";
 		}
 	}
-
 }

@@ -17,7 +17,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +67,11 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
                        .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
                        .retryWhen(
                                Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
-                                       .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)
+                                       .filter(throwable -> throwable instanceof TimeoutException
+                                               || throwable instanceof ConnectException
+                                               || throwable instanceof UnknownHostException
+                                               || (throwable.getCause() instanceof UnknownHostException)
+                                               || (throwable.getCause() instanceof SSLHandshakeException))
                        )
                         .onErrorResume(WebClientResponseException.class,
                                 ex -> ex.getRawStatusCode() == 404 ? this.personalDataVaultTokenizerClient.findPii(uid): Mono.error(ex))

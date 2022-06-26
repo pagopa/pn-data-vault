@@ -74,6 +74,10 @@ Parameters:
   PDVUserRegistryBasePath:
     Type: String
     Description: 'Path base di invocazione al servizio di user registry'
+  
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
 
 Resources:
 

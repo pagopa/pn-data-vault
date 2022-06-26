@@ -16,6 +16,10 @@ Parameters:
     Type: String
     Description: URL da cui caricare i frammenti di template di infrastruttura
 
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+  
 Resources:
 
   ConfidentialObjectsDynamoTable:

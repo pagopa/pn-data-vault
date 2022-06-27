@@ -496,8 +496,8 @@ components:
     AddressId:
       title: Identificativo del recapito o domicilio digitale
       type: string
-      pattern: '[A-Za-z0-9-_:]*'
-      example: DD_c_f205_1
+      pattern: '[A-Za-z0-9-_:#]*'
+      example: LEGAL#default#PEC
     
     RecipientAddressesDto:
       title: Request for new object creation

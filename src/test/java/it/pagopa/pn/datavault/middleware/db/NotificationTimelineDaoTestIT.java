@@ -204,6 +204,7 @@ public class NotificationTimelineDaoTestIT {
         pa.setAt("via");
         pa.setAddressDetails("interno 2");
         pa.setMunicipality("Venezia");
+        pa.setMunicipalityDetails("zattere");
         pa.setCap("30000");
         pa.setProvince("VE");
         pa.setState("Italia");

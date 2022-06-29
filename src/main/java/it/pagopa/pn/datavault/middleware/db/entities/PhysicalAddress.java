@@ -14,6 +14,7 @@ public class PhysicalAddress {
     private static final String COL_ADDRESS_DETAILS = "addressDetails";
     private static final String COL_CAP = "cap";
     private static final String COL_MUNICIPALITY = "municipality";
+    private static final String COL_MUNICIPALITY_DETAILS = "municipalityDetails";
     private static final String COL_PROVINCE = "province";
     private static final String COL_STATE = "state";
 
@@ -30,8 +31,11 @@ public class PhysicalAddress {
     // Codice avviamento postale italiano o internazionale
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_CAP)}))  private String cap;
 
-    // frazione o località
+    // comune
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_MUNICIPALITY)}))  private String municipality;
+
+    // frazione o località
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_MUNICIPALITY_DETAILS)}))  private String municipalityDetails;
 
     // provincia
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_PROVINCE)}))  private String province;

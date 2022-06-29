@@ -15,6 +15,7 @@ public abstract class PhysicalAddressAnalogDomicileMapper {
             physicalAddress.setAt(analogDomicile.getAt());
             physicalAddress.setCap(analogDomicile.getCap());
             physicalAddress.setMunicipality(analogDomicile.getMunicipality());
+            physicalAddress.setMunicipalityDetails(analogDomicile.getMunicipalityDetails());
             physicalAddress.setProvince(analogDomicile.getProvince());
             physicalAddress.setState(analogDomicile.getState());
         }
@@ -31,6 +32,7 @@ public abstract class PhysicalAddressAnalogDomicileMapper {
             analogDomicile.setAt(physicalAddress.getAt());
             analogDomicile.setCap(physicalAddress.getCap());
             analogDomicile.setMunicipality(physicalAddress.getMunicipality());
+            analogDomicile.setMunicipalityDetails(physicalAddress.getMunicipalityDetails());
             analogDomicile.setProvince(physicalAddress.getProvince());
             analogDomicile.setState(physicalAddress.getState());
         }

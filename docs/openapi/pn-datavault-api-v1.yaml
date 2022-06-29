@@ -613,6 +613,9 @@ components:
         municipality:
           type: string
           example: 'Bologna'
+        municipalityDetails:
+          type: string
+          example: 'borgo qualcosa'
         province:
           type: string
           example: 'BO'

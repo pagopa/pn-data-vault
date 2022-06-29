@@ -5,6 +5,7 @@ import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 public class NotificationTimelineEntityConfidentialTimelineElementDtoMapper  extends PhysicalAddressAnalogDomicileMapper
@@ -33,9 +34,11 @@ public class NotificationTimelineEntityConfidentialTimelineElementDtoMapper  ext
     public ConfidentialTimelineElementDto toDto(NotificationTimelineEntity entity) {
         final ConfidentialTimelineElementDto target = new ConfidentialTimelineElementDto();
         target.setTimelineElementId(entity.getTimelineElementId());
-        AddressDto addressDto = new AddressDto();
-        addressDto.setValue(entity.getDigitalAddress());
-        target.setDigitalAddress(addressDto);
+        if (StringUtils.hasText(entity.getDigitalAddress())) {
+            AddressDto addressDto = new AddressDto();
+            addressDto.setValue(entity.getDigitalAddress());
+            target.setDigitalAddress(addressDto);
+        }
         if(entity.getPhysicalAddress() != null){
             target.setPhysicalAddress(toAnalogDomicile(entity.getPhysicalAddress()));
         }

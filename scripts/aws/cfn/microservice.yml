@@ -42,6 +42,10 @@ Parameters:
   VpcId:
     Type: String
     Description: 'VpcId where the microservice is going to be deployed'
+  
+  EcsDefaultSecurityGroup:
+    Type: String
+    Description: 'Default security group required by infrastructure'
 
   ApplicationLoadBalancerListenerArn:
     Type: String
@@ -70,6 +74,10 @@ Parameters:
   PDVUserRegistryBasePath:
     Type: String
     Description: 'Path base di invocazione al servizio di user registry'
+  
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
 
   CacheExpireMinutes:
     Type: String
@@ -106,6 +114,7 @@ Resources:
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
+        EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
 

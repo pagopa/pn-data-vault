@@ -18,3 +18,4 @@ docker run -p 9804:8080 pn-data-vault:0.0.1-SNAPSHOT
 ```
 docker run -v $(pwd)/scripts/taurus:/configs blazemeter/taurus -o settings.env.BASE_URL=http://host.docker.internal:9804/  /configs/main.yaml
 ```
+

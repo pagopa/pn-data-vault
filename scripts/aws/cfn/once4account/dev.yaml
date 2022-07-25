@@ -56,14 +56,14 @@ Resources:
                 aws:SourceArn: !Ref AlarmSNSTopic
       
   # - Connect dev alarm to slack developers channel
-  AlarmSNSTopicSlackConnection:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sns-topic-to-slack-channel.yaml"
-      Parameters:
-        TopicName: 'dev_alarm'
-        SNSTopicArn: !Ref AlarmSNSTopic
-        SlackInfo: !Ref SlackInfo
+  # AlarmSNSTopicSlackConnection:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sns-topic-to-slack-channel.yaml"
+  #     Parameters:
+  #       TopicName: 'dev_alarm'
+  #       SNSTopicArn: !Ref AlarmSNSTopic
+  #       SlackInfo: !Ref SlackInfo
   
 Outputs:
 

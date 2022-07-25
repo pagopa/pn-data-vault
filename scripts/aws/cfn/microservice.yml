@@ -119,7 +119,7 @@ Resources:
   Route53RecordSetGroup:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub 'alb.core.${ProjectName}.internal'
+      Name: !Sub 'alb.confidential.${ProjectName}.internal'
       Type: A
       HostedZoneId: !Ref PrivateHostedZone  
       AliasTarget:

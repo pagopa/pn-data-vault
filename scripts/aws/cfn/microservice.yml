@@ -11,13 +11,21 @@ Parameters:
     Type: String
     Description: ARN of alarm topic
   
-  # ApiDnsName:
-  #   Type: String
-  #   Description: 'The DNS name used for B2B rest API.'
-
-  # WebApiDnsName:
-  #   Type: String
-  #   Description: 'The DNS name used for WEB rest API.'
+  VpcId:
+    Type: String
+    Description: VpcId of the VPC where to install PN-CORE
+  VpcCidr:
+    Type: String
+    Description: Cidr of the VPC where to install PN-CORE
+  VpcSubnets:
+    Type: String
+    Description: subnets where to install PN-CORE
+  VpcSubnetsRoutingTables:
+    Type: String
+    Description: routing table for subnets where to install PN-CORE
+  PrivateHostedZone:
+    Type: String
+    Description: private hosted zone where register the application load balancer
   
   ContainerImageUri:
     Type: String
@@ -39,10 +47,6 @@ Parameters:
     Type: String
     Description: 'subnets ids comma separated list. Where to deploy the microservice'
 
-  VpcId:
-    Type: String
-    Description: 'VpcId where the microservice is going to be deployed'
-  
   EcsDefaultSecurityGroup:
     Type: String
     Description: 'Default security group required by infrastructure'
@@ -89,6 +93,52 @@ Parameters:
 
 Resources:
 
+  # Private connection from subnets to AWS services
+  VPCEndpoints:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
+      Parameters:
+        VpcName: !Ref ProjectName
+        VpcCidr: !Ref VpcCidr
+        Subnets: !Ref VpcSubnets
+        RouteTableIds: !Ref VpcSubnetsRoutingTables
+        VpcId: !Ref VpcId
+
+  # LoadBalancer
+  LoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/load-balancer.yaml"
+      Parameters:
+        LoadBalancerName: !Ref ProjectName
+        Subnets: !Ref VpcSubnets
+        VpcId: !Ref VpcId
+  
+  # Load balancer private fixed DNS
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub 'alb.core.${ProjectName}.internal'
+      Type: A
+      HostedZoneId: !Ref PrivateHostedZone  
+      AliasTarget:
+        DNSName: !GetAtt LoadBalancer.Outputs.ApplicationLoadBalancerDomain 
+        EvaluateTargetHealth: false
+        HostedZoneId: !GetAtt LoadBalancer.Outputs.ApplicationLoadBalancerDomainZone
+
+  ###                             ECS CLUSTER                             ###
+  ###########################################################################
+
+  # The cluster
+  ECSCluster:
+    DependsOn: LoadBalancer
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
+      Parameters:
+        MacroServiceName: !Sub '${ProjectName}-datavault'
+  
   # PN-Delivery microservice
   DataVaultMicroservice:
     Type: AWS::CloudFormation::Stack
@@ -143,31 +193,3 @@ Resources:
             Resource:
               - !Ref ConfidentialObjectsDynamoTableArn
 
-
-#  # Expose PN-Delivery microservice public API with API-GW for B2B usage
-#  DatavaultMicroservicePublicAPI:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
-#      Parameters:
-#        MicroServiceUniqueName: !Sub '${ProjectName}-datavault'
-#        IntendedUsage: B2B
-#        DnsName: !Ref ApiDnsName
-#        ProjectName: !Ref ProjectName
-#        ServiceApiPath: 'datavault'
-#        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
-#        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
-#
-#  # Expose PN-Delivery microservice public API with API-GW for WEB usage
-#  DeliveryMicroservicePublicWebAPI:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
-#      Parameters:
-#        MicroServiceUniqueName: !Sub '${ProjectName}-datavault'
-#        IntendedUsage: WEB
-#        DnsName: !Ref WebApiDnsName
-#        ProjectName: !Ref ProjectName
-#        ServiceApiPath: 'datavault'
-#        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
-#        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain

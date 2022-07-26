@@ -85,16 +85,48 @@ Resources:
         RouteTableIds: !Ref VpcSubnetsRoutingTables
         VpcId: !Ref VpcId
 
-  # LoadBalancer
-  LoadBalancer:
-    Type: AWS::CloudFormation::Stack
+  ###                       APPLICATION LOAD BALANCER                       ###
+  #############################################################################
+  # Application load balancer
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/load-balancer.yaml"
-      Parameters:
-        LoadBalancerName: !Ref ProjectName
-        Subnets: !Ref VpcSubnets
-        VpcId: !Ref VpcId
-  
+      Type: application
+      Scheme: internal
+      IpAddressType: ipv4
+      Subnets: !Split [ ',', !Ref VpcSubnets ]
+      SecurityGroups:
+        - !Ref WebappSecurityGroup
+
+  # Application load balancer listener
+  ApplicationLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Protocol: HTTP
+      Port: 8080
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: "application/json"
+            MessageBody: "{ \"error\": \"404\", \"message\": \"Load balancer rule not configured\" }"
+          Order: 1
+
+  # Application security groups
+  WebappSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ProjectName}-webapp-security-group
+      GroupDescription: "ingres tcp 8080, egress all"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: "0.0.0.0/0"
+      VpcId: !Ref VpcId
+
+
   # Load balancer private fixed DNS
   Route53RecordSetGroup:
     Type: AWS::Route53::RecordSet
@@ -103,16 +135,16 @@ Resources:
       Type: A
       HostedZoneId: !Ref PrivateHostedZone  
       AliasTarget:
-        DNSName: !GetAtt LoadBalancer.Outputs.ApplicationLoadBalancerDomain 
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
         EvaluateTargetHealth: false
-        HostedZoneId: !GetAtt LoadBalancer.Outputs.ApplicationLoadBalancerDomainZone
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
 
   ###                             ECS CLUSTER                             ###
   ###########################################################################
 
   # The cluster
   ECSCluster:
-    DependsOn: LoadBalancer
+    DependsOn: ApplicationLoadBalancerListener
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
@@ -145,7 +177,7 @@ Resources:
         Subnets: !Ref VpcSubnets
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
-        LoadBalancerListenerArn: !GetAtt LoadBalancer.Outputs.ApplicationLoadBalancerListenerArn
+        LoadBalancerListenerArn: !GetAtt ApplicationLoadBalancerListener.ListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
 
   # Grant operational rights to PN-Delivery microservice

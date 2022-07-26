@@ -117,7 +117,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
       Parameters:
-        MacroServiceName: !Sub '${ProjectName}-datavault'
+        MacroServiceName: !Sub '${ProjectName}-confidential'
   
   # PN-Delivery microservice
   DataVaultMicroservice:
@@ -125,7 +125,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-data-vault'
+        MicroServiceUniqueName: !Sub '${ProjectName}-data-vault-sep'
         CpuValue: 1024
         MemoryAmount: 2GB
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -152,7 +152,7 @@ Resources:
   DeliveryMicroserviceTaskPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub '${ProjectName}-datavault-CustomTaskPolicy'
+      PolicyName: !Sub '${ProjectName}-datavault-sep-CustomTaskPolicy'
       Roles:
         - !GetAtt DataVaultMicroservice.Outputs.TaskRoleName
       PolicyDocument:

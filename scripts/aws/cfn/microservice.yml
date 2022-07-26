@@ -39,14 +39,6 @@ Parameters:
     Type: String
     Description: 'The S3 bucket from which to fetch the templates used by this stack.'
 
-  ECSClusterName:
-    Type: String
-    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
-
-  SubnetsIds:
-    Type: String
-    Description: 'subnets ids comma separated list. Where to deploy the microservice'
-
   EcsDefaultSecurityGroup:
     Type: String
     Description: 'Default security group required by infrastructure'
@@ -161,8 +153,8 @@ Resources:
         ContainerEnvEntry9: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
         ContainerEnvEntry10: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
         MappedPaths: '/datavault/*,/datavault-private/*'
-        ECSClusterName: !Ref ECSClusterName
-        Subnets: !Ref SubnetsIds
+        ECSClusterName: !GetAtt ECSCluster.Outputs.ClusterName
+        Subnets: !Ref VpcSubnets
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn

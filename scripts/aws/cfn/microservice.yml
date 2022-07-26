@@ -43,18 +43,6 @@ Parameters:
     Type: String
     Description: 'Default security group required by infrastructure'
 
-  ApplicationLoadBalancerListenerArn:
-    Type: String
-    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
-
-  # ApplicationLoadBalancerDomain:
-  #   Type: String
-  #   Description: 'Base URL of the load balancer where the service is going to be reachable'
-
-  # NetworkLoadBalancerLink:
-  #   Type: String
-  #   Description: 'network load balancer link for API-GW'
-
   ConfidentialObjectsDynamoTableName:
     Type: String
     Description: 'Name of dynamodb table containing fake confidentials informations'
@@ -157,7 +145,7 @@ Resources:
         Subnets: !Ref VpcSubnets
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
-        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
+        LoadBalancerListenerArn: !GetAtt LoadBalancer.Outputs.ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
 
   # Grant operational rights to PN-Delivery microservice

@@ -36,9 +36,12 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "sortKey"
           KeyType: "RANGE"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+      BillingMode: "PAY_PER_REQUEST"
+      KinesisStreamSpecification:
+        StreamArn: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamArn
+      StreamSpecification: 
+        StreamViewType: NEW_IMAGE
+
   
   ## KINESIS SOURCE STREAM FOR TIMELINE Change Data Capture
   ConfidentialDataCdcKinesis:

@@ -36,9 +36,21 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "sortKey"
           KeyType: "RANGE"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+      BillingMode: "PAY_PER_REQUEST"
+      KinesisStreamSpecification:
+        StreamArn: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamArn
+      StreamSpecification: 
+        StreamViewType: NEW_IMAGE
+
+  
+  ## KINESIS SOURCE STREAM FOR TIMELINE Change Data Capture
+  ConfidentialDataCdcKinesis:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
+      Parameters:
+        StreamName: !Sub '${ProjectName}-confidential-cdc-stream'
+        StreamRetentionPeriodHours: 24
 
 Outputs:
   ConfidentialObjectsDynamoTableName:
@@ -48,3 +60,18 @@ Outputs:
   ConfidentialObjectsDynamoTableArn:
     Description: ARN of dynamodb table containing fake confidentials informations
     Value: !Sub '${ConfidentialObjectsDynamoTable.Arn}'
+  
+
+  # Confidential Data Change Data Capture kinesis stream
+  ConfidentialDataCdcKinesisStreamName:
+    Value: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamName
+    Description: kinesis stream name for ConfidentialObject dynamo table
+  ConfidentialDataCdcKinesisStreamArn:
+    Value: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamArn
+    Description: kinesis stream Arn for ConfidentialObject dynamo table
+  ConfidentialDataCdcKinesisKeyArn:
+    Value: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamKeyArn
+    Description: KMS key arn for ConfidentialObject stream decryption
+  ConfidentialDataCdcKinesisStreamReadOnlyRoleArn:
+    Value: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamReadOnlyRoleArn
+    Description: KMS key arn for ConfidentialObject stream decryption

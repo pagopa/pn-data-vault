@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Template containing all the once-in-an-account configurations for dev accounts'
+
+Parameters:
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+Resources:
+
+  ###                          DEFINE ALARM TOPIC                          ###
+  ############################################################################
+  # - Everything written to this topic is an alarm
+  AlarmSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: 'uat account alarms topic'
+
+
+Outputs:
+
+  AlarmSNSTopicArn:
+    Value: !Ref AlarmSNSTopic
+    Description: ARN of the Alarm SNS Topic
+
+  AlarmSNSTopicName:
+    Value: !GetAtt  AlarmSNSTopic.TopicName
+    Description: Name of the Alarm SNS Topic

@@ -11,13 +11,21 @@ Parameters:
     Type: String
     Description: ARN of alarm topic
   
-  # ApiDnsName:
-  #   Type: String
-  #   Description: 'The DNS name used for B2B rest API.'
-
-  # WebApiDnsName:
-  #   Type: String
-  #   Description: 'The DNS name used for WEB rest API.'
+  VpcId:
+    Type: String
+    Description: VpcId of the VPC where to install PN-CORE
+  VpcCidr:
+    Type: String
+    Description: Cidr of the VPC where to install PN-CORE
+  VpcSubnets:
+    Type: String
+    Description: subnets where to install PN-CORE
+  VpcSubnetsRoutingTables:
+    Type: String
+    Description: routing table for subnets where to install PN-CORE
+  PrivateHostedZone:
+    Type: String
+    Description: private hosted zone where register the application load balancer
   
   ContainerImageUri:
     Type: String
@@ -31,33 +39,9 @@ Parameters:
     Type: String
     Description: 'The S3 bucket from which to fetch the templates used by this stack.'
 
-  ECSClusterName:
-    Type: String
-    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
-
-  SubnetsIds:
-    Type: String
-    Description: 'subnets ids comma separated list. Where to deploy the microservice'
-
-  VpcId:
-    Type: String
-    Description: 'VpcId where the microservice is going to be deployed'
-  
   EcsDefaultSecurityGroup:
     Type: String
     Description: 'Default security group required by infrastructure'
-
-  ApplicationLoadBalancerListenerArn:
-    Type: String
-    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
-
-  # ApplicationLoadBalancerDomain:
-  #   Type: String
-  #   Description: 'Base URL of the load balancer where the service is going to be reachable'
-
-  # NetworkLoadBalancerLink:
-  #   Type: String
-  #   Description: 'network load balancer link for API-GW'
 
   ConfidentialObjectsDynamoTableName:
     Type: String
@@ -89,13 +73,91 @@ Parameters:
 
 Resources:
 
+  # Private connection from subnets to AWS services
+  VPCEndpoints:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
+      Parameters:
+        VpcName: !Ref ProjectName
+        VpcCidr: !Ref VpcCidr
+        Subnets: !Ref VpcSubnets
+        RouteTableIds: !Ref VpcSubnetsRoutingTables
+        VpcId: !Ref VpcId
+
+  ###                       APPLICATION LOAD BALANCER                       ###
+  #############################################################################
+  # Application load balancer
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internal
+      IpAddressType: ipv4
+      Subnets: !Split [ ',', !Ref VpcSubnets ]
+      SecurityGroups:
+        - !Ref WebappSecurityGroup
+
+  # Application load balancer listener
+  ApplicationLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Protocol: HTTP
+      Port: 8080
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: "application/json"
+            MessageBody: "{ \"error\": \"404\", \"message\": \"Load balancer rule not configured\" }"
+          Order: 1
+
+  # Application security groups
+  WebappSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ProjectName}-webapp-security-group
+      GroupDescription: "ingres tcp 8080, egress all"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: "0.0.0.0/0"
+      VpcId: !Ref VpcId
+
+
+  # Load balancer private fixed DNS
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub 'alb.confidential.${ProjectName}.internal'
+      Type: A
+      HostedZoneId: !Ref PrivateHostedZone  
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        EvaluateTargetHealth: false
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
+  ###                             ECS CLUSTER                             ###
+  ###########################################################################
+
+  # The cluster
+  ECSCluster:
+    DependsOn: ApplicationLoadBalancerListener
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
+      Parameters:
+        MacroServiceName: !Sub '${ProjectName}-confidential'
+  
   # PN-Delivery microservice
   DataVaultMicroservice:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-data-vault'
+        MicroServiceUniqueName: !Sub '${ProjectName}-data-vault-sep'
         CpuValue: 1024
         MemoryAmount: 2GB
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -111,18 +173,18 @@ Resources:
         ContainerEnvEntry9: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
         ContainerEnvEntry10: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
         MappedPaths: '/datavault/*,/datavault-private/*'
-        ECSClusterName: !Ref ECSClusterName
-        Subnets: !Ref SubnetsIds
+        ECSClusterName: !GetAtt ECSCluster.Outputs.ClusterName
+        Subnets: !Ref VpcSubnets
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
-        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
+        LoadBalancerListenerArn: !GetAtt ApplicationLoadBalancerListener.ListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
 
   # Grant operational rights to PN-Delivery microservice
   DeliveryMicroserviceTaskPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub '${ProjectName}-datavault-CustomTaskPolicy'
+      PolicyName: !Sub '${ProjectName}-datavault-sep-CustomTaskPolicy'
       Roles:
         - !GetAtt DataVaultMicroservice.Outputs.TaskRoleName
       PolicyDocument:
@@ -143,31 +205,3 @@ Resources:
             Resource:
               - !Ref ConfidentialObjectsDynamoTableArn
 
-
-#  # Expose PN-Delivery microservice public API with API-GW for B2B usage
-#  DatavaultMicroservicePublicAPI:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
-#      Parameters:
-#        MicroServiceUniqueName: !Sub '${ProjectName}-datavault'
-#        IntendedUsage: B2B
-#        DnsName: !Ref ApiDnsName
-#        ProjectName: !Ref ProjectName
-#        ServiceApiPath: 'datavault'
-#        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
-#        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
-#
-#  # Expose PN-Delivery microservice public API with API-GW for WEB usage
-#  DeliveryMicroservicePublicWebAPI:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
-#      Parameters:
-#        MicroServiceUniqueName: !Sub '${ProjectName}-datavault'
-#        IntendedUsage: WEB
-#        DnsName: !Ref WebApiDnsName
-#        ProjectName: !Ref ProjectName
-#        ServiceApiPath: 'datavault'
-#        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
-#        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain

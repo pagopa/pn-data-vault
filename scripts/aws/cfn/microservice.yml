@@ -194,12 +194,9 @@ Resources:
             Action:
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
-              - dynamodb:ExecuteTransaction
               - dynamodb:GetItem
               - dynamodb:PutItem
               - dynamodb:Query
-              - dynamodb:TransactGetItems
-              - dynamodb:TransactWriteItems
               - dynamodb:UpdateItem
               - dynamodb:DeleteItem
             Resource:

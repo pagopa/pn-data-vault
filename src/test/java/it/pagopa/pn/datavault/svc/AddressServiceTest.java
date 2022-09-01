@@ -1,6 +1,6 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.exceptions.InvalidInputException;
+import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
@@ -84,7 +84,7 @@ class AddressServiceTest {
         //When
         String iun = addressEntity.getInternalId();
         String addr = addressEntity.getAddressId();
-        assertThrows(InvalidInputException.class, () ->privateService.updateAddressByInternalId(iun, addr, dto));
+        assertThrows(PnInvalidInputException.class, () ->privateService.updateAddressByInternalId(iun, addr, dto));
 
         //Then
         // nothing
@@ -100,7 +100,7 @@ class AddressServiceTest {
         //When
         String iun = addressEntity.getInternalId();
         String addr = addressEntity.getAddressId();
-        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, dto));
 
         //Then
         // nothing
@@ -114,7 +114,7 @@ class AddressServiceTest {
         //When
         String iun = addressEntity.getInternalId();
         String addr = addressEntity.getAddressId();
-        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, null));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, null));
 
         //Then
         // nothing
@@ -129,7 +129,7 @@ class AddressServiceTest {
 
         //When
         String addr = addressEntity.getAddressId();
-        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(null, addr, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(null, addr, dto));
 
         //Then
         // nothing
@@ -144,7 +144,7 @@ class AddressServiceTest {
 
         //When
         String iun = addressEntity.getInternalId();
-        assertThrows(InvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, null, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, null, dto));
 
         //Then
         // nothing
@@ -173,7 +173,7 @@ class AddressServiceTest {
 
         //When
         String add = addressEntity.getAddressId();
-        assertThrows(InvalidInputException.class, () ->privateService.deleteAddressByInternalId(null, add));
+        assertThrows(PnInvalidInputException.class, () ->privateService.deleteAddressByInternalId(null, add));
 
         //Then
         // nothing
@@ -186,7 +186,7 @@ class AddressServiceTest {
 
         //When
         String iun = addressEntity.getInternalId();
-        assertThrows(InvalidInputException.class, () -> privateService.deleteAddressByInternalId(iun, null));
+        assertThrows(PnInvalidInputException.class, () -> privateService.deleteAddressByInternalId(iun, null));
 
         //Then
         // nothing

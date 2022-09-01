@@ -1,6 +1,6 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.exceptions.InvalidInputException;
+import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.DenominationDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.mapper.MandateEntityMandateDtoMapper;
@@ -92,7 +92,7 @@ class MandateServiceTest {
 
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -105,7 +105,7 @@ class MandateServiceTest {
 
         //When
         String mid = mandateEntity.getMandateId();
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(mid, null));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateMandateByInternalId(mid, null));
 
         //Then
         // nothing
@@ -120,7 +120,7 @@ class MandateServiceTest {
 
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -135,7 +135,7 @@ class MandateServiceTest {
 
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -147,7 +147,7 @@ class MandateServiceTest {
         DenominationDto dto = new DenominationDto();
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateMandateByInternalId(null, dto));
 
         //Then
         // nothing
@@ -175,7 +175,7 @@ class MandateServiceTest {
         //Given
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.deleteMandateByInternalId(null));
+        assertThrows(PnInvalidInputException.class, () -> privateService.deleteMandateByInternalId(null));
 
         //Then
         // nothing

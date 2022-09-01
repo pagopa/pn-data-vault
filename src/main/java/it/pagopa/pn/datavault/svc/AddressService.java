@@ -1,6 +1,7 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.exceptions.InvalidInputException;
+import it.pagopa.pn.datavault.exceptions.PnDatavaultExceptionCodes;
+import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
@@ -10,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+
+import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
 @Service
 @Slf4j
@@ -37,11 +40,11 @@ public class AddressService {
 
     public Mono<String> updateAddressByInternalId(String internalId, String addressId, AddressDto addressDto) {
         if (!StringUtils.hasText(internalId))
-            throw new InvalidInputException("internalId is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "internalId");
         if (!StringUtils.hasText(addressId))
-            throw new InvalidInputException("addressId is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "addressId");
         if (addressDto == null || !StringUtils.hasText(addressDto.getValue()))
-            throw new InvalidInputException("address.value is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "addressDto.value");
 
         AddressEntity me = new AddressEntity(internalId, addressId);
         me.setValue(addressDto.getValue());
@@ -51,9 +54,9 @@ public class AddressService {
 
     public Mono<String> deleteAddressByInternalId(String internalId, String addressId ) {
         if (!StringUtils.hasText(internalId))
-            throw new InvalidInputException("internalId is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "internalId");
         if (!StringUtils.hasText(addressId))
-            throw new InvalidInputException("addressId is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "addressDto.value");
 
         return objDao.deleteAddressId(internalId, addressId).map(r -> "OK");
     }

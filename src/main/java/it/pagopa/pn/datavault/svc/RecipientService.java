@@ -72,7 +72,7 @@ public class RecipientService {
                 return Mono.fromFuture(this.cacheIntToExtIds.get(internalId.get(0),
                                 (s, executor) -> userClient.getRecipientDenominationByInternalId(internalId).take(1).next().toFuture()))
                         .map(baseRecipientDto -> {
-                            log.debug("[exit] getRecipientDenominationByInternalId taxId={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()));
+                            log.debug("[exit] getRecipientDenominationByInternalId taxId={} denomination={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()), LogUtils.maskGeneric(baseRecipientDto.getDenomination()));
                             return baseRecipientDto;
                         })
                         .flux();

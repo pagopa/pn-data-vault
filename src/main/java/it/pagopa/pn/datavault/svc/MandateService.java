@@ -1,6 +1,6 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.exceptions.InvalidInputException;
+import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.DenominationDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.mapper.MandateEntityMandateDtoMapper;
@@ -12,6 +12,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
 @Service
 public class MandateService {
@@ -32,7 +34,7 @@ public class MandateService {
 
     public Mono<String> updateMandateByInternalId(String mandateId, DenominationDto addressDto) {
         if (!StringUtils.hasText(mandateId))
-            throw new InvalidInputException("mandateId is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "mandateId");
         if (addressDto == null
                 || (!StringUtils.hasText(addressDto.getDestName())
                     && !StringUtils.hasText(addressDto.getDestSurname())
@@ -42,7 +44,7 @@ public class MandateService {
                 || (StringUtils.hasText(addressDto.getDestName())
                     && !StringUtils.hasText(addressDto.getDestName()))
                 )
-            throw new InvalidInputException("destName is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "destName");
 
 
         MandateEntity me = new MandateEntity(mandateId);
@@ -55,7 +57,7 @@ public class MandateService {
 
     public Mono<String> deleteMandateByInternalId(String mandateId ) {
         if (!StringUtils.hasText(mandateId))
-            throw new InvalidInputException("mandateId is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "mandateId");
 
         return objDao.deleteMandateId(mandateId).map(r -> "OK");
     }

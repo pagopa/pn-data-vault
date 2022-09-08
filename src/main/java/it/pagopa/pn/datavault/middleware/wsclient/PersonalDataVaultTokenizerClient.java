@@ -4,7 +4,7 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import io.netty.handler.timeout.TimeoutException;
 import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
-import it.pagopa.pn.datavault.exceptions.NotFoundException;
+import it.pagopa.pn.datavault.exceptions.PnDatavaultRecipientNotFoundException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.ApiClient;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.api.TokenApi;
@@ -74,7 +74,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
                         if (r == null)
                         {
                             log.error("Invalid empty response from tokenizer");
-                            throw new NotFoundException();
+                            throw new PnDatavaultRecipientNotFoundException();
                         }
 
                         String res = encapsulateRecipientType(recipientType, r.getToken().toString());

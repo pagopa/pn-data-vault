@@ -1,6 +1,6 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.exceptions.InvalidInputException;
+import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AnalogDomicile;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
@@ -72,7 +72,7 @@ class NotificationServiceTest {
         //Given
 
         //When
-        assertThrows(InvalidInputException.class, () -> privateService.deleteNotificationByIun(null));
+        assertThrows(PnInvalidInputException.class, () -> privateService.deleteNotificationByIun(null));
 
         //Then
         // nothing
@@ -163,7 +163,7 @@ class NotificationServiceTest {
         //When
         String iun = notificationEntity.getInternalId();
         NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
-        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
 
         //Then
         // nothing
@@ -188,7 +188,7 @@ class NotificationServiceTest {
         //When
         String iun = notificationEntity.getInternalId();
         NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
-        assertThrows(InvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
 
         //Then
         // nothing

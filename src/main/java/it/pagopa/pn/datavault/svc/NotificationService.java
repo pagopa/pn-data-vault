@@ -1,6 +1,6 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.exceptions.InvalidInputException;
+import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
 @Service
 public class NotificationService {
@@ -38,7 +40,7 @@ public class NotificationService {
 
     public Mono<Object> deleteNotificationByIun(String iun) {
         if (!StringUtils.hasText(iun))
-            throw new InvalidInputException("iun is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "iun");
 
         return notificationDao.deleteNotificationByIun(iun);
     }
@@ -85,8 +87,8 @@ public class NotificationService {
 
     private void validate(NotificationRecipientAddressesDto dto) {
         if (!StringUtils.hasText(dto.getDenomination()))
-            throw new InvalidInputException("denomination is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "denomination");
         if (dto.getDigitalAddress() != null && !StringUtils.hasText(dto.getDigitalAddress().getValue()))
-            throw new InvalidInputException("digitalAddress.value is required");
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "digitalAddress.value");
     }
 }

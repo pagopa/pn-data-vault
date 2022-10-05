@@ -66,7 +66,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
   
   ###############################################################################################
@@ -106,7 +106,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
 
 
@@ -142,7 +142,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
   '/datavault-private/v1/recipients/internal/{internalId}/addresses/{addressId}':
     parameters:
@@ -176,7 +176,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
     delete:
       operationId: deleteRecipientAddressByInternalId
       summary: Cancella un domicilio o recapito
@@ -190,7 +190,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
 
   ###############################################################################################
@@ -229,7 +229,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
 
 
   '/datavault-private/v1/mandates/{mandateId}':
@@ -258,7 +258,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
     delete:
       operationId: deleteMandateById
       summary: Elimina il recapito di una delega
@@ -272,7 +272,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
   
 
@@ -302,7 +302,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem' 
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
     
   '/datavault-private/v1/notifications/{iun}/addresses':
     parameters:
@@ -333,7 +333,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'    
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
     put:
       operationId: updateNotificationAddressesByIun
       summary: Inserisci o aggiorna elenco domicili specificati in fase di invio di una notifica.
@@ -352,7 +352,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'  
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
   '/datavault-private/v1/notifications/{iun}/timeline':
     parameters:
@@ -383,7 +383,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'    
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
   '/datavault-private/v1/notifications/{iun}/timeline/{timelineElementId}':
     parameters:
@@ -418,7 +418,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'    
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
     put:
       operationId: updateNotificationTimelineByIunAndTimelineElementId
       summary: Inserisci o aggiorna elenco domicili specificati in fase di invio di una notifica.
@@ -437,7 +437,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: 'pn-errors.yaml#/components/schemas/Problem'  
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
    
 components:
   schemas:

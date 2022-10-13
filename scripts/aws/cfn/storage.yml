@@ -72,6 +72,3 @@ Outputs:
   ConfidentialDataCdcKinesisKeyArn:
     Value: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamKeyArn
     Description: KMS key arn for ConfidentialObject stream decryption
-  ConfidentialDataCdcKinesisStreamReadOnlyRoleArn:
-    Value: !GetAtt ConfidentialDataCdcKinesis.Outputs.KinesisStreamReadOnlyRoleArn
-    Description: KMS key arn for ConfidentialObject stream decryption

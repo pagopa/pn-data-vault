@@ -100,7 +100,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
       Parameters:
-        StreamName: !Sub '${ProjectName}-confidential-cdc-stream'
+        StreamName: !Sub '${ProjectName}-confidential-cdc-source-stream'
         StreamRetentionPeriodHours: !Ref CdcStreamRetentionHours
 
   ## KINESIS SOURCE STREAM FOR Logs
@@ -109,7 +109,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
       Parameters:
-        StreamName: !Sub '${ProjectName}-confidential-logs-stream'
+        StreamName: !Sub '${ProjectName}-confidential-logs-source-stream'
         StreamRetentionPeriodHours: !Ref LogsStreamRetentionHours
 
   ###             Export dynamo CDC to Log saving bucket             ###

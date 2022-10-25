@@ -184,3 +184,8 @@ Outputs:
   ConfidentialInfoLogsKinesisSourceStreamKeyArn:
     Description: 'Kinesis source Logs stream crypto key ARN'
     Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamKeyArn
+
+  # Back-compatibility for logsaver
+  LogsKinesisSourceStreamArn:
+    Description: 'Kinesis source Logs stream ARN'
+    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamArn

@@ -163,3 +163,13 @@ Outputs:
   CdcKinesisSourceStreamArn:
     Description: 'Kinesis source Logs stream ARN'
     Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamArn
+
+  # Back-compatibility for logsaver
+  LogsExporterPolicyArn:
+    Description: Policy used by LogsExporterRoleArn Role
+    Value: !GetAtt LogsExporterRole.Outputs.LogsIngestionPolicyArn
+
+  # Back-compatibility for logsaver
+  LogsBucketName:
+    Description: The name of the bucket where logs must be exported
+    Value: !GetAtt LogsBucket.Outputs.LogsBucketName

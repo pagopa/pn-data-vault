@@ -1,0 +1,164 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Template containing the infra resources for pn data vault'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Nome dell'ambiente destinazione
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+  BucketSuffix:
+    Type: String
+    Default: "001"
+    Description: Suffix to the log bucket name
+
+  DataLakeAccountId1:
+    Type: String
+    Default: '-'
+    Description: Data lake can read logs
+
+  DataLakeAccountId2:
+    Type: String
+    Default: '-'
+    Description: Data lake can read logs
+
+  CdcStreamRetentionHours:
+    Type: Number
+    Default: "24"
+    Description: 'Change Data Capture Kinesis Data Stream retention period in hours'
+
+  LogsStreamRetentionHours:
+    Type: Number
+    Default: "24"
+    Description: 'Cloudwatch Logs Kinesis Data Stream retention period in hours'
+    
+  AlarmSNSTopicArn:
+    Value: !Ref AlarmSNSTopic
+    Description: ARN of the Alarm SNS Topic
+Resources:
+  ###                       LOGS STREAMS PREPARATION                      ###
+  ###########################################################################
+  # Logs bucket
+  LogsBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-bucket.yaml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        BucketSuffix: !Ref BucketSuffix
+        DataLakeAccountId1: !Ref DataLakeAccountId1
+        DataLakeAccountId2: !Ref DataLakeAccountId2
+
+  # Exporter role
+  LogsExporterRole:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-bucket-access-role.yaml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
+        LogsAccountId: !Ref AWS::AccountId
+  
+  ## KINESIS SOURCE STREAM FOR Change Data Capture
+  ConfidentialInfoCdcKinesisSourceStream:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
+      Parameters:
+        StreamName: !Sub '${ProjectName}-confidential-cdc-source-stream'
+        StreamRetentionPeriodHours: !Ref CdcStreamRetentionHours
+
+  ## KINESIS SOURCE STREAM FOR Logs
+  ConfidentialInfoLogsKinesisSourceStream:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
+      Parameters:
+        StreamName: !Sub '${ProjectName}-confidential-logs-source-stream'
+        StreamRetentionPeriodHours: !Ref LogsStreamRetentionHours
+
+  ###             Export dynamo CDC to Log saving bucket             ###
+  ###########################################################################
+  CdcToExternalBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        SourceKinesisDataStreamArn: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamArn
+        SourceKinesisDataStreamKeyArn: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamKeyArn
+        LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
+        LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
+        StreamNamePrefix: 'cdcTos3'
+        AlarmSNSTopicArn: !Ref AlarmSNSTopic
+
+  ###             Export CloudWatch Logs to Log saving bucket             ###
+  ###########################################################################
+  LogsToExternalBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        SourceKinesisDataStreamArn: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamArn
+        SourceKinesisDataStreamKeyArn: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamKeyArn
+        LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
+        LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
+        StreamNamePrefix: 'logsTos3'
+        AlarmSNSTopicArn: !Ref AlarmSNSTopic     
+
+  # - Connect dev alarm to slack developers channel
+  # AlarmSNSTopicSlackConnection:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sns-topic-to-slack-channel.yaml"
+  #     Parameters:
+  #       TopicName: 'dev_alarm'
+  #       SNSTopicArn: !Ref AlarmSNSTopic
+  #       SlackInfo: !Ref SlackInfo
+  
+Outputs:
+
+  AlarmSNSTopicArn:
+    Value: !Ref AlarmSNSTopic
+    Description: ARN of the Alarm SNS Topic
+  
+  # Confidential Data Change Data Capture kinesis stream
+  ConfidentialInfoCdcKinesisSourceStreamName:
+    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamName
+    Description: kinesis stream name for ConfidentialObject dynamo table
+  ConfidentialInfoCdcKinesisSourceStreamArn:
+    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamArn
+    Description: kinesis stream Arn for ConfidentialObject dynamo table
+  ConfidentialInfoCdcKinesisSourceStreamKeyArn:
+    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamKeyArn
+    Description: KMS key arn for ConfidentialObject stream decryption
+
+
+  # Kinesis Source Stream containing the CloudWatch Logs
+  ConfidentialInfoLogsKinesisSourceStreamName:
+    Description: 'Kinesis source Logs stream name'
+    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamName
+  ConfidentialInfoLogsKinesisSourceStreamArn:
+    Description: 'Kinesis source Logs stream ARN'
+    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamArn
+  ConfidentialInfoLogsKinesisSourceStreamKeyArn:
+    Description: 'Kinesis source Logs stream crypto key ARN'
+    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamKeyArn
+
+  # Back-compatibility for logsaver
+  LogsKinesisSourceStreamArn:
+    Description: 'Kinesis source Logs stream ARN'
+    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamArn
+
+  # Back-compatibility for logsaver
+  CdcKinesisSourceStreamArn:
+    Description: 'Kinesis source Logs stream ARN'
+    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamArn

@@ -98,7 +98,7 @@ Resources:
         LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
         LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
         StreamNamePrefix: 'cdcTos3'
-        AlarmSNSTopicArn: !Ref AlarmSNSTopic
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
   ###             Export CloudWatch Logs to Log saving bucket             ###
   ###########################################################################
@@ -113,7 +113,7 @@ Resources:
         LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
         LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
         StreamNamePrefix: 'logsTos3'
-        AlarmSNSTopicArn: !Ref AlarmSNSTopic     
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn     
 
   # - Connect dev alarm to slack developers channel
   # AlarmSNSTopicSlackConnection:
@@ -128,7 +128,7 @@ Resources:
 Outputs:
 
   AlarmSNSTopicArn:
-    Value: !Ref AlarmSNSTopic
+    Value: !Ref AlarmSNSTopicArn
     Description: ARN of the Alarm SNS Topic
   
   # Confidential Data Change Data Capture kinesis stream

@@ -40,8 +40,9 @@ Parameters:
     Description: 'Cloudwatch Logs Kinesis Data Stream retention period in hours'
     
   AlarmSNSTopicArn:
-    Value: !Ref AlarmSNSTopic
+    Type: String
     Description: ARN of the Alarm SNS Topic
+
 Resources:
   ###                       LOGS STREAMS PREPARATION                      ###
   ###########################################################################

@@ -37,12 +37,12 @@ Parameters:
 
   CdcStreamRetentionHours:
     Type: Number
-    Default: 24
+    Default: "24"
     Description: 'Change Data Capture Kinesis Data Stream retention period in hours'
 
   LogsStreamRetentionHours:
     Type: Number
-    Default: 24
+    Default: "24"
     Description: 'Cloudwatch Logs Kinesis Data Stream retention period in hours'
     
   AlarmSNSTopicArn:

@@ -146,7 +146,7 @@ Outputs:
 
   VpcSubnets:
     Description: subnets where to install PN-CONFIDENTIAL-INFO
-    Value: !Ref VcpSubnets
+    Value: !Ref VpcSubnets
 
   # Confidential Data Change Data Capture kinesis stream
   ConfidentialInfoCdcKinesisSourceStreamName:
@@ -194,4 +194,4 @@ Outputs:
   # Back-compatibility for logsaver
   SubnetsIds:
     Description: subnets where to install PN-CONFIDENTIAL-INFO
-    Value: !Ref VcpSubnets
+    Value: !Ref VpcSubnets

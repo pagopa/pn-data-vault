@@ -14,12 +14,15 @@ Parameters:
   VpcId:
     Type: String
     Description: VpcId of the VPC where to install PN-CORE
+
   VpcCidr:
     Type: String
     Description: Cidr of the VPC where to install PN-CORE
+    
   VpcSubnets:
     Type: String
     Description: subnets where to install PN-CORE
+
   VpcSubnetsRoutingTables:
     Type: String
     Description: routing table for subnets where to install PN-CORE

@@ -14,6 +14,14 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+  VpcId:
+    Type: String
+    Description: VpcId of the VPC where to install PN-CONFIDENTIAL-INFO
+
+  VpcSubnets:
+    Type: String
+    Description: subnets where to install PN-CONFIDENTIAL-INFO
+
   BucketSuffix:
     Type: String
     Default: "001"
@@ -42,6 +50,7 @@ Parameters:
   AlarmSNSTopicArn:
     Type: String
     Description: ARN of the Alarm SNS Topic
+
 
 Resources:
   ###                       LOGS STREAMS PREPARATION                      ###
@@ -130,7 +139,15 @@ Outputs:
   AlarmSNSTopicArn:
     Value: !Ref AlarmSNSTopicArn
     Description: ARN of the Alarm SNS Topic
-  
+
+  VpcId:
+    Description: VpcId of the VPC where to install PN-CONFIDENTIAL-INFO
+    Value: !Ref VpcId
+
+  VpcSubnets:
+    Description: subnets where to install PN-CONFIDENTIAL-INFO
+    Value: !Ref VcpSubnets
+
   # Confidential Data Change Data Capture kinesis stream
   ConfidentialInfoCdcKinesisSourceStreamName:
     Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamName
@@ -173,3 +190,8 @@ Outputs:
   LogsBucketName:
     Description: The name of the bucket where logs must be exported
     Value: !GetAtt LogsBucket.Outputs.LogsBucketName
+  
+  # Back-compatibility for logsaver
+  SubnetsIds:
+    Description: subnets where to install PN-CONFIDENTIAL-INFO
+    Value: !Ref VcpSubnets

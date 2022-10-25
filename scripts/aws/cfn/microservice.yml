@@ -71,6 +71,9 @@ Parameters:
     Type: String
     Description: 'Cache dimensione massima'
 
+  ConfidentialInfoLogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receive logs'
 Resources:
 
   # Private connection from subnets to AWS services
@@ -179,6 +182,7 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !GetAtt ApplicationLoadBalancerListener.ListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
+        CloudwatchLogKinesisStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
 
   # Grant operational rights to PN-Delivery microservice
   DeliveryMicroserviceTaskPolicy:

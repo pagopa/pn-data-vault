@@ -14,12 +14,15 @@ Parameters:
   VpcId:
     Type: String
     Description: VpcId of the VPC where to install PN-CORE
+
   VpcCidr:
     Type: String
     Description: Cidr of the VPC where to install PN-CORE
+    
   VpcSubnets:
     Type: String
     Description: subnets where to install PN-CORE
+
   VpcSubnetsRoutingTables:
     Type: String
     Description: routing table for subnets where to install PN-CORE
@@ -71,6 +74,9 @@ Parameters:
     Type: String
     Description: 'Cache dimensione massima'
 
+  ConfidentialInfoLogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receive logs'
 Resources:
 
   # Private connection from subnets to AWS services
@@ -179,6 +185,7 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !GetAtt ApplicationLoadBalancerListener.ListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
+        CloudwatchLogKinesisStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
 
   # Grant operational rights to PN-Delivery microservice
   DeliveryMicroserviceTaskPolicy:

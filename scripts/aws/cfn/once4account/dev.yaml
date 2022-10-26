@@ -15,6 +15,7 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+    
 Resources:
 
   ###                          DEFINE ALARM TOPIC                          ###
@@ -53,8 +54,8 @@ Resources:
             Resource: !Sub ${AlarmHistoryBufferQueue.Arn}
             Condition: 
               ArnEquals: 
-                aws:SourceArn: !Ref AlarmSNSTopic
-      
+                aws:SourceArn: !Ref AlarmSNSTopic   
+
   # - Connect dev alarm to slack developers channel
   # AlarmSNSTopicSlackConnection:
   #   Type: AWS::CloudFormation::Stack
@@ -74,4 +75,3 @@ Outputs:
   AlarmSNSTopicName:
     Value: !GetAtt  AlarmSNSTopic.TopicName
     Description: Name of the Alarm SNS Topic
-

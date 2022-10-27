@@ -124,6 +124,18 @@ Resources:
         StreamNamePrefix: 'logsTos3'
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn     
 
+  ###                       CLOUDFORMATION TRANSFORM LAMBDAS              ###
+  ###########################################################################
+  UpdateDeploymentTransform:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-update-deployment-transform.yaml"
+
+  CloudWatchDashboardTransform:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-cloudwatch-dashboard-transform.yaml"
+
   # - Connect dev alarm to slack developers channel
   # AlarmSNSTopicSlackConnection:
   #   Type: AWS::CloudFormation::Stack

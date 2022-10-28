@@ -212,3 +212,17 @@ Resources:
             Resource:
               - !Ref ConfidentialObjectsDynamoTableArn
 
+  ## Dashboard
+  DataVaultMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-data-vault"
+        DynamoDBTableNames: !Join 
+          - ',' 
+          - - !Ref ConfidentialObjectsDynamoTableName
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt DataVaultMicroservice.Outputs.AutoScalingAlarmArn
+            - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn

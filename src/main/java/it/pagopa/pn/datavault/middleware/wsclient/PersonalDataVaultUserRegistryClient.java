@@ -1,6 +1,9 @@
 package it.pagopa.pn.datavault.middleware.wsclient;
 
 
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import io.netty.handler.timeout.TimeoutException;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
@@ -34,16 +37,22 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     public static final String FILTER_FAMILY_NAME = "familyName";
     public static final String FILTER_NAME = "name";
     public static final String FILTER_FISCAL_CODE = "fiscalCode";
+
+    private static final int RATE_LIMIT_MILLIS = 1000;
+    private static final int RATE_LIMIT_NUMBER = 20;
+
     private final UserApi userClientPF;
     private final UserApi userClientPG;
     private final PnDatavaultConfig pnDatavaultConfig;
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
+    private final RateLimiter rateLimiter;
 
     public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.pnDatavaultConfig = pnDatavaultConfig1;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
+        this.rateLimiter = buildRateLimiter();
     }
 
 
@@ -65,14 +74,11 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.getUserApiForRecipientType(getRecipientTypeFromInternalId(uid))
                        .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
-                       .retryWhen(
+                        .retryWhen(
                                Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
-                                       .filter(throwable -> throwable instanceof TimeoutException
-                                               || throwable instanceof ConnectException
-                                               || throwable instanceof UnknownHostException
-                                               || (throwable.getCause() instanceof UnknownHostException)
-                                               || (throwable.getCause() instanceof SSLHandshakeException))
+                                       .filter(this::retryableException)
                        )
+                        .transformDeferred(RateLimiterOperator.of(rateLimiter))
                         .onErrorResume(WebClientResponseException.class,
                                 ex -> ex.getRawStatusCode() == 404 ? this.personalDataVaultTokenizerClient.findPii(uid): Mono.error(ex))
                        .map(r -> {
@@ -128,5 +134,23 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
             resultoutput[i] = strAsByteArray[strAsByteArray.length - i - 1];
 
         return new String(resultoutput);
+    }
+
+    private boolean retryableException(Throwable throwable) {
+        return throwable instanceof TimeoutException
+                || throwable instanceof ConnectException
+                || throwable instanceof UnknownHostException
+                || throwable.getCause() instanceof UnknownHostException
+                || throwable.getCause() instanceof SSLHandshakeException
+                || throwable instanceof WebClientResponseException.TooManyRequests
+                ;
+    }
+
+    private RateLimiter buildRateLimiter() {
+        return RateLimiter.of("user-registry-rate-limit", RateLimiterConfig.custom()
+                        .limitRefreshPeriod(Duration.ofMillis(RATE_LIMIT_MILLIS))
+                        .limitForPeriod(RATE_LIMIT_NUMBER)
+                        .timeoutDuration(Duration.ofMillis(RATE_LIMIT_MILLIS * RATE_LIMIT_NUMBER))
+                .build());
     }
 }

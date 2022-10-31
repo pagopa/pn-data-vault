@@ -202,7 +202,23 @@ Outputs:
   LogsBucketName:
     Description: The name of the bucket where logs must be exported
     Value: !GetAtt LogsBucket.Outputs.LogsBucketName
-  
+
+  LogsToExternalBucketArn:
+    Description: 'Logs Delivery stream to S3 ARN'
+    Value: !GetAtt LogsToExternalBucket.Outputs.DeliveryStreamArn
+
+  LogsToExternalBucketAlarmArn:
+    Description: 'Log delivery stream alarm ARN'
+    Value: !GetAtt LogsToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
+
+  CdcToExternalBucketArn:
+    Description: 'Cdc Delivery stream to S3 ARN'
+    Value: !GetAtt CdcToExternalBucket.Outputs.DeliveryStreamArn
+
+  CdcToExternalBucketAlarmArn:
+    Description: 'Cdc delivery stream alarm ARN'
+    Value: !GetAtt CdcToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
+
   # Back-compatibility for logsaver
   SubnetsIds:
     Description: subnets where to install PN-CONFIDENTIAL-INFO

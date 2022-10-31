@@ -77,6 +77,27 @@ Parameters:
   ConfidentialInfoLogsKinesisSourceStreamArn:
     Type: String
     Description: 'Kinesis stream that receive logs'
+
+  ConfidentialInfoCdcKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receives cdc'
+
+  LogsToExternalBucketArn:
+    Type: String
+    Description: 'Logs Delivery stream to S3 ARN'
+
+  LogsToExternalBucketAlarmArn:
+    Type: String
+    Description: 'Log delivery stream alarm ARN'
+
+  CdcToExternalBucketArn:
+    Type: String
+    Description: 'Cdc Delivery stream to S3 ARN'
+
+  CdcToExternalBucketAlarmArn:
+    Type: String
+    Description: 'Cdc delivery stream alarm ARN'
+
 Resources:
 
   # Private connection from subnets to AWS services
@@ -226,3 +247,22 @@ Resources:
           - ','
           - - !GetAtt DataVaultMicroservice.Outputs.AutoScalingAlarmArn
             - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn
+
+  InfraMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-infra"
+        AlarmArns: !Join
+          - ','
+          - - !Ref LogsToExternalBucketAlarmArn
+            - !Ref CdcToExternalBucketAlarmArn
+        KinesisDataArns: !Join
+          - ','
+          - - !Ref ConfidentialInfoLogsKinesisSourceStreamArn
+            - !Ref ConfidentialInfoCdcKinesisSourceStreamArn
+        KinesisFirehoseArns: !Join
+          - ','
+          - - !Ref LogsToExternalBucketArn
+            - !Ref CdcToExternalBucketArn

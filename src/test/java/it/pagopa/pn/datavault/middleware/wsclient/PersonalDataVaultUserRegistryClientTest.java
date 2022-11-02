@@ -202,7 +202,7 @@ class PersonalDataVaultUserRegistryClientTest {
         String name = "mario";
         String surname = "rossi";
         String fc = "RSSMRA85T10A562S";
-        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe24";
         String expectediuid = "PF-"+iuid;
         List<String> ids = Arrays.asList(expectediuid);
         UserResourceDto response = new UserResourceDto();
@@ -262,7 +262,7 @@ class PersonalDataVaultUserRegistryClientTest {
     @Test
     void getRecipientDenominationByInternalIdPFAfterNotRetryableException() {
         //Given
-        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe23";
         String expectediuid = "PF-"+iuid;
         List<String> ids = List.of(expectediuid);
 

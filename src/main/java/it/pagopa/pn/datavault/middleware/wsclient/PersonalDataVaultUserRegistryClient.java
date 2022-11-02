@@ -38,7 +38,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     public static final String FILTER_NAME = "name";
     public static final String FILTER_FISCAL_CODE = "fiscalCode";
 
-    private static final int RATE_LIMIT_MILLIS = 1000;
+    private static final long RATE_LIMIT_MILLIS = 1000L;
     private static final int RATE_LIMIT_NUMBER = 20;
 
     private final UserApi userClientPF;

@@ -37,22 +37,18 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     public static final String FILTER_FAMILY_NAME = "familyName";
     public static final String FILTER_NAME = "name";
     public static final String FILTER_FISCAL_CODE = "fiscalCode";
-
-    private static final long RATE_LIMIT_MILLIS = 1000L;
-    private static final int RATE_LIMIT_NUMBER = 20;
-
     private final UserApi userClientPF;
     private final UserApi userClientPG;
     private final PnDatavaultConfig pnDatavaultConfig;
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
     private final RateLimiter rateLimiter;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
+    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
-        this.pnDatavaultConfig = pnDatavaultConfig1;
+        this.pnDatavaultConfig = pnDatavaultConfig;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
-        this.rateLimiter = buildRateLimiter();
+        this.rateLimiter = buildRateLimiter(pnDatavaultConfig);
     }
 
 
@@ -146,11 +142,11 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
                 ;
     }
 
-    private RateLimiter buildRateLimiter() {
+    private RateLimiter buildRateLimiter(PnDatavaultConfig pnDatavaultConfig) {
         return RateLimiter.of("user-registry-rate-limit", RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofMillis(RATE_LIMIT_MILLIS))
-                        .limitForPeriod(RATE_LIMIT_NUMBER)
-                        .timeoutDuration(Duration.ofMillis(RATE_LIMIT_MILLIS * RATE_LIMIT_NUMBER))
+                        .limitRefreshPeriod(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterMillis()))
+                        .limitForPeriod(pnDatavaultConfig.getUserregistryRateLimiterNrequests())
+                        .timeoutDuration(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterTimeoutMillis()))
                 .build());
     }
 }

@@ -76,7 +76,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
                        .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
                         .retryWhen(
                                Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
-                                       .filter(this::retryableException)
+                                       .filter(this::isRetryableException)
                        )
                         .transformDeferred(RateLimiterOperator.of(rateLimiter))
                         .onErrorResume(WebClientResponseException.class,
@@ -136,7 +136,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         return new String(resultoutput);
     }
 
-    private boolean retryableException(Throwable throwable) {
+    private boolean isRetryableException(Throwable throwable) {
         return throwable instanceof TimeoutException
                 || throwable instanceof ConnectException
                 || throwable instanceof UnknownHostException

@@ -1,6 +1,9 @@
 package it.pagopa.pn.datavault.middleware.wsclient;
 
 
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import io.netty.handler.timeout.TimeoutException;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
@@ -38,12 +41,14 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     private final UserApi userClientPG;
     private final PnDatavaultConfig pnDatavaultConfig;
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
+    private final RateLimiter rateLimiter;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
+    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
-        this.pnDatavaultConfig = pnDatavaultConfig1;
+        this.pnDatavaultConfig = pnDatavaultConfig;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
+        this.rateLimiter = buildRateLimiter(pnDatavaultConfig);
     }
 
 
@@ -65,14 +70,11 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.getUserApiForRecipientType(getRecipientTypeFromInternalId(uid))
                        .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
-                       .retryWhen(
+                        .retryWhen(
                                Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
-                                       .filter(throwable -> throwable instanceof TimeoutException
-                                               || throwable instanceof ConnectException
-                                               || throwable instanceof UnknownHostException
-                                               || (throwable.getCause() instanceof UnknownHostException)
-                                               || (throwable.getCause() instanceof SSLHandshakeException))
+                                       .filter(this::isRetryableException)
                        )
+                        .transformDeferred(RateLimiterOperator.of(rateLimiter))
                         .onErrorResume(WebClientResponseException.class,
                                 ex -> ex.getRawStatusCode() == 404 ? this.personalDataVaultTokenizerClient.findPii(uid): Mono.error(ex))
                        .map(r -> {
@@ -128,5 +130,23 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
             resultoutput[i] = strAsByteArray[strAsByteArray.length - i - 1];
 
         return new String(resultoutput);
+    }
+
+    private boolean isRetryableException(Throwable throwable) {
+        return throwable instanceof TimeoutException
+                || throwable instanceof ConnectException
+                || throwable instanceof UnknownHostException
+                || throwable.getCause() instanceof UnknownHostException
+                || throwable.getCause() instanceof SSLHandshakeException
+                || throwable instanceof WebClientResponseException.TooManyRequests
+                ;
+    }
+
+    private RateLimiter buildRateLimiter(PnDatavaultConfig pnDatavaultConfig) {
+        return RateLimiter.of("user-registry-rate-limit", RateLimiterConfig.custom()
+                        .limitRefreshPeriod(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterMillis()))
+                        .limitForPeriod(pnDatavaultConfig.getUserregistryRateLimiterNrequests())
+                        .timeoutDuration(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterTimeoutMillis()))
+                .build());
     }
 }

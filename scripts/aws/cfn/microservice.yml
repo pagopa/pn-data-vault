@@ -61,6 +61,18 @@ Parameters:
   PDVUserRegistryBasePath:
     Type: String
     Description: 'Path base di invocazione al servizio di user registry'
+
+  PDVUserRegistryRateLimiterMillis:
+    Type: Number
+    Description: 'Periodo di aggiornamento in millisecondi del rate limiter per le API di user-registry'
+
+  PDVUserRegistryRateLimiterNRequests:
+    Type: Number
+    Description: 'Numero richieste impostate nel rate limiter per le API di user-registry'
+
+  PDVUserRegistryRateLimiterTimeoutMillis:
+    Type: Number
+    Description: 'Periodo di timeout in millisecondi nel rate limiter per le API di user-registry'
   
   Version:
     Type: String
@@ -199,6 +211,9 @@ Resources:
         ContainerEnvEntry8: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:UserRegistryApiKeyForPG}}'
         ContainerEnvEntry9: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
         ContainerEnvEntry10: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
+        ContainerEnvEntry11: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_MILLIS=${PDVUserRegistryRateLimiterMillis}'
+        ContainerEnvEntry12: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_NREQUESTS=${PDVUserRegistryRateLimiterNRequests}'
+        ContainerEnvEntry13: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_TIMEOUT_MILLIS=${PDVUserRegistryRateLimiterTimeoutMillis}'
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !GetAtt ECSCluster.Outputs.ClusterName
         Subnets: !Ref VpcSubnets

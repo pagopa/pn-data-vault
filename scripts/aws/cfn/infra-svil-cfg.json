@@ -1,7 +1,7 @@
 {
     "Parameters" : {
-      "VpcId": "",
-      "VpcSubnets": ""
+      "VpcId": "vpc-000f6dbe5cb177a5e",
+      "VpcSubnets": "subnet-0714f32a12614be5a,subnet-09afb9d3ed5dc9ff5,subnet-0b975718a351ff9f0"
     }
   }
   

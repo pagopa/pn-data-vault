@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class AddressBookRestControllerV1 implements AddressBookApi {
 
+    private static final String EXIT_LOG = "[exit]";
+
     private final AddressService svc;
 
     public AddressBookRestControllerV1(AddressService svc) {
@@ -29,7 +31,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
                             svc.updateAddressByInternalId( internalId, addressId, addressDtoValue)
                     )
                     .map( updateResult -> {
-                        log.debug("[exit]");
+                        log.debug(EXIT_LOG);
                         return ResponseEntity.noContent().build();
                     } );
     }
@@ -39,7 +41,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
         log.info("[enter] internalid:{}", internalId);
         return svc.getAddressByInternalId( internalId )
                 .map(body -> {
-                    log.debug("[exit]");
+                    log.debug(EXIT_LOG);
                     return ResponseEntity.ok(body);
                 });
     }
@@ -49,7 +51,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
         log.info("[enter] internalid:{} addressid:{}", internalId, addressId);
         return svc.deleteAddressByInternalId( internalId, addressId )
                 .map( dto -> {
-                    log.debug("[exit]");
+                    log.debug(EXIT_LOG);
                     return ResponseEntity.noContent().build();
                 });
     }

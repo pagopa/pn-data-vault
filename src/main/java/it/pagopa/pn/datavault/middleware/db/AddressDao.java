@@ -45,7 +45,7 @@ public class AddressDao extends BaseDao {
                 .scanIndexForward(true)
                 .build();
 
-        // TODO: viene volutamente ignorata la gestione della paginazione, che per ora non serve.
+        // viene volutamente ignorata la gestione della paginazione, che per ora non serve.
         // si suppone infatti che la lista degli indirizzi non sia troppo lunga e quindi non vada a sforare il limite di 1MB di paginazione
         return Flux.from(addressTable.query(qeRequest)
                 .flatMapIterable(Page::items));

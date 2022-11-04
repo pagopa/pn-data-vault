@@ -8,6 +8,8 @@ import software.amazon.awssdk.enhanced.dynamodb.model.DeleteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 @SpringBootTest
@@ -20,13 +22,12 @@ class TestDao<T> extends BaseDao {
             this.dbTable = dynamoDbEnhancedAsyncClient.table(table, TableSchema.fromBean(typeParameter));
         }
 
-        public T get(String pk, String sk) throws ExecutionException, InterruptedException {
-            Thread.sleep(500);
+        public T get(String pk, String sk) throws ExecutionException, InterruptedException, TimeoutException {
             GetItemEnhancedRequest req = GetItemEnhancedRequest.builder()
                     .key(getKeyBuild(pk, sk))
                     .build();
 
-            return (T)dbTable.getItem(req).get();
+            return (T)dbTable.getItem(req).get(500, TimeUnit.MILLISECONDS);
         }
 
         public void delete(String pk, String sk) throws ExecutionException, InterruptedException {

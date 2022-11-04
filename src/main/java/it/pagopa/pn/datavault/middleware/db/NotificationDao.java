@@ -12,7 +12,6 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -94,12 +93,12 @@ public class NotificationDao extends BaseDao {
                 .scanIndexForward(true)
                 .build();
 
-        // TODO: viene volutamente ignorata la gestione della paginazione, che per ora non serve.
+        // viene volutamente ignorata la gestione della paginazione, che per ora non serve.
         // si suppone infatti che la lista degli indirizzi non sia troppo lunga e quindi non vada a sforare il limite di 1MB di paginazione
         return Flux.from(notificationTable.query(qeRequest)
-                .flatMapIterable( ( page) -> {
-                    List<NotificationEntity> result = new ArrayList( page.items() );
-                    Collections.sort( result, Comparator.comparing( NotificationEntity::getRecipientIndex) );
+                .flatMapIterable( page -> {
+                    List<NotificationEntity> result = new ArrayList<>( page.items() );
+                    result.sort(Comparator.comparing(NotificationEntity::getRecipientIndex));
                     return result;
                 }));
     }

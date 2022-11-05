@@ -1,15 +1,16 @@
 package it.pagopa.pn.datavault.middleware.db;
 
+import it.pagopa.pn.datavault.LocalStackTestConfig;
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.middleware.db.entities.AddressEntity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 
 import java.time.Duration;
@@ -19,14 +20,13 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-@ExtendWith(SpringExtension.class)
 @TestPropertySource(properties = {
         "aws.region-code=us-east-1",
         "aws.profile-name=${PN_AWS_PROFILE_NAME:default}",
-        "aws.endpoint-url=http://localhost:4566"
+//        "aws.endpoint-url=http://localhost:4566"
 })
 @SpringBootTest
-public
+@Import(LocalStackTestConfig.class)
 class AddressDaoTestIT {
 
 
@@ -50,7 +50,7 @@ class AddressDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            AddressEntity ae = newAddress();
+            AddressEntity ae = TestUtils.newAddress();
             ae.setAddressId(ae.getAddressId() + "_" + i);
             addressesEntities.add(ae);
         }
@@ -108,7 +108,7 @@ class AddressDaoTestIT {
     @Test
     void updateAddress() {
         //Given
-        AddressEntity addresToInsert = newAddress();
+        AddressEntity addresToInsert = TestUtils.newAddress();
 
         try {
             testDao.delete(addresToInsert.getPk(), addresToInsert.getAddressId());
@@ -140,7 +140,7 @@ class AddressDaoTestIT {
     @Test
     void deleteAddressId() {
         //Given
-        AddressEntity addresToInsert = newAddress();
+        AddressEntity addresToInsert = TestUtils.newAddress();
 
         try {
             testDao.delete(addresToInsert.getPk(), addresToInsert.getAddressId());
@@ -166,12 +166,5 @@ class AddressDaoTestIT {
                 System.out.println("Nothing to remove");
             }
         }
-    }
-
-
-    public static AddressEntity newAddress() {
-        AddressEntity ae = new AddressEntity("425e4567-e89b-12d3-a456-426655449631", "DD_c_f205_1");
-        ae.setValue("test@test.it");
-        return  ae;
     }
 }

@@ -1,5 +1,6 @@
 package it.pagopa.pn.datavault.svc;
 
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AnalogDomicile;
@@ -8,9 +9,7 @@ import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipi
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.NotificationDao;
-import it.pagopa.pn.datavault.middleware.db.NotificationDaoTestIT;
 import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
-import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDaoTestIT;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import org.junit.jupiter.api.Test;
@@ -54,7 +53,7 @@ class NotificationServiceTest {
     @Test
     void deleteNotificationByIun() {
         //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
+        NotificationEntity notificationEntity = TestUtils.newNotification();
 
         when(objDao.deleteNotificationByIun(Mockito.any())).thenReturn(Mono.just("OK"));
 
@@ -81,7 +80,7 @@ class NotificationServiceTest {
     @Test
     void getNotificationAddressesByIun() {
         //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
+        NotificationEntity notificationEntity = TestUtils.newNotification();
         List<NotificationEntity> list = new ArrayList<>();
         list.add(notificationEntity);
 
@@ -99,7 +98,7 @@ class NotificationServiceTest {
     @Test
     void updateNotificationAddressesByIun() {
         //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
+        NotificationEntity notificationEntity = TestUtils.newNotification();
         List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
         NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
         dto.setDenomination("sig rossi");
@@ -124,7 +123,7 @@ class NotificationServiceTest {
     @Test
     void updateNotificationAddressesByIunValidNoDigital() {
         //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
+        NotificationEntity notificationEntity = TestUtils.newNotification();
         List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
         NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
         dto.setDenomination("sig rossi");
@@ -149,7 +148,7 @@ class NotificationServiceTest {
     @Test
     void updateNotificationAddressesByIunInvalid1() {
         //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
+        NotificationEntity notificationEntity = TestUtils.newNotification();
         List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
         NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
         //dto.setDenomination("sig rossi");
@@ -174,7 +173,7 @@ class NotificationServiceTest {
     @Test
     void updateNotificationAddressesByIunInvalid2() {
         //Given
-        NotificationEntity notificationEntity = NotificationDaoTestIT.newNotification();
+        NotificationEntity notificationEntity = TestUtils.newNotification();
         List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
         NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
         dto.setDenomination("sig rossi");
@@ -198,7 +197,7 @@ class NotificationServiceTest {
     @Test
     void getNotificationTimelineByIun() {
         //Given
-        NotificationTimelineEntity notificationEntity = NotificationTimelineDaoTestIT.newNotification();
+        NotificationTimelineEntity notificationEntity = TestUtils.newNotificationTimeline();
         List<NotificationTimelineEntity> list = new ArrayList<>();
         list.add(notificationEntity);
 
@@ -216,7 +215,7 @@ class NotificationServiceTest {
     @Test
     void getNotificationTimelineByIunAndTimelineElementId() {
         //Given
-        NotificationTimelineEntity notificationEntity = NotificationTimelineDaoTestIT.newNotification();
+        NotificationTimelineEntity notificationEntity = TestUtils.newNotificationTimeline();
 
         when(objtimelineDao.getNotificationTimelineByIunAndTimelineElementId(Mockito.any(), Mockito.any())).thenReturn(Mono.just(notificationEntity));
         when(mappertimeline.toDto(Mockito.any())).thenReturn(new ConfidentialTimelineElementDto());
@@ -231,7 +230,7 @@ class NotificationServiceTest {
     @Test
     void updateNotificationTimelineByIunAndTimelineElementId() {
         //Given
-        NotificationTimelineEntity notificationEntity = NotificationTimelineDaoTestIT.newNotification();
+        NotificationTimelineEntity notificationEntity = TestUtils.newNotificationTimeline();
         ConfidentialTimelineElementDto dto = new ConfidentialTimelineElementDto();
         dto.setTimelineElementId("elementid");
         dto.setDigitalAddress(new AddressDto());

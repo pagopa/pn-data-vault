@@ -1,9 +1,9 @@
 package it.pagopa.pn.datavault.rest;
 
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
-import it.pagopa.pn.datavault.middleware.db.AddressDaoTestIT;
 import it.pagopa.pn.datavault.svc.AddressService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,7 +36,7 @@ class AddressBookRestControllerV1Test {
         String url = "/datavault-private/v1/recipients/internal/{internalId}/addresses/{addressId}"
                 .replace("{internalId}", "123e4567-e89b-12d3-a456-426655440000")
                 .replace("{addressId}", "DD_c_f205_1");
-        AddressDto dto = mapper.toDto(AddressDaoTestIT.newAddress());
+        AddressDto dto = mapper.toDto(TestUtils.newAddress());
 
 
         //When
@@ -58,7 +58,7 @@ class AddressBookRestControllerV1Test {
         String url = "/datavault-private/v1/recipients/internal/{internalId}/addresses"
                 .replace("{internalId}", "123e4567-e89b-12d3-a456-426655440000");
 
-        AddressDto dto = mapper.toDto(AddressDaoTestIT.newAddress());
+        AddressDto dto = mapper.toDto(TestUtils.newAddress());
         RecipientAddressesDto r = new RecipientAddressesDto();
 
         r.putAddressesItem("DD_c_f205_1", dto);

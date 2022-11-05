@@ -1,16 +1,16 @@
 package it.pagopa.pn.datavault.middleware.db;
 
+import it.pagopa.pn.datavault.LocalStackTestConfig;
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
-import it.pagopa.pn.datavault.middleware.db.entities.PhysicalAddress;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 
 import java.time.Duration;
@@ -21,14 +21,14 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.jupiter.api.Assertions.fail;
 
 
-@ExtendWith(SpringExtension.class)
 @TestPropertySource(properties = {
         "aws.region-code=us-east-1",
         "aws.profile-name=${PN_AWS_PROFILE_NAME:default}",
-        "aws.endpoint-url=http://localhost:4566"
+//        "aws.endpoint-url=http://localhost:4566"
 })
 @SpringBootTest
-public class NotificationTimelineDaoTestIT {
+@Import(LocalStackTestConfig.class)
+class NotificationTimelineDaoTestIT {
 
     @Autowired
     private NotificationTimelineDao notificationDao;
@@ -46,7 +46,7 @@ public class NotificationTimelineDaoTestIT {
     @Test
     void updateNotification() {
         //Given
-        NotificationTimelineEntity addresToInsert = newNotification();
+        NotificationTimelineEntity addresToInsert = TestUtils.newNotificationTimeline();
 
         try {
             testDao.delete(addresToInsert.getPk(), addresToInsert.getTimelineElementId());
@@ -81,7 +81,7 @@ public class NotificationTimelineDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationTimelineEntity ae = newNotification();
+            NotificationTimelineEntity ae = TestUtils.newNotificationTimeline();
             ae.setTimelineElementId(ae.getTimelineElementId() + "_" + i);
             notificationsEntities.add(ae);
         }
@@ -140,7 +140,7 @@ public class NotificationTimelineDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationTimelineEntity ae = newNotification();
+            NotificationTimelineEntity ae = TestUtils.newNotificationTimeline();
             ae.setTimelineElementId(ae.getTimelineElementId() + "_" + i);
             notificationsEntities.add(ae);
         }
@@ -193,22 +193,5 @@ public class NotificationTimelineDaoTestIT {
                 System.out.println("Nothing to remove");
             }
         }
-    }
-
-
-    public static NotificationTimelineEntity newNotification(){
-        NotificationTimelineEntity ne = new NotificationTimelineEntity("425e4567-e89b-12d3-a456-426655449631", "mario rossi");
-        ne.setDigitalAddress("mario.rossi@test.it");
-        PhysicalAddress pa = new PhysicalAddress();
-        pa.setAddress("via casa sua");
-        pa.setAt("via");
-        pa.setAddressDetails("interno 2");
-        pa.setMunicipality("Venezia");
-        pa.setMunicipalityDetails("zattere");
-        pa.setCap("30000");
-        pa.setProvince("VE");
-        pa.setState("Italia");
-        ne.setPhysicalAddress(pa);
-        return ne;
     }
 }

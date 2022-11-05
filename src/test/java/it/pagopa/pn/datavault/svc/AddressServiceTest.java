@@ -1,11 +1,11 @@
 package it.pagopa.pn.datavault.svc;
 
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.AddressDao;
-import it.pagopa.pn.datavault.middleware.db.AddressDaoTestIT;
 import it.pagopa.pn.datavault.middleware.db.entities.AddressEntity;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -41,7 +41,7 @@ class AddressServiceTest {
     @Test
     void getAddressByInternalId() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
         List<AddressEntity> list = new ArrayList<>();
         list.add(addressEntity);
 
@@ -59,7 +59,7 @@ class AddressServiceTest {
     @Test
     void updateAddressByInternalId() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
         AddressDto dto = new AddressDto();
         dto.setValue("test@test.it");
 
@@ -77,7 +77,7 @@ class AddressServiceTest {
     @Test
     void updateAddressByInternalIdInvalid1() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
         AddressDto dto = new AddressDto();
         dto.setValue(null);
 
@@ -93,7 +93,7 @@ class AddressServiceTest {
     @Test
     void updateAddressByInternalIdInvalid2() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
         AddressDto dto = new AddressDto();
         dto.setValue("");
 
@@ -109,7 +109,7 @@ class AddressServiceTest {
     @Test
     void updateAddressByInternalIdInvalid3() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
 
         //When
         String iun = addressEntity.getInternalId();
@@ -123,7 +123,7 @@ class AddressServiceTest {
     @Test
     void updateAddressByInternalIdInvalid4() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
         AddressDto dto = new AddressDto();
         dto.setValue("test@test.it");
 
@@ -138,7 +138,7 @@ class AddressServiceTest {
     @Test
     void updateAddressByInternalIdInvalid5() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
         AddressDto dto = new AddressDto();
         dto.setValue("test@test.it");
 
@@ -153,7 +153,7 @@ class AddressServiceTest {
     @Test
     void deleteAddressByInternalId() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
 
         when(objDao.deleteAddressId(Mockito.any(), Mockito.any())).thenReturn(Mono.just(addressEntity));
 
@@ -169,7 +169,7 @@ class AddressServiceTest {
     @Test
     void deleteAddressByInternalId1() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
 
         //When
         String add = addressEntity.getAddressId();
@@ -182,7 +182,7 @@ class AddressServiceTest {
     @Test
     void deleteAddressByInternalId2() {
         //Given
-        AddressEntity addressEntity = AddressDaoTestIT.newAddress();
+        AddressEntity addressEntity = TestUtils.newAddress();
 
         //When
         String iun = addressEntity.getInternalId();

@@ -5,7 +5,6 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.*;
@@ -17,7 +16,6 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
  * @Import(LocalStackTestConfig.class)
  */
 @TestConfiguration
-@Testcontainers
 public class LocalStackTestConfig {
 
     static LocalStackContainer localStack =

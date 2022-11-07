@@ -40,7 +40,7 @@ class AddressDaoTestIT {
 
     @BeforeEach
     void setup( @Value("${pn.data-vault.dynamodb_table-name}") String table) {
-        testDao = new TestDao<AddressEntity>( dynamoDbEnhancedAsyncClient, table, AddressEntity.class);
+        testDao = new TestDao<>( dynamoDbEnhancedAsyncClient, table, AddressEntity.class);
     }
 
     @Test

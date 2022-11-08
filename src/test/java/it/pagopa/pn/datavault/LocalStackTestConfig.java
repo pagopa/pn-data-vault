@@ -22,7 +22,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 public class LocalStackTestConfig {
 
     static LocalStackContainer localStack =
-            new LocalStackContainer(DockerImageName.parse("public.ecr.aws/localstack/localstack:1.0.4").asCompatibleSubstituteFor("localstack/localstack"))
+            new LocalStackContainer(DockerImageName.parse("911845998067.dkr.ecr.eu-central-1.amazonaws.com/localstack:1.0.4").asCompatibleSubstituteFor("localstack/localstack"))
                     .withServices(DYNAMODB)
                     .withClasspathResourceMapping("testcontainers/init.sh",
                             "/docker-entrypoint-initaws.d/make-storages.sh", BindMode.READ_ONLY)

@@ -20,7 +20,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <springdoc-openapi-webflux-version>1.6.7</springdoc-openapi-webflux-version>
     <software.amazon.awssdk-version>2.17.174</software.amazon.awssdk-version>
-    <sonar.coverage.exclusions>it.pagopa.pn.datavault.middleware.db/**/*Dao.java</sonar.coverage.exclusions>
     <awspring.version>2.3.2</awspring.version>
     <testcontainers.version>1.16.2</testcontainers.version>
   </properties>

@@ -15,8 +15,8 @@ public class PnDataVaultApplication {
 		// impostazione cache ttl
 		java.security.Security.setProperty("networkaddress.cache.ttl" , "1");
 		java.security.Security.setProperty("networkaddress.cache.negative.ttl", "1");
-		log.debug("set network cache");
 		SpringApplication.run(PnDataVaultApplication.class, args);
+		log.debug("set network cache");
 	}
 
 	@RestController

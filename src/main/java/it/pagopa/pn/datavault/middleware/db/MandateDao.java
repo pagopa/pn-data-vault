@@ -48,7 +48,7 @@ public class MandateDao extends BaseDao {
                 .addReadBatch(rbb.build())
                 .build();
 
-        // TODO: viene volutamente ignorata la gestione della paginazione, che per ora non serve.
+        // viene volutamente ignorata la gestione della paginazione, che per ora non serve.
         // si suppone infatti che la lista delle deleghe non sia troppo lunga e quindi non vada a sforare il limite di 1MB di paginazione
         return Flux.from(dynamoDbEnhancedAsyncClient.batchGetItem(qeRequest)
                 .flatMapIterable(x -> x.resultsForTable(mandateTable)));

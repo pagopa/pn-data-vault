@@ -1,15 +1,15 @@
 package it.pagopa.pn.datavault.middleware.db;
 
+import it.pagopa.pn.datavault.LocalStackTestConfig;
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.middleware.db.entities.MandateEntity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.context.annotation.Import;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 
 import java.time.Duration;
@@ -19,14 +19,9 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-@ExtendWith(SpringExtension.class)
-@TestPropertySource(properties = {
-        "aws.region-code=us-east-1",
-        "aws.profile-name=${PN_AWS_PROFILE_NAME:default}",
-        "aws.endpoint-url=http://localhost:4566"
-})
 @SpringBootTest
-public class MandateDaoTestIT {
+@Import(LocalStackTestConfig.class)
+class MandateDaoTestIT {
 
     @Autowired
     private MandateDao mandateDao;
@@ -49,7 +44,7 @@ public class MandateDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            MandateEntity mandateToInsert = newMandate(false);
+            MandateEntity mandateToInsert = TestUtils.newMandate(false);
             mandateToInsert.setPk(mandateToInsert.getPk() + "_"+i);
             ids.add(mandateToInsert.getMandateId());
             mandateEntities.add(mandateToInsert);
@@ -107,7 +102,7 @@ public class MandateDaoTestIT {
     @Test
     void updateMandatePF() {
         //Given
-        MandateEntity mandateToInsert = newMandate(true);
+        MandateEntity mandateToInsert = TestUtils.newMandate(true);
 
         try {
             testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
@@ -138,7 +133,7 @@ public class MandateDaoTestIT {
     @Test
     void updateMandatePG() {
         //Give
-        MandateEntity mandateToInsert = newMandate(false);
+        MandateEntity mandateToInsert = TestUtils.newMandate(false);
 
         try {
             testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
@@ -170,7 +165,7 @@ public class MandateDaoTestIT {
     @Test
     void deleteMandateId() {
         //Given
-        MandateEntity mandateToInsert = newMandate(true);
+        MandateEntity mandateToInsert = TestUtils.newMandate(true);
 
         try {
             testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
@@ -196,20 +191,6 @@ public class MandateDaoTestIT {
                 System.out.println("Nothing to remove");
             }
         }
-    }
-
-
-    public static MandateEntity newMandate(boolean pf) {
-        MandateEntity me = new MandateEntity("425e4567-e89b-12d3-a456-426655449631");
-        if (pf)
-        {
-            me.setName("mario");
-            me.setSurname("rossi");
-        }
-        else
-            me.setBusinessName("ragione sociale");
-
-        return me;
     }
 
 }

@@ -1,11 +1,11 @@
 package it.pagopa.pn.datavault.svc;
 
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.DenominationDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.mapper.MandateEntityMandateDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.MandateDao;
-import it.pagopa.pn.datavault.middleware.db.MandateDaoTestIT;
 import it.pagopa.pn.datavault.middleware.db.entities.MandateEntity;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -42,8 +42,8 @@ class MandateServiceTest {
     @Test
     void getMandatesByInternalIds() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
-        MandateEntity mandateEntity1 = MandateDaoTestIT.newMandate(false);
+        MandateEntity mandateEntity = TestUtils.newMandate(true);
+        MandateEntity mandateEntity1 = TestUtils.newMandate(false);
         List<MandateEntity> list = new ArrayList<>();
         List<String> listids = new ArrayList<>();
         list.add(mandateEntity);
@@ -65,7 +65,7 @@ class MandateServiceTest {
     @Test
     void updateMandateByInternalId() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
+        MandateEntity mandateEntity = TestUtils.newMandate(true);
         DenominationDto dto = new DenominationDto();
         dto.setDestName(mandateEntity.getName());
         dto.setDestSurname(mandateEntity.getSurname());
@@ -85,7 +85,7 @@ class MandateServiceTest {
     @Test
     void updateMandateByInternalIdNullMandateId() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
+        MandateEntity mandateEntity = TestUtils.newMandate(true);
         DenominationDto dto = new DenominationDto();
         dto.setDestName(mandateEntity.getName());
         dto.setDestSurname(mandateEntity.getSurname());
@@ -101,7 +101,7 @@ class MandateServiceTest {
     @Test
     void updateMandateByInternalIdNullDto() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
+        MandateEntity mandateEntity = TestUtils.newMandate(true);
 
         //When
         String mid = mandateEntity.getMandateId();
@@ -114,7 +114,7 @@ class MandateServiceTest {
     @Test
     void updateMandateByInternalIdInvalidDto() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
+        MandateEntity mandateEntity = TestUtils.newMandate(true);
         DenominationDto dto = new DenominationDto();
         dto.setDestName(mandateEntity.getName());
 
@@ -129,7 +129,7 @@ class MandateServiceTest {
     @Test
     void updateMandateByInternalIdInvalidDto1() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
+        MandateEntity mandateEntity = TestUtils.newMandate(true);
         DenominationDto dto = new DenominationDto();
         dto.setDestSurname(mandateEntity.getSurname());
 
@@ -156,7 +156,7 @@ class MandateServiceTest {
     @Test
     void deleteMandateByInternalId() {
         //Given
-        MandateEntity mandateEntity = MandateDaoTestIT.newMandate(true);
+        MandateEntity mandateEntity = TestUtils.newMandate(true);
 
 
         when(objDao.deleteMandateId(Mockito.any())).thenReturn(Mono.just(mandateEntity));

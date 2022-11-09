@@ -18,6 +18,8 @@ import java.util.List;
 @Slf4j
 public class MandatesRestControllerV1 implements MandatesApi {
 
+    private static final String EXIT_LOG = "[exit]";
+
     private final MandateService svc;
 
     public MandatesRestControllerV1(MandateService svc) {
@@ -26,20 +28,20 @@ public class MandatesRestControllerV1 implements MandatesApi {
 
     @Override
     public Mono<ResponseEntity<Void>> updateMandateById(String mandateId, Mono<DenominationDto> addressAndDenominationDto, ServerWebExchange exchange) {
-        log.info("[enter] mandateid:{}", mandateId);
+        logMandateId(mandateId);
         return addressAndDenominationDto
                 .flatMap( dtoValue -> svc.updateMandateByInternalId( mandateId, dtoValue))
                 .map( updateResult -> {
-                    log.debug("[exit]");
+                    log.debug(EXIT_LOG);
                     return ResponseEntity.noContent().build();
                 });
     }
 
     @Override
     public Mono<ResponseEntity<Flux<MandateDto>>> getMandatesByIds(List<String> mandateId, ServerWebExchange exchange) {
-        log.info("[enter] mandateid:{}", mandateId);
+        logMandateIds(mandateId);
         return Mono.fromSupplier( () -> {
-                    log.debug("[exit]");
+                    log.debug(EXIT_LOG);
                     return ResponseEntity.ok(svc.getMandatesByInternalIds(mandateId));
                 }
         );
@@ -47,12 +49,20 @@ public class MandatesRestControllerV1 implements MandatesApi {
 
     @Override
     public Mono<ResponseEntity<Void>> deleteMandateById(String mandateId, ServerWebExchange exchange) {
-        log.info("[enter] mandateid:{}", mandateId);
+        logMandateId(mandateId);
         return svc.deleteMandateByInternalId( mandateId )
                 .map( result -> {
-                    log.debug("[exit]");
+                    log.debug(EXIT_LOG);
                     return ResponseEntity.noContent().build();
                 });
+    }
+
+    private void logMandateId(String mandateId) {
+        log.info("[enter] mandateid:{}", mandateId);
+    }
+
+    private void logMandateIds(List<String> mandateIds) {
+        log.info("[enter] mandateids:{}", mandateIds);
     }
 
 }

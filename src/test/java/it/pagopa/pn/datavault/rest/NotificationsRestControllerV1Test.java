@@ -1,12 +1,11 @@
 package it.pagopa.pn.datavault.rest;
 
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
-import it.pagopa.pn.datavault.middleware.db.NotificationDaoTestIT;
-import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDaoTestIT;
 import it.pagopa.pn.datavault.svc.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -64,7 +63,7 @@ class NotificationsRestControllerV1Test {
         String url = "/datavault-private/v1/notifications/{iun}/addresses"
                 .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
-        NotificationRecipientAddressesDto dto = mapper.toDto(NotificationDaoTestIT.newNotification());
+        NotificationRecipientAddressesDto dto = mapper.toDto(TestUtils.newNotification());
         List<NotificationRecipientAddressesDto> list = new ArrayList<>();
         list.add(dto);
 
@@ -105,7 +104,7 @@ class NotificationsRestControllerV1Test {
         String url = "/datavault-private/v1/notifications/{iun}/timeline"
                 .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
-        ConfidentialTimelineElementDto dto = mappertimeline.toDto(NotificationTimelineDaoTestIT.newNotification());
+        ConfidentialTimelineElementDto dto = mappertimeline.toDto(TestUtils.newNotificationTimeline());
         List<ConfidentialTimelineElementDto> list = new ArrayList<>();
         list.add(dto);
 
@@ -128,7 +127,7 @@ class NotificationsRestControllerV1Test {
                 .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1")
                 .replace("{timelineElementId}", "abcd");
 
-        ConfidentialTimelineElementDto dto = mappertimeline.toDto(NotificationTimelineDaoTestIT.newNotification());
+        ConfidentialTimelineElementDto dto = mappertimeline.toDto(TestUtils.newNotificationTimeline());
 
 
         //When
@@ -149,7 +148,7 @@ class NotificationsRestControllerV1Test {
         String url = "/datavault-private/v1/notifications/{iun}/timeline/{timelineElementId}"
                 .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1")
                 .replace("{timelineElementId}", "mario rossi");
-        ConfidentialTimelineElementDto dto = mappertimeline.toDto(NotificationTimelineDaoTestIT.newNotification());
+        ConfidentialTimelineElementDto dto = mappertimeline.toDto(TestUtils.newNotificationTimeline());
 
 
         //When

@@ -8,6 +8,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ public class MDCTraceIdWebFilter implements WebFilter {
             }
         };
 
-        Consumer mdcCleaner = ignored -> MDC.remove(MDC_TRACE_ID_KEY);
+        Consumer<SignalType> mdcCleaner = ignored -> MDC.remove(MDC_TRACE_ID_KEY);
 
         return webFilterChain.filter(serverWebExchange)
                 .doFirst(mdcSetter)

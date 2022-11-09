@@ -1,13 +1,8 @@
 package it.pagopa.pn.datavault.rest;
 
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddressesDto;
-import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
 import it.pagopa.pn.datavault.mapper.MandateEntityMandateDtoMapper;
-import it.pagopa.pn.datavault.middleware.db.AddressDaoTestIT;
-import it.pagopa.pn.datavault.middleware.db.MandateDaoTestIT;
-import it.pagopa.pn.datavault.svc.AddressService;
 import it.pagopa.pn.datavault.svc.MandateService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -22,8 +17,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @WebFluxTest(controllers = {MandatesRestControllerV1.class})
 @Import(MandateEntityMandateDtoMapper.class)
@@ -46,7 +39,7 @@ class MandatesRestControllerV1Test {
         //Given
         String url = "/datavault-private/v1/mandates/{mandateId}"
                 .replace("{mandateId}", "123e4567-e89b-12d3-a456-426655440000");
-        MandateDto dto = mapper.toDto(MandateDaoTestIT.newMandate(true));
+        MandateDto dto = mapper.toDto(TestUtils.newMandate(true));
 
 
 
@@ -69,8 +62,8 @@ class MandatesRestControllerV1Test {
         String url = "/datavault-private/v1/mandates?mandateId={mandateId}"
                 .replace("{mandateId}", "123e4567-e89b-12d3-a456-426655440000");
 
-        MandateDto dto = mapper.toDto(MandateDaoTestIT.newMandate(true));
-        MandateDto dto1 = mapper.toDto(MandateDaoTestIT.newMandate(false));
+        MandateDto dto = mapper.toDto(TestUtils.newMandate(true));
+        MandateDto dto1 = mapper.toDto(TestUtils.newMandate(false));
         List<MandateDto> list = new ArrayList<>();
         list.add(dto);
         list.add(dto1);

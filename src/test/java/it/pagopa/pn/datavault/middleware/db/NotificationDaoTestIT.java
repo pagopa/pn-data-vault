@@ -1,17 +1,16 @@
 package it.pagopa.pn.datavault.middleware.db;
 
+import it.pagopa.pn.datavault.LocalStackTestConfig;
+import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
-import it.pagopa.pn.datavault.middleware.db.entities.PhysicalAddress;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.context.annotation.Import;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 
 import java.time.Duration;
@@ -21,14 +20,9 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-@ExtendWith(SpringExtension.class)
-@TestPropertySource(properties = {
-        "aws.region-code=us-east-1",
-        "aws.profile-name=${PN_AWS_PROFILE_NAME:default}",
-        "aws.endpoint-url=http://localhost:4566"
-})
 @SpringBootTest
-public class NotificationDaoTestIT {
+@Import(LocalStackTestConfig.class)
+class NotificationDaoTestIT {
 
     private final Duration d = Duration.ofMillis(3000);
     
@@ -53,7 +47,7 @@ public class NotificationDaoTestIT {
     @Test
     void updateNotifications() {
         //Given
-        NotificationEntity addresToInsert = newNotification();
+        NotificationEntity addresToInsert = TestUtils.newNotification();
         List<NotificationEntity> l = new ArrayList<>();
         l.add(addresToInsert);
 
@@ -90,7 +84,7 @@ public class NotificationDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationEntity ae = newNotification();
+            NotificationEntity ae = TestUtils.newNotification();
             ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
             notificationsEntities.add(ae);
         }
@@ -152,7 +146,7 @@ public class NotificationDaoTestIT {
     @Test
     void deleteNotificationByIun() {
         //Given
-        NotificationEntity addresToInsert = newNotification();
+        NotificationEntity addresToInsert = TestUtils.newNotification();
         List<NotificationEntity> l = new ArrayList<>();
         l.add(addresToInsert);
 
@@ -192,7 +186,7 @@ public class NotificationDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationEntity ae = newNotification();
+            NotificationEntity ae = TestUtils.newNotification();
             ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
             notificationsEntities.add(ae);
         }
@@ -252,14 +246,14 @@ public class NotificationDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationEntity ae = newNotification();
+            NotificationEntity ae = TestUtils.newNotification();
             ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
             notificationsEntities.add(ae);
         }
         List<NotificationTimelineEntity> notificationsTimelineEntities = new ArrayList<>();
         for(int i = 0;i<N;i++)
         {
-            NotificationTimelineEntity ae = NotificationTimelineDaoTestIT.newNotification();
+            NotificationTimelineEntity ae = TestUtils.newNotificationTimeline();
             ae.setTimelineElementId(ae.getTimelineElementId() + "_" + i);
             notificationsTimelineEntities.add(ae);
         }
@@ -350,7 +344,7 @@ public class NotificationDaoTestIT {
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationEntity ae = newNotification();
+            NotificationEntity ae = TestUtils.newNotification();
             ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
             notificationsEntities.add(ae);
         }
@@ -403,20 +397,5 @@ public class NotificationDaoTestIT {
                 System.out.println("Nothing to remove");
             }
         }
-    }
-
-    public static NotificationEntity newNotification(){
-        NotificationEntity ne = new NotificationEntity("425e4567-e89b-12d3-a456-426655449631", "000");
-        ne.setDigitalAddress("mario.rossi@test.it");
-        PhysicalAddress pa = new PhysicalAddress();
-        pa.setAddress("via casa sua");
-        pa.setAt("via");
-        pa.setAddressDetails("interno 2");
-        pa.setMunicipality("Venezia");
-        pa.setCap("30000");
-        pa.setProvince("VE");
-        pa.setState("Italia");
-        ne.setPhysicalAddress(pa);
-        return ne;
     }
 }

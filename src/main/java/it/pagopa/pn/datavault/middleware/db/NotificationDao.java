@@ -78,7 +78,7 @@ public class NotificationDao extends BaseDao {
                             .build()));
                     return delRequestBuilder;
                 })
-                .map(r -> dynamoDbEnhancedAsyncClient.transactWriteItems(r.build()));
+                .flatMap(r -> Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(r.build())));
     }
 
     public Flux<NotificationEntity> listNotificationRecipientAddressesDtoById(String iun) {

@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @WebFluxTest(controllers = {RecipientsRestControllerV1.class})
 class RecipientsRestControllerV1Test {
@@ -67,5 +69,29 @@ class RecipientsRestControllerV1Test {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk().expectBodyList(BaseRecipientDto.class);
+    }
+
+    @Test
+    void getRecipientDenominationByInternalIdButFailedValidationSize() {
+
+        String url = "/datavault-private/v1/recipients/internal?internalId={internalId}"
+                .replace("{internalId}", "123e4567-e89b-12d3-a456-426655440000");
+
+        StringBuilder urlBuilder = new StringBuilder(url);
+
+        String otherInternalIds = "&internalId=123e4567-e89b-12d3-a456-426655440000";
+
+        urlBuilder.append(otherInternalIds.repeat(100));
+
+        String finalUrl = urlBuilder.toString();
+
+        assertThat(finalUrl.split("internalId")).hasSizeGreaterThan(100);
+
+
+        webTestClient.get()
+                .uri(finalUrl)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

@@ -92,6 +92,8 @@ paths:
             type: array
             items:
               $ref: '#/components/schemas/InternalId'
+            minItems: 1
+            maxItems: 100
       responses:
         '200':
           description: OK

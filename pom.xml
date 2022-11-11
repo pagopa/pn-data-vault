@@ -9,7 +9,7 @@
   </parent>
   <groupId>it.pagopa.pn.datavault</groupId>
   <artifactId>pn-data-vault</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <name>pn-data-vault</name>
   <description>Handle Confidential Information</description>
 
@@ -17,7 +17,7 @@
     <connection>${git.conn}</connection>
     <developerConnection>${git.devConn}</developerConnection>
     <url>${git.url}</url>
-    <tag>v1.0.0</tag>
+    <tag>HEAD</tag>
   </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

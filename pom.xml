@@ -6,7 +6,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
   <parent>
     <groupId>it.pagopa.pn</groupId>
     <artifactId>pn-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <relativePath/>
   </parent>
   <groupId>it.pagopa.pn.datavault</groupId>
@@ -15,7 +15,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
   <name>pn-data-vault</name>
   <description>Handle Confidential Information</description>
 
-
+  <scm>
+    <connection>${git.conn}</connection>
+    <developerConnection>${git.devConn}</developerConnection>
+    <url>${git.url}</url>
+  </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <springdoc-openapi-webflux-version>1.6.7</springdoc-openapi-webflux-version>
@@ -48,7 +52,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
     <dependency>
       <groupId>it.pagopa.pn</groupId>
       <artifactId>pn-commons</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
 
     <dependency>
@@ -154,7 +158,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
               <inputSpec>${project.basedir}/docs/openapi/pn-datavault-api-v1.yaml</inputSpec>
               <generatorName>spring</generatorName>
               <library>spring-boot</library>
-              <modelNameSuffix></modelNameSuffix>
+              <modelNameSuffix/>
               <generateApiTests>false</generateApiTests>
               <generateModelTests>false</generateModelTests>
               <configOptions>

@@ -19,10 +19,6 @@
     <url>${git.url}</url>
     <tag>HEAD</tag>
   </scm>
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <springdoc-openapi-webflux-version>1.6.7</springdoc-openapi-webflux-version>
-  </properties>
 
   <dependencies>
 

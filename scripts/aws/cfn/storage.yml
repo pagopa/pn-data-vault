@@ -49,7 +49,9 @@ Resources:
         StreamArn: !Ref ConfidentialInfoCdcKinesisSourceStreamArn
       StreamSpecification: 
         StreamViewType: NEW_IMAGE
-        
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+                
 Outputs:
   ConfidentialObjectsDynamoTableName:
     Description: Name of dynamodb table containing fake confidentials informations

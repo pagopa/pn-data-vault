@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template creates a solution to allow private Rest API to have custom domain name.
+
+Parameters:
+  ApiGatewayStageName:
+    Description: Name of the stage to deploy the API in API Gateway
+    Type: String
+    Default: dev
+
+  CertificateArn:
+    Description: The Amazon Resource Name (ARN) of the SSL certificate.
+    Type: String
+
+  FQDName:
+    Description: Enter a fully qualified domain name.
+    Type: String
+
+  HostedZoneID:
+    Description: Private hosted zone Id you want to create records in. 
+    Type: String
+
+  RestApiId:
+    Description: Id od the REST API.s
+    Type: String
+
+  NLBSubnets:
+    Description: The IDs of the private subnets.
+    Type: CommaDelimitedList
+
+  VpcEndpointIPs:
+    Description: The private IP addresses of the VPC Endpoint
+    Type: CommaDelimitedList
+
+  VpcId:
+    Description: The ID of the VPC in which the endpoint will be used.
+    Type: String
+
+Resources:
+  #############################
+  ### Network Load Balancer ###
+  #############################
+
+  InternalNLB:  
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      IpAddressType: ipv4
+      Name: 'Rest-API-NLB'
+      Scheme: internal
+      Subnets: !Ref NLBSubnets
+      Type: network
+
+  NLBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      Certificates: 
+        - CertificateArn: !Ref CertificateArn
+      DefaultActions: 
+        - ForwardConfig: 
+            TargetGroups: 
+              - TargetGroupArn: !Ref NLBTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref InternalNLB
+      Port: 443
+      Protocol: TLS
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+
+  NLBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      HealthCheckEnabled: true 
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPort: '443'
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      Name: 'Rest-API-NLB-Target-group'
+      Port: 443
+      Protocol: TLS
+      Targets: 
+        - Id: !Select [ 0, !Ref VpcEndpointIPs ]
+          Port: 443
+        - Id: !Select [ 1, !Ref VpcEndpointIPs ]
+          Port: 443
+      TargetType: ip
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VpcId 
+
+  ######################
+  ### Route53 record ###
+  ######################
+
+  RestApiDnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties: 
+      AliasTarget: 
+        DNSName: !GetAtt InternalNLB.DNSName
+        HostedZoneId: !GetAtt InternalNLB.CanonicalHostedZoneID
+      HostedZoneId: !Ref HostedZoneID
+      Name: !Sub ${FQDName}
+      Type: A
+
+  CustomDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties: 
+      DomainName: !Ref FQDName
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Ref CertificateArn
+      SecurityPolicy: TLS_1_2
+
+  APIMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties: 
+      DomainName: !Ref CustomDomainName
+      RestApiId: !Ref RestApiId
+      Stage: !Ref ApiGatewayStageName
+
+Outputs:
+  CallbackURL:
+    Description: "API Gateway endpoint"
+    Value: !Sub "https://${FQDName}/lambda"
+
+  LoadBalancerFullName: 
+    Description: "The full name of the Load Balancer"
+    Value: !GetAtt InternalNLB.LoadBalancerFullName

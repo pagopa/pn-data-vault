@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template to create private REST API with VPC endpoint
+
+Parameters:
+  ApiGatewayStageName:
+    Description: Name of the stage to deploy the API in API Gateway
+    Type: String
+    Default: dev
+    
+  ApiGatewayName:
+    Description: The name of the Rest API Gateway.
+    Type: String
+    Default: Private-Rest-API
+
+  SubnetIds:
+    Description: The ID of the subnets in which to create an endpoint network interface.
+    Type: CommaDelimitedList
+
+  VpcId:
+    Description: The ID of the VPC in which the endpoint will be used.
+    Type: String
+
+  VpcCidrBlock:
+    Description: The VPC CIDR range.
+    Type: String
+
+Resources:
+  ###################
+  ### API Gateway ###
+  ###################
+
+  MyAPIGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: Private REST API gateway
+      DisableExecuteApiEndpoint: true
+      EndpointConfiguration:
+        Types:  
+          - PRIVATE
+        VpcEndpointIds:
+          - !Ref RestApiVpcEndpoint
+      Name: !Ref ApiGatewayName
+      Policy:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: "*"
+          Action: execute-api:Invoke
+          Resource:
+          - execute-api:/*
+        - Effect: Deny
+          Principal: "*"
+          Action: execute-api:Invoke
+          Resource:
+          - execute-api:/*
+          Condition:
+            StringNotEquals:
+              aws:SourceVpce: !Ref RestApiVpcEndpoint
+
+  LambdaResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyAPIGateway.RootResourceId
+      PathPart: lambda
+      RestApiId: !Ref MyAPIGateway
+
+  LambdaMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PrivateApiLambda.Arn}/invocations'
+      ResourceId: !Ref LambdaResource
+      RestApiId: !Ref MyAPIGateway
+
+  ApiGatewayModel:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      ContentType: 'application/json'
+      RestApiId: !Ref MyAPIGateway
+      Schema: {}
+
+  ApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId: !Ref APIDeployment
+      Description: Lambda API Stage v1
+      RestApiId: !Ref MyAPIGateway
+      StageName: !Ref ApiGatewayStageName
+
+  APIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: LambdaMethod
+    Properties:
+      RestApiId: !Ref MyAPIGateway
+      Description: Lambda API Deployment
+  
+  ApiGatewayIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: ''
+            Effect: 'Allow'
+            Principal:
+              Service:
+                - 'apigateway.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Path: '/'
+      Policies:
+        - PolicyName: LambdaAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 'lambda:InvokeFunction'
+                Resource: !GetAtt PrivateApiLambda.Arn
+
+  ####################
+  ### VPC Endpoint ###
+  ####################  
+
+  RestApiVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+      PrivateDnsEnabled: false
+      SecurityGroupIds: 
+        - !Ref VPCEndpointSG
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.execute-api"
+      SubnetIds: !Ref SubnetIds
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId 
+
+  VPCEndpointSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: REST API VPC Endpoint Security Group
+      GroupName: !Sub ${ApiGatewayName}-VpcSg
+      SecurityGroupEgress: 
+        - CidrIp: 0.0.0.0/0
+          Description: Allow return traffic
+          IpProtocol: '-1'
+      SecurityGroupIngress: 
+        - CidrIp: !Ref VpcCidrBlock
+          Description: Allow inbound from VPC CIDR
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !Ref VpcId
+
+  #######################
+  ### Lambda Function ###
+  ####################### 
+
+  PrivateApiLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >-
+          exports.handler = async (event) => {
+            const response = {
+              statusCode: 200,
+              body: JSON.stringify('Hello from Lambda!')
+            }; 
+            return response;
+          };
+      Role: !GetAtt LambdaFuntionServiceRole.Arn
+      Handler: index.handler
+      Runtime: nodejs18.x
+      FunctionName: !Sub ${ApiGatewayName}-lambda
+
+  LambdaFuntionServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Path: '/'
+      Policies:
+        - PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Effect: "Allow"
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ApiGatewayName}-lambda:*"
+          PolicyName: !Join ["", [{"Ref": "AWS::StackName"}, "-lambda-log"]]
+  
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PrivateApiLambda
+      Principal: apigateway.amazonaws.com
+
+  LambdaLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ApiGatewayName}-lambda"
+      RetentionInDays: 30
+
+Outputs:
+  RestApiId:
+    Description: "REST API Id"
+    Value: !Ref MyAPIGateway
+
+  VpcEndpointId:
+    Description: "Id of the VPC Endpoint"
+    Value: !Ref RestApiVpcEndpoint

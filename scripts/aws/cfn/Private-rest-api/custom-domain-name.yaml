@@ -78,8 +78,10 @@ Resources:
       Protocol: TLS
       Targets: 
         - Id: !Select [ 0, !Ref VpcEndpointIPs ]
+          AvailabilityZone: !Select [ 0, !GetAZs '']
           Port: 443
         - Id: !Select [ 1, !Ref VpcEndpointIPs ]
+          AvailabilityZone: !Select [ 0, !GetAZs '']        
           Port: 443
       TargetType: ip
       UnhealthyThresholdCount: 3
@@ -99,22 +101,22 @@ Resources:
       Name: !Sub ${FQDName}
       Type: A
 
-  CustomDomainName:
-    Type: AWS::ApiGateway::DomainName
-    Properties: 
-      DomainName: !Ref FQDName
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      RegionalCertificateArn: !Ref CertificateArn
-      SecurityPolicy: TLS_1_2
+  #CustomDomainName:
+  #  Type: AWS::ApiGateway::DomainName
+  #  Properties: 
+  #    DomainName: !Ref FQDName
+  #    EndpointConfiguration:
+  #      Types:
+  #        - REGIONAL
+  #    RegionalCertificateArn: !Ref CertificateArn
+  #    SecurityPolicy: TLS_1_2
 
-  APIMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties: 
-      DomainName: !Ref CustomDomainName
-      RestApiId: !Ref RestApiId
-      Stage: !Ref ApiGatewayStageName
+  #APIMapping:
+  #  Type: AWS::ApiGateway::BasePathMapping
+  #  Properties: 
+  #    DomainName: !Ref CustomDomainName
+  #    RestApiId: !Ref RestApiId
+  #    Stage: !Ref ApiGatewayStageName
 
 Outputs:
   CallbackURL:

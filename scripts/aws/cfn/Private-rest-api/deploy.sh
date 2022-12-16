@@ -160,8 +160,11 @@ function deployNLB() {
     echo "Deploying Custom Domain resources."
 
     VPC_ENDPOINT_IP_ARRAY=$(getVPCEndpointPrivateIP)
+    echo $VPC_ENDPOINT_IP_ARRAY
     NLB_SUBNETS="$NLB_SUBNET_1,$NLB_SUBNET_2"
+    echo $NLB_SUBNETS
     REST_API_ID=$(getRestApiId)
+    echo $REST_API_ID
 
     aws cloudformation deploy --template-file ./custom-domain-name.yaml \
     --stack-name Custom-domain-name \

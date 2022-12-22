@@ -222,14 +222,12 @@ Resources:
         LoadBalancerListenerArn: !GetAtt ApplicationLoadBalancerListener.ListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         CloudwatchLogKinesisStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
+        TaskRoleManagedPolicyArn: !Ref DataVaultyMicroserviceTaskManagedPolicy
 
   # Grant operational rights to PN-Delivery microservice
-  DeliveryMicroserviceTaskPolicy:
-    Type: AWS::IAM::Policy
+  DataVaultyMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: !Sub '${ProjectName}-datavault-sep-CustomTaskPolicy'
-      Roles:
-        - !GetAtt DataVaultMicroservice.Outputs.TaskRoleName
       PolicyDocument:
         Version: 2012-10-17
         Statement:

@@ -258,8 +258,7 @@ Resources:
           - - !Ref ConfidentialObjectsDynamoTableName
         AlarmArns: !Join
           - ','
-          - - !GetAtt DataVaultMicroservice.Outputs.AutoScalingAlarmArn
-            - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn
+          - - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn
 
   InfraMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack

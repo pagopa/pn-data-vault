@@ -42,6 +42,8 @@ public abstract class TestUtils {
 
     public static NotificationTimelineEntity newNotificationTimeline(){
         NotificationTimelineEntity ne = new NotificationTimelineEntity("425e4567-e89b-12d3-a456-426655449631", "mario rossi");
+        ne.setTaxId("MRDSME90R225451F");
+        ne.setDenomination("Mario Rossi");
         ne.setDigitalAddress("mario.rossi@test.it");
         PhysicalAddress pa = new PhysicalAddress();
         pa.setAddress("via casa sua");

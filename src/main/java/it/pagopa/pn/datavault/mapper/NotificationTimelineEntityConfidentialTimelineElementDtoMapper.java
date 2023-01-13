@@ -20,6 +20,8 @@ public class NotificationTimelineEntityConfidentialTimelineElementDtoMapper  ext
     public NotificationTimelineEntity toEntity(ConfidentialTimelineElementDto dto) {
         final NotificationTimelineEntity target = new NotificationTimelineEntity();
         target.setTimelineElementId(dto.getTimelineElementId());
+        target.setTaxId(dto.getTaxId());
+        target.setDenomination(dto.getDenomination());
         target.setDigitalAddress(dto.getDigitalAddress()!=null?dto.getDigitalAddress().getValue():null);
         if(dto.getPhysicalAddress() != null){
             target.setPhysicalAddress(toPhysicalAddress(dto.getPhysicalAddress()));
@@ -33,7 +35,11 @@ public class NotificationTimelineEntityConfidentialTimelineElementDtoMapper  ext
     @Override
     public ConfidentialTimelineElementDto toDto(NotificationTimelineEntity entity) {
         final ConfidentialTimelineElementDto target = new ConfidentialTimelineElementDto();
+        
         target.setTimelineElementId(entity.getTimelineElementId());
+        target.setTaxId(entity.getTaxId());
+        target.setDenomination(entity.getDenomination());
+        
         if (StringUtils.hasText(entity.getDigitalAddress())) {
             AddressDto addressDto = new AddressDto();
             addressDto.setValue(entity.getDigitalAddress());

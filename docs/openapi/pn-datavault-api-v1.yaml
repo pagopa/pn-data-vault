@@ -632,6 +632,10 @@ components:
         properties:
           timelineElementId:
             type: string
+          taxId:
+            type: string
+          denomination:
+            type: string
           digitalAddress:
             $ref: '#/components/schemas/AddressDto'
           physicalAddress: 

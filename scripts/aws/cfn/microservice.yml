@@ -110,10 +110,6 @@ Parameters:
     Type: String
     Description: 'Cdc delivery stream alarm ARN'
 
-  PnDataVaultSecretArn:
-    Type: String
-    Description: Data Vault secret ARN
-    
 Resources:
 
   # Private connection from subnets to AWS services
@@ -214,11 +210,11 @@ Resources:
         ContainerEnvEntry11: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_MILLIS=${PDVUserRegistryRateLimiterMillis}'
         ContainerEnvEntry12: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_NREQUESTS=${PDVUserRegistryRateLimiterNRequests}'
         ContainerEnvEntry13: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_TIMEOUT_MILLIS=${PDVUserRegistryRateLimiterTimeoutMillis}'
-        ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=${PnDataVaultSecretArn}:TokenizerApiKeyForPF:AWSCURRENT:'
-        ContainerSecret2: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=${PnDataVaultSecretArn}:TokenizerApiKeyForPG:AWSCURRENT:'
-        ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=${PnDataVaultSecretArn}:UserRegistryApiKeyForPF:AWSCURRENT:'
-        ContainerSecret4: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG=${PnDataVaultSecretArn}:UserRegistryApiKeyForPG:AWSCURRENT:'                
-        MicroServiceSecretPrefix: pn-PersonalDataVault-Apikey # TODO: change
+        ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Apikey:TokenizerApiKeyForPF:AWSCURRENT:'
+        ContainerSecret2: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Apikey:TokenizerApiKeyForPG:AWSCURRENT:'
+        ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Apikey:UserRegistryApiKeyForPF:AWSCURRENT:'
+        ContainerSecret4: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Apikey:UserRegistryApiKeyForPG:AWSCURRENT:'                
+        MicroServiceSecretPrefix: pn-PersonalDataVault-Apikey
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !GetAtt ECSCluster.Outputs.ClusterName
         Subnets: !Ref VpcSubnets

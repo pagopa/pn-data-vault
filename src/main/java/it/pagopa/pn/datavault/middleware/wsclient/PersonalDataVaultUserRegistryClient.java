@@ -4,7 +4,6 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
-import io.netty.handler.timeout.TimeoutException;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
@@ -18,11 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
-import javax.net.ssl.SSLHandshakeException;
-import java.net.ConnectException;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -70,10 +65,6 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.getUserApiForRecipientType(getRecipientTypeFromInternalId(uid))
                        .findByIdUsingGET(getUUIDFromInternalId(uid), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
-                        .retryWhen(
-                               Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
-                                       .filter(this::isRetryableException)
-                       )
                         .transformDeferred(RateLimiterOperator.of(rateLimiter))
                         .onErrorResume(WebClientResponseException.class,
                                 ex -> ex.getRawStatusCode() == 404 ? this.personalDataVaultTokenizerClient.findPii(uid): Mono.error(ex))
@@ -132,15 +123,6 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         return new String(resultoutput);
     }
 
-    private boolean isRetryableException(Throwable throwable) {
-        return throwable instanceof TimeoutException
-                || throwable instanceof ConnectException
-                || throwable instanceof UnknownHostException
-                || throwable.getCause() instanceof UnknownHostException
-                || throwable.getCause() instanceof SSLHandshakeException
-                || throwable instanceof WebClientResponseException.TooManyRequests
-                ;
-    }
 
     private RateLimiter buildRateLimiter(PnDatavaultConfig pnDatavaultConfig) {
         return RateLimiter.of("user-registry-rate-limit", RateLimiterConfig.custom()

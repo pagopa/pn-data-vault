@@ -1,7 +1,6 @@
 package it.pagopa.pn.datavault.middleware.wsclient;
 
 
-import io.netty.handler.timeout.TimeoutException;
 import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.exceptions.PnDatavaultRecipientNotFoundException;
@@ -14,12 +13,6 @@ import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
-
-import javax.net.ssl.SSLHandshakeException;
-import java.net.ConnectException;
-import java.net.UnknownHostException;
-import java.time.Duration;
 
 /**
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff
@@ -61,15 +54,6 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         pii.setPii(taxId);
         return this.getTokeApiForRecipientType(recipientType)
                     .saveUsingPUT(pii)
-                    .retryWhen(
-                            Retry.backoff(2, Duration.ofSeconds(1))
-                                    .filter(throwable -> throwable instanceof TimeoutException
-                                                    || throwable instanceof ConnectException
-                                                    || throwable instanceof UnknownHostException
-                                                    || (throwable.getCause() instanceof UnknownHostException)
-                                                    || (throwable.getCause() instanceof SSLHandshakeException)
-                                            )
-                    )
                     .map(r -> {
                         if (r == null)
                         {
@@ -88,14 +72,6 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         log.info("[enter] findPii token={}", internalId);
         return this.getTokeApiForRecipientType(getRecipientTypeFromInternalId(internalId))
                 .findPiiUsingGET(getUUIDFromInternalId(internalId))
-                .retryWhen(
-                        Retry.backoff(2, Duration.ofSeconds(1)).jitter(0.75)
-                                .filter(throwable -> throwable instanceof TimeoutException
-                                        || throwable instanceof ConnectException
-                                        || throwable instanceof UnknownHostException
-                                        || (throwable.getCause() instanceof UnknownHostException)
-                                        || (throwable.getCause() instanceof SSLHandshakeException))
-                )
                 .map(r -> {
                     UserResourceDto brd = new UserResourceDto();
                     brd.setId(getUUIDFromInternalId(internalId));

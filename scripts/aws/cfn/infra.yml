@@ -108,6 +108,7 @@ Resources:
         LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
         StreamNamePrefix: 'cdcTos3'
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        StreamContent: DYNAMO_CDC
 
   ###             Export CloudWatch Logs to Log saving bucket             ###
   ###########################################################################
@@ -122,7 +123,8 @@ Resources:
         LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
         LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
         StreamNamePrefix: 'logsTos3'
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn     
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn    
+        StreamContent: CLOUDWATCH_LOGS         
 
   ###                       CLOUDFORMATION TRANSFORM LAMBDAS              ###
   ###########################################################################

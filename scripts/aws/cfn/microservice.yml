@@ -369,3 +369,6 @@ Resources:
           - ','
           - - !Ref LogsToExternalBucketArn
             - !Ref CdcToExternalBucketArn
+        LogGroupsNames: !Join
+          - ','
+          - - !Sub '/ecs/${ProjectName}-data-vault'

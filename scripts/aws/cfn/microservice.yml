@@ -350,7 +350,10 @@ Resources:
         AlarmArns: !Join
           - ','
           - - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn
-
+        LogGroupsNames: !Join
+          - ','
+          - - !Sub '/ecs/${ProjectName}-data-vault-sep'
+          
   InfraMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -369,6 +372,3 @@ Resources:
           - ','
           - - !Ref LogsToExternalBucketArn
             - !Ref CdcToExternalBucketArn
-        LogGroupsNames: !Join
-          - ','
-          - - !Sub '/ecs/${ProjectName}-data-vault'

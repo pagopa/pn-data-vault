@@ -6,8 +6,11 @@ import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
+import it.pagopa.pn.datavault.svc.entities.InternalId;
+import it.pagopa.pn.datavault.utils.RecipientUtils;
 import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultTokenizerClient;
 import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultUserRegistryClient;
+import it.pagopa.pn.datavault.middleware.wsclient.SelfcarePGClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -21,16 +24,20 @@ import java.util.concurrent.TimeUnit;
 public class RecipientService {
 
 
+    private static final String LOG_EXIT = "[exit]";
+    private static final String LOG_ENTER = "[enter]";
     private final PersonalDataVaultTokenizerClient client;
     private final PersonalDataVaultUserRegistryClient userClient;
+    private final SelfcarePGClient selfcareTokenizerClient;
     private final AsyncCache<String, String> cacheExtToIntIds;
     private final AsyncCache<String, BaseRecipientDto> cacheIntToExtIds;
 
     private final boolean cacheEnabled;
 
-    public RecipientService(PersonalDataVaultTokenizerClient client, PersonalDataVaultUserRegistryClient userClient, PnDatavaultConfig pnDatavaultConfig) {
+    public RecipientService(PersonalDataVaultTokenizerClient client, PersonalDataVaultUserRegistryClient userClient, SelfcarePGClient selfcareTokenizerClient, PnDatavaultConfig pnDatavaultConfig) {
         this.client = client;
         this.userClient = userClient;
+        this.selfcareTokenizerClient = selfcareTokenizerClient;
         this.cacheExtToIntIds = Caffeine.newBuilder()
                 .expireAfterAccess(pnDatavaultConfig.getCacheExpireAfterMinutes(), TimeUnit.MINUTES)
                 .maximumSize(pnDatavaultConfig.getCacheMaxSize())
@@ -43,26 +50,19 @@ public class RecipientService {
     }
 
     public Mono<String> ensureRecipientByExternalId(RecipientType recipientType, String taxId) {
-        log.debug("[enter] ensureRecipientByExternalId recipientType={} taxid={}", recipientType.getValue(), LogUtils.maskTaxId(taxId));
+        log.debug(LOG_ENTER + " ensureRecipientByExternalId recipientType={} taxid={}", recipientType.getValue(), LogUtils.maskTaxId(taxId));
         final String extId = encapsulateTaxId(recipientType, taxId);
         if (cacheEnabled)
             return Mono.fromFuture(this.cacheExtToIntIds.get(extId,
-                (s, executor) -> client.ensureRecipientByExternalId(recipientType, taxId).toFuture()))
-                .map(r -> {
-                    log.debug("[exit] ensureRecipientByExternalId internalId={}",r);
-                    return r;
-                });
+                (s, executor) -> this.ensureRecipientByExternalIdPForPG(recipientType, taxId).toFuture()))
+                .doOnNext(r -> log.debug(LOG_EXIT + " ensureRecipientByExternalId cache internalId={}",r));
         else
-            return client.ensureRecipientByExternalId(recipientType, taxId)
-                    .map(r -> {
-                        log.debug("[exit] ensureRecipientByExternalId internalId={}",r);
-                        return r;
-                    });
+            return this.ensureRecipientByExternalIdPForPG(recipientType, taxId);
     }
 
 
     public Flux<BaseRecipientDto> getRecipientDenominationByInternalId(List<String> internalId) {
-        log.debug("[enter] getRecipientDenominationByInternalId internalId={}", internalId);
+        log.debug(LOG_ENTER + " getRecipientDenominationByInternalId internalId={}", internalId);
         if (internalId.size() == 1)
         {
             if (cacheEnabled)
@@ -70,25 +70,57 @@ public class RecipientService {
                 log.debug("request is 1 element only, using cache");
                 // caso molto comune, provo a risolverlo nella cache
                 return Mono.fromFuture(this.cacheIntToExtIds.get(internalId.get(0),
-                                (s, executor) -> userClient.getRecipientDenominationByInternalId(internalId).take(1).next().toFuture()))
+                                (s, executor) -> this.getRecipientDenominationByInternalIdPForPG(internalId).take(1).next().toFuture()))
                         .map(baseRecipientDto -> {
-                            log.debug("[exit] getRecipientDenominationByInternalId taxId={} denomination={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()), LogUtils.maskGeneric(baseRecipientDto.getDenomination()));
+                            log.debug(LOG_EXIT + " getRecipientDenominationByInternalId taxId={} denomination={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()), LogUtils.maskGeneric(baseRecipientDto.getDenomination()));
                             return baseRecipientDto;
                         })
                         .flux();
             }
             else
             {
-                return  userClient.getRecipientDenominationByInternalId( internalId );
+                return  this.getRecipientDenominationByInternalIdPForPG( internalId );
             }
         }
         else
         {
             log.debug("request is more than 1 element, not using cache");
-            return  userClient.getRecipientDenominationByInternalId( internalId );
+            return  this.getRecipientDenominationByInternalIdPForPG( internalId );
         }
     }
 
+    private Mono<String> ensureRecipientByExternalIdPForPG(RecipientType recipientType, String taxId){
+        if (recipientType == RecipientType.PF) {
+            return client.ensureRecipientByExternalId(taxId)
+                    .doOnNext(r -> log.debug(LOG_EXIT + " ensureRecipientByExternalId_PF internalId={}",r));
+        } else {
+            return selfcareTokenizerClient.addInstitutionUsingPOST(taxId)
+                    .doOnNext(r -> log.debug(LOG_EXIT + " ensureRecipientByExternalId_PG internalId={}",r));
+        }
+    }
+
+
+    private Flux<BaseRecipientDto> getRecipientDenominationByInternalIdPForPG(List<String> internalIds){
+        // la risoluzione degli internalIds, va fatta con più attenzione, perchè potrei ricevere liste "miste", ovvero alcuni internalID di PF e altri di PG
+        // che devo ovviamente risolvere su client diversi
+        List<InternalId> allInternalIds = RecipientUtils.mapToInternalId(internalIds);
+        List<InternalId> pfInternalIds = allInternalIds.stream().filter(x -> x.recipientType()==RecipientType.PF).toList();
+        List<InternalId> pgInternalIds = allInternalIds.stream().filter(x -> x.recipientType()==RecipientType.PG).toList();
+
+
+        // il concat di 2 flux non funziona "facilmente" se uno dei 2 è vuoto. Dato che cmq è un caso limite
+        // si mettono le due ricerca separate e poi quella combinata
+        if (!pfInternalIds.isEmpty() && pgInternalIds.isEmpty())
+            return userClient.getRecipientDenominationByInternalId(pfInternalIds)
+                    .doOnNext(r -> log.debug(LOG_EXIT + " getRecipientDenominationByInternalIdPForPG_PF internalId={}",r));
+        else if (pfInternalIds.isEmpty() && !pgInternalIds.isEmpty())
+            return selfcareTokenizerClient.retrieveInstitutionByIdUsingGET(pgInternalIds)
+                    .doOnNext(r -> log.debug(LOG_EXIT + " getRecipientDenominationByInternalIdPForPG_PF internalId={}",r));
+        else
+            return userClient.getRecipientDenominationByInternalId(pfInternalIds)
+                .concatWith(selfcareTokenizerClient.retrieveInstitutionByIdUsingGET(pgInternalIds))
+                .doOnNext(r -> log.debug(LOG_EXIT + " getRecipientDenominationByInternalIdPForPG_PF_PG internalId={}",r));
+    }
 
     /**
      * Ritorna un tax id "modificato" che contiene anche l'informazione di PF/PG

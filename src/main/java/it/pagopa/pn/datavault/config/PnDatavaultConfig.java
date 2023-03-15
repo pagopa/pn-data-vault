@@ -22,6 +22,7 @@ public class PnDatavaultConfig {
     private String dynamodbTableName;
     private String clientTokenizerBasepath;
     private String clientUserregistryBasepath;
+    private String clientSelfcarepgBasepath;
 
     private String tokenizerApiKeyPf;
     private String tokenizerApiKeyPg;
@@ -31,6 +32,11 @@ public class PnDatavaultConfig {
     private Long userregistryRateLimiterMillis;
     private Integer userregistryRateLimiterNrequests;
     private Long userregistryRateLimiterTimeoutMillis;
+
+    private String selfcarepgApiKeyPg;
+    private Long selfcarepgRateLimiterMillis;
+    private Integer selfcarepgRateLimiterNrequests;
+    private Long selfcarepgRateLimiterTimeoutMillis;
 
     private int cacheExpireAfterMinutes;
     private int cacheMaxSize;

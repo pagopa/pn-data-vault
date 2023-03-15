@@ -1,0 +1,197 @@
+openapi: 3.0.1
+info:
+  title: External API for PNPG
+  description: External API for PNPG usage
+  version: v1
+servers:
+  - url: https://api.dev.selfcare.pagopa.it/external/pnpg/v1
+paths:
+  /institutions/{id}:
+    get:
+      tags:
+        - institutions-pnpg
+      summary: Gets the corresponding institution using internal institution id
+      description: Gets the corresponding institution using internal institution id
+      operationId: retrieveInstitutionByIdUsingGET
+      parameters:
+        - name: id
+          in: path
+          description: id
+          required: true
+          style: simple
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /pn-pg/institutions/add:
+    post:
+      tags:
+        - institutions-pnpg
+      summary: addInstitution
+      description: Checks if there is an institution with given externalId and returns its internalId if doesn't exists it creates it
+      operationId: addInstitutionUsingPOST
+      parameters:
+        - name: x-selfcare-uid
+          in: header
+          description: Logged user's unique identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePnPgInstitutionDto'
+            example:
+              description: string
+              externalId: string
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                detail: string
+                instance: string
+                invalidParams:
+                  - name: string
+                    reason: string
+                status: 500
+                title: string
+                type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                detail: string
+                instance: string
+                invalidParams:
+                  - name: string
+                    reason: string
+                status: 500
+                title: string
+                type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                detail: string
+                instance: string
+                invalidParams:
+                  - name: string
+                    reason: string
+                status: 500
+                title: string
+                type: string
+components:
+  schemas:
+    CreatePnPgInstitutionDto:
+      title: CreatePnPgInstitutionDto
+      required:
+        - externalId
+      type: object
+      properties:
+        description:
+          type: string
+          description: Institution's legal name
+        externalId:
+          type: string
+          description: Institution's unique external identifier
+    InstitutionResponse:
+      title: InstitutionResponse
+      type: object
+      properties:
+        description:
+          type: string
+        externalId:
+          type: string
+    Problem:
+      title: Problem
+      required:
+        - status
+        - title
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Human-readable description of this specific problem.
+        instance:
+          type: string
+          description: A URI that describes where the problem occurred.
+        invalidParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvalidParam'
+          description: A list of invalid parameters details.
+        status:
+          type: integer
+          description: The HTTP status code.
+          format: int32
+          example: 500
+        title:
+          type: string
+          description: Short human-readable summary of the problem.
+        type:
+          type: string
+          description: A URL to a page with more details regarding the problem.
+      description: A "problem detail" as a way to carry machine-readable details of errors (https://datatracker.ietf.org/doc/html/rfc7807)
+    InvalidParam:
+      title: InvalidParam
+      required:
+        - name
+        - reason
+      type: object
+      properties:
+        name:
+          type: string
+          description: Invalid parameter name.
+        reason:
+          type: string
+          description: Invalid parameter reason.
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]
+tags:
+  - name: institutions-pnpg
+    description: PNPG Controller

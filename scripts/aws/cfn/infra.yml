@@ -17,10 +17,22 @@ Parameters:
   VpcId:
     Type: String
     Description: VpcId of the VPC where to install PN-CONFIDENTIAL-INFO
+    
+  VpcCidr:
+    Type: String
+    Description: Cidr of the VPC where to install PN-CORE
 
   VpcSubnets:
     Type: String
     Description: subnets where to install PN-CONFIDENTIAL-INFO
+  
+  VpcSubnetsRoutingTables:
+    Type: String
+    Description: routing table for subnets where to install PN-CORE
+
+  PrivateHostedZone:
+    Type: String
+    Description: private hosted zone where register the application load balancer
 
   BucketSuffix:
     Type: String
@@ -147,6 +159,84 @@ Resources:
   #       TopicName: 'dev_alarm'
   #       SNSTopicArn: !Ref AlarmSNSTopic
   #       SlackInfo: !Ref SlackInfo
+
+   # Private connection from subnets to AWS services
+  VPCEndpoints:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
+      Parameters:
+        VpcName: !Ref ProjectName
+        VpcCidr: !Ref VpcCidr
+        Subnets: !Ref VpcSubnets
+        RouteTableIds: !Ref VpcSubnetsRoutingTables
+        VpcId: !Ref VpcId
+
+  ###                       APPLICATION LOAD BALANCER                       ###
+  #############################################################################
+  # Application load balancer
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internal
+      IpAddressType: ipv4
+      Subnets: !Split [ ',', !Ref VpcSubnets ]
+      SecurityGroups:
+        - !Ref WebappSecurityGroup
+
+  # Application load balancer listener
+  ApplicationLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Protocol: HTTP
+      Port: 8080
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: "application/json"
+            MessageBody: "{ \"error\": \"404\", \"message\": \"Load balancer rule not configured\" }"
+          Order: 1
+
+  # Application security groups
+  WebappSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ProjectName}-webapp-security-group
+      GroupDescription: "ingres tcp 8080, egress all"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: "0.0.0.0/0"
+      VpcId: !Ref VpcId
+
+
+  # Load balancer private fixed DNS
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub 'alb.confidential.${ProjectName}.internal'
+      Type: A
+      HostedZoneId: !Ref PrivateHostedZone  
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        EvaluateTargetHealth: false
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
+  ###                             ECS CLUSTER                             ###
+  ###########################################################################
+
+  # The cluster
+  ECSCluster:
+    DependsOn: ApplicationLoadBalancerListener
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
+      Parameters:
+        MacroServiceName: !Sub '${ProjectName}-confidential'
   
 Outputs:
 
@@ -225,3 +315,12 @@ Outputs:
   SubnetsIds:
     Description: subnets where to install PN-CONFIDENTIAL-INFO
     Value: !Ref VpcSubnets
+
+  ApplicationLoadBalancerListenerArn:
+    Value: !Ref ApplicationLoadBalancerListener
+    Description: Application Load Balancer listener Arn
+  
+  # ECS Cluster
+  ECSClusterName:
+    Value: !GetAtt ECSCluster.Outputs.ClusterName
+    Description: ECS cluster name

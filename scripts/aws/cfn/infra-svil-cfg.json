@@ -1,7 +1,10 @@
 {
     "Parameters" : {
       "VpcId": "vpc-000f6dbe5cb177a5e",
-      "VpcSubnets": "subnet-0714f32a12614be5a,subnet-09afb9d3ed5dc9ff5,subnet-0b975718a351ff9f0"
+      "VpcCidr": "10.4.0.0/16",
+      "VpcSubnets": "subnet-0714f32a12614be5a,subnet-09afb9d3ed5dc9ff5,subnet-0b975718a351ff9f0",
+      "VpcSubnetsRoutingTables": "rtb-0f1c9bf830764ed9b",
+      "PrivateHostedZone": "Z011999260P98G6A4NTO"
     }
   }
   

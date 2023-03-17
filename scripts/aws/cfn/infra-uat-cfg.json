@@ -1,7 +1,10 @@
 {
     "Parameters" : {
       "VpcId": "",
-      "VpcSubnets": ""
+      "VpcCidr": "",
+      "VpcSubnets": "",
+      "VpcSubnetsRoutingTables": "",
+      "PrivateHostedZone": ""
     }
   }
   

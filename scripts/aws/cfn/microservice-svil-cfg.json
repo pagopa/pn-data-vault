@@ -1,8 +1,5 @@
 {
   "Parameters" : {
-    "VpcCidr": "10.4.0.0/16",
-    "VpcSubnetsRoutingTables": "rtb-0f1c9bf830764ed9b",
-    "PrivateHostedZone": "Z011999260P98G6A4NTO",
     "EcsDefaultSecurityGroup": "sg-063225b050d342247",
     "PDVTokenizerBasePath" : "https://api.uat.tokenizer.pdv.pagopa.it/tokenizer/v1",
     "PDVUserRegistryBasePath" : "https://api.uat.pdv.pagopa.it/user-registry/v1",

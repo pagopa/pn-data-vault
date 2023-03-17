@@ -319,6 +319,10 @@ Outputs:
   ApplicationLoadBalancerListenerArn:
     Value: !Ref ApplicationLoadBalancerListener
     Description: Application Load Balancer listener Arn
+
+  ApplicationLoadBalancerDomain:
+    Value: !Sub '${ApplicationLoadBalancer.DNSName}'
+    Description: Application Load Balancer Domain to use for http URL
   
   # ECS Cluster
   ECSClusterName:

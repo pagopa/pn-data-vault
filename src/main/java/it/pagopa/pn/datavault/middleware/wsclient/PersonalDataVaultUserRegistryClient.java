@@ -62,6 +62,9 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
 
         log.trace("Run task scheduled! {}", NAMESPACE );
         int numberOfWaitingThreads = this.rateLimiter.getMetrics().getNumberOfWaitingThreads();
+        if(numberOfWaitingThreads > 0) {
+            log.warn("[{}] NumberOfWaitingThreads: {}", NAMESPACE, numberOfWaitingThreads);
+        }
 
         MetricDatum metricDatum = MetricDatum.builder()
                 .metricName("PDVNumberOfWaitingThreads")

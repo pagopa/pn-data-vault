@@ -12,15 +12,21 @@ import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregist
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
+import software.amazon.awssdk.services.cloudwatch.model.*;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Classe wrapper di personal-data-vault, con gestione del backoff
@@ -28,6 +34,8 @@ import java.util.List;
 @Component
 @Slf4j
 public class PersonalDataVaultUserRegistryClient extends BaseClient {
+
+    private static final UUID UUID_FOR_CLOUDWATCH_METRIC = UUID.randomUUID();
 
     public static final String FILTER_FAMILY_NAME = "familyName";
     public static final String FILTER_NAME = "name";
@@ -37,13 +45,46 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     private final PnDatavaultConfig pnDatavaultConfig;
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
     private final RateLimiter rateLimiter;
+    private final CloudWatchAsyncClient cloudWatchAsyncClient;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
+    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, CloudWatchAsyncClient cloudWatchAsyncClient){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.pnDatavaultConfig = pnDatavaultConfig;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
         this.rateLimiter = buildRateLimiter(pnDatavaultConfig);
+        this.cloudWatchAsyncClient = cloudWatchAsyncClient;
+    }
+
+    @Scheduled(fixedRate = 10000)
+    public void sendMetricToCloudWatch() {
+        final String NAMESPACE = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
+
+        log.trace("Run task scheduled! {}", NAMESPACE );
+        int numberOfWaitingThreads = this.rateLimiter.getMetrics().getNumberOfWaitingThreads();
+
+        MetricDatum metricDatum = MetricDatum.builder()
+                .metricName("PDVNumberOfWaitingThreads")
+                .value((double) numberOfWaitingThreads)
+                .unit(StandardUnit.COUNT)
+                .dimensions(Collections.singletonList(Dimension.builder()
+                        .name("Environment")
+                        .value(pnDatavaultConfig.getEnvRuntime())
+                        .build()))
+                .timestamp(Instant.now())
+                .build();
+
+        PutMetricDataRequest putMetricDataRequest = PutMetricDataRequest.builder()
+                .namespace(NAMESPACE)
+                .metricData(Collections.singletonList(metricDatum))
+                .build();
+
+
+        Mono.fromFuture(cloudWatchAsyncClient.putMetricData(putMetricDataRequest))
+                .subscribe(putMetricDataResponse -> log.trace("PutMetricDataResponse: {}", putMetricDataResponse),
+                        throwable -> log.warn("Error sending metric", throwable));
+
+
     }
 
 

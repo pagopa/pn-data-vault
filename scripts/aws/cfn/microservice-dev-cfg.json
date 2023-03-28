@@ -6,7 +6,7 @@
     "PDVUserRegistryRateLimiterMillis": "1000",
     "PDVUserRegistryRateLimiterNRequests": "20",
     "PDVUserRegistryRateLimiterTimeoutMillis": "10000",
-    "CacheExpireMinutes": "600",
+    "CacheExpireMinutes": "0",
     "CacheMaxSize": "100000",
     "PnDataVaultSecretArn": "arn:aws:secretsmanager:eu-south-1:946373734005:secret:pn-PersonalDataVault-Apikey-lM5gJk",
     "MaxTasksNumber": "1"

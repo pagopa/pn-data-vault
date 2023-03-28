@@ -183,7 +183,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      Name: !Sub '${ProjectName}-cdc-stream'
+      Name: !Sub '${ProjectName}-confidential-cdc-source-stream'
       RetentionPeriodHours: !Ref CdcStreamRetentionHours
       ShardCount: !If [CdcOnDemandDisabled, !Ref CdcStreamShardCount, !Ref "AWS::NoValue"]
       StreamEncryption:
@@ -223,7 +223,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      Name: !Sub '${ProjectName}-logs-stream'
+      Name: !Sub '${ProjectName}-confidential-logs-source-stream'
       RetentionPeriodHours: !Ref LogsStreamRetentionHours
       ShardCount: !If [LogsOnDemandDisabled, !Ref LogsStreamShardCount, !Ref "AWS::NoValue"]
       StreamEncryption:

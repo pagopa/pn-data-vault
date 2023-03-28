@@ -71,18 +71,6 @@ Parameters:
     Type: String
 
 Resources:
-  ###                       LOGS STREAMS PREPARATION                      ###
-  ###########################################################################
-  # Logs bucket
-  # LogsBucket:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-bucket.yaml"
-  #     Parameters:
-  #       ProjectName: !Ref ProjectName
-  #       BucketSuffix: !Ref BucketSuffix
-  #       DataLakeAccountId1: !Ref DataLakeAccountId1
-  #       DataLakeAccountId2: !Ref DataLakeAccountId2
 
   # Exporter role
   LogsExporterRole:
@@ -97,55 +85,37 @@ Resources:
         DataLakeAccountId2: !Ref DataLakeAccountId2
         BucketSuffix: !Ref BucketSuffix 
   
-  ## KINESIS SOURCE STREAM FOR Change Data Capture
-  # ConfidentialInfoCdcKinesisSourceStream:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
-  #     Parameters:
-  #       StreamName: !Sub '${ProjectName}-confidential-cdc-source-stream'
-  #       StreamRetentionPeriodHours: !Ref CdcStreamRetentionHours
-
-  ## KINESIS SOURCE STREAM FOR Logs
-  # ConfidentialInfoLogsKinesisSourceStream:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
-  #     Parameters:
-  #       StreamName: !Sub '${ProjectName}-confidential-logs-source-stream'
-  #       StreamRetentionPeriodHours: !Ref LogsStreamRetentionHours
-
   ###             Export dynamo CDC to Log saving bucket             ###
   ###########################################################################
-  # CdcToExternalBucket:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
-  #     Parameters:
-  #       ProjectName: !Ref ProjectName
-  #       SourceKinesisDataStreamArn: !Ref CdcKinesisStreamArn
-  #       SourceKinesisDataStreamKeyArn: !Ref CdcKinesisStreamKeyArn
-  #       LogsBucketName: !Ref LogsBucketName
-  #       LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
-  #       StreamNamePrefix: 'cdcTos3'
-  #       AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-  #       StreamContent: DYNAMO_CDC
+  CdcToExternalBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        SourceKinesisDataStreamArn: !Ref CdcKinesisStreamArn
+        SourceKinesisDataStreamKeyArn: !Ref CdcKinesisStreamKeyArn
+        LogsBucketName: !Ref LogsBucketName
+        LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
+        StreamNamePrefix: 'cdcTos3'
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        StreamContent: DYNAMO_CDC
 
   ###             Export CloudWatch Logs to Log saving bucket             ###
   ###########################################################################
-  # LogsToExternalBucket:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
-  #     Parameters:
-  #       ProjectName: !Ref ProjectName
-  #       SourceKinesisDataStreamArn: !Ref LogsKinesisStreamArn
-  #       SourceKinesisDataStreamKeyArn: !Ref LogsKinesisStreamKeyArn
-  #       LogsBucketName: !Ref LogsBucketName
-  #       LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
-  #       StreamNamePrefix: 'logsTos3'
-  #       AlarmSNSTopicArn: !Ref AlarmSNSTopicArn    
-  #       StreamContent: CLOUDWATCH_LOGS         
+  LogsToExternalBucket:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        SourceKinesisDataStreamArn: !Ref LogsKinesisStreamArn
+        SourceKinesisDataStreamKeyArn: !Ref LogsKinesisStreamKeyArn
+        LogsBucketName: !Ref LogsBucketName
+        LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
+        StreamNamePrefix: 'logsTos3'
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn    
+        StreamContent: CLOUDWATCH_LOGS         
 
   ###                       CLOUDFORMATION TRANSFORM LAMBDAS              ###
   ###########################################################################
@@ -289,19 +259,19 @@ Outputs:
   # Back-compatibility for logsaver
   LogsToExternalBucketArn:
     Description: 'Logs Delivery stream to S3 ARN'
-    Value: '' # !GetAtt LogsToExternalBucket.Outputs.DeliveryStreamArn
+    Value: !GetAtt LogsToExternalBucket.Outputs.DeliveryStreamArn
 
   LogsToExternalBucketAlarmArn:
     Description: 'Log delivery stream alarm ARN'
-    Value: '' # !GetAtt LogsToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
+    Value: !GetAtt LogsToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
 
   CdcToExternalBucketArn:
     Description: 'Cdc Delivery stream to S3 ARN'
-    Value: '' #!GetAtt CdcToExternalBucket.Outputs.DeliveryStreamArn
+    Value: !GetAtt CdcToExternalBucket.Outputs.DeliveryStreamArn
 
   CdcToExternalBucketAlarmArn:
     Description: 'Cdc delivery stream alarm ARN'
-    Value: '' #!GetAtt CdcToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
+    Value: !GetAtt CdcToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
 
   # Back-compatibility for logsaver
   SubnetsIds:

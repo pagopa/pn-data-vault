@@ -117,19 +117,19 @@ Resources:
 
   ###             Export dynamo CDC to Log saving bucket             ###
   ###########################################################################
-  CdcToExternalBucket:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
-      Parameters:
-        ProjectName: !Ref ProjectName
-        SourceKinesisDataStreamArn: !Ref CdcKinesisStreamArn
-        SourceKinesisDataStreamKeyArn: !Ref CdcKinesisStreamKeyArn
-        LogsBucketName: !Ref LogsBucketName
-        LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
-        StreamNamePrefix: 'cdcTos3'
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-        StreamContent: DYNAMO_CDC
+  # CdcToExternalBucket:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
+  #     Parameters:
+  #       ProjectName: !Ref ProjectName
+  #       SourceKinesisDataStreamArn: !Ref CdcKinesisStreamArn
+  #       SourceKinesisDataStreamKeyArn: !Ref CdcKinesisStreamKeyArn
+  #       LogsBucketName: !Ref LogsBucketName
+  #       LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
+  #       StreamNamePrefix: 'cdcTos3'
+  #       AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+  #       StreamContent: DYNAMO_CDC
 
   ###             Export CloudWatch Logs to Log saving bucket             ###
   ###########################################################################
@@ -297,11 +297,11 @@ Outputs:
 
   CdcToExternalBucketArn:
     Description: 'Cdc Delivery stream to S3 ARN'
-    Value: !GetAtt CdcToExternalBucket.Outputs.DeliveryStreamArn
+    Value: '' #!GetAtt CdcToExternalBucket.Outputs.DeliveryStreamArn
 
   CdcToExternalBucketAlarmArn:
     Description: 'Cdc delivery stream alarm ARN'
-    Value: !GetAtt CdcToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
+    Value: '' #!GetAtt CdcToExternalBucket.Outputs.DeliveryStreamErrorLogsMetricAlarmArn
 
   # Back-compatibility for logsaver
   SubnetsIds:

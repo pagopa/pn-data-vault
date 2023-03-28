@@ -60,15 +60,16 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     public void sendMetricToCloudWatch() {
         final String NAMESPACE = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
 
-        log.trace("Run task scheduled! {}", NAMESPACE );
-        int numberOfWaitingThreads = this.rateLimiter.getMetrics().getNumberOfWaitingThreads();
-        if(numberOfWaitingThreads > 0) {
-            log.warn("[{}] NumberOfWaitingThreads: {}", NAMESPACE, numberOfWaitingThreads);
+        int availablePermissions = this.rateLimiter.getMetrics().getAvailablePermissions();
+        int numberOfWaitingRequests = availablePermissions >= 0 ? 0 : Math.abs(availablePermissions);
+        log.trace("[{}] NumberOfWaitingRequest: {} - NumberOfWaitingRequest: {}", NAMESPACE, availablePermissions, numberOfWaitingRequests);
+        if(numberOfWaitingRequests > 0) {
+            log.warn("[{}] PDVNumberOfWaitingRequests: {}", NAMESPACE, numberOfWaitingRequests);
         }
 
         MetricDatum metricDatum = MetricDatum.builder()
-                .metricName("PDVNumberOfWaitingThreads")
-                .value((double) numberOfWaitingThreads)
+                .metricName("PDVNumberOfWaitingRequests")
+                .value((double) numberOfWaitingRequests)
                 .unit(StandardUnit.COUNT)
                 .dimensions(Collections.singletonList(Dimension.builder()
                         .name("Environment")

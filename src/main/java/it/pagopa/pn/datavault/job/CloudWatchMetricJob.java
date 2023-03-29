@@ -14,6 +14,7 @@ import software.amazon.awssdk.services.cloudwatch.model.MetricDatum;
 import software.amazon.awssdk.services.cloudwatch.model.PutMetricDataRequest;
 import software.amazon.awssdk.services.cloudwatch.model.StandardUnit;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.UUID;
@@ -26,16 +27,21 @@ public class CloudWatchMetricJob {
     public static final String PDV_RATE_LIMITER = "pdv-rate-limiter";
 
     private static final UUID UUID_FOR_CLOUDWATCH_METRIC = UUID.randomUUID();
+    private static final String NAMESPACE = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
 
     private final RateLimiterRegistry rateLimiterRegistry;
     private final CloudWatchAsyncClient cloudWatchAsyncClient;
     private final PnDatavaultConfig pnDatavaultConfig;
 
+    @PostConstruct
+    public void init() {
+        log.info("Namespace for CloudWatchMetricJob is: {}", NAMESPACE);
+    }
+
 
     @Scheduled(cron = "${pn.data-vault.cloudwatch-metric-cron}")
     public void sendMetricToCloudWatch() {
         RateLimiter rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
-        final String NAMESPACE = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
 
         int availablePermissions = rateLimiter.getMetrics().getAvailablePermissions();
         int numberOfWaitingRequests = availablePermissions >= 0 ? 0 : Math.abs(availablePermissions);

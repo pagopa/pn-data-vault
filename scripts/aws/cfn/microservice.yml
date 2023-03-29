@@ -261,6 +261,13 @@ Resources:
               - dynamodb:DeleteItem
             Resource:
               - !Ref ConfidentialObjectsDynamoTableArn
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - cloudwatch:GetMetricStream
+              - cloudwatch:GetMetricData
+            Resource:
+              - "*"
 
   ## Dashboard
   DataVaultMicroserviceCloudWatchDashboard:

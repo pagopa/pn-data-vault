@@ -28,10 +28,6 @@ public class PnDatavaultConfig {
 
     private String userregistryApiKeyPf;
     private String userregistryApiKeyPg;
-    private Long userregistryRateLimiterMillis;
-    private Integer userregistryRateLimiterNrequests;
-    private Long userregistryRateLimiterTimeoutMillis;
-
     private int cacheExpireAfterMinutes;
     private int cacheMaxSize;
 

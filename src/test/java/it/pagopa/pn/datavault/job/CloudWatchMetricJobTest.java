@@ -43,7 +43,5 @@ class CloudWatchMetricJobTest {
         when(cloudWatchAsyncClient.putMetricData(any(PutMetricDataRequest.class))).thenReturn(CompletableFuture.completedFuture(putMetricDataResponse));
 
         Assertions.assertDoesNotThrow(() -> cloudWatchMetricJob.sendMetricToCloudWatch());
-        cloudWatchMetricJob.sendMetricToCloudWatch();
-
     }
 }

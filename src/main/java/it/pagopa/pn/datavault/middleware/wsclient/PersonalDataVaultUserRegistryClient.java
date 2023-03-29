@@ -56,13 +56,13 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         this.cloudWatchAsyncClient = cloudWatchAsyncClient;
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(cron = "${pn.data-vault.cloudwatch-metric-cron}")
     public void sendMetricToCloudWatch() {
         final String NAMESPACE = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
 
         int availablePermissions = this.rateLimiter.getMetrics().getAvailablePermissions();
         int numberOfWaitingRequests = availablePermissions >= 0 ? 0 : Math.abs(availablePermissions);
-        log.trace("[{}] NumberOfWaitingRequest: {} - NumberOfWaitingRequest: {}", NAMESPACE, availablePermissions, numberOfWaitingRequests);
+        log.trace("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", NAMESPACE, availablePermissions, numberOfWaitingRequests);
         if(numberOfWaitingRequests > 0) {
             log.warn("[{}] PDVNumberOfWaitingRequests: {}", NAMESPACE, numberOfWaitingRequests);
         }

@@ -185,7 +185,12 @@ Parameters:
   MaxTasksNumber:
     Default: 6
     Type: Number
-    Description: maximum autoscaling number of tasks    
+    Description: maximum autoscaling number of tasks
+
+  CloudWatchMetricCron:
+    Type: String
+    Description: Cron for which you send the custom metric for PDV to CloudWatch
+
 Resources:
 
   # PN-DataVault microservice
@@ -219,6 +224,7 @@ Resources:
         ContainerEnvEntry11: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_MILLIS=${PDVUserRegistryRateLimiterMillis}'
         ContainerEnvEntry12: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_NREQUESTS=${PDVUserRegistryRateLimiterNRequests}'
         ContainerEnvEntry13: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_TIMEOUT_MILLIS=${PDVUserRegistryRateLimiterTimeoutMillis}'
+        ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
         ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=${PnDataVaultSecretArn}:TokenizerApiKeyForPF:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=${PnDataVaultSecretArn}:TokenizerApiKeyForPG:AWSCURRENT:'
         ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=${PnDataVaultSecretArn}:UserRegistryApiKeyForPF:AWSCURRENT:'

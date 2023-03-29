@@ -62,7 +62,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
 
         int availablePermissions = this.rateLimiter.getMetrics().getAvailablePermissions();
         int numberOfWaitingRequests = availablePermissions >= 0 ? 0 : Math.abs(availablePermissions);
-        log.info("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", NAMESPACE, availablePermissions, numberOfWaitingRequests);
+        log.trace("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", NAMESPACE, availablePermissions, numberOfWaitingRequests);
         if(numberOfWaitingRequests > 0) {
             log.warn("[{}] PDVNumberOfWaitingRequests: {}", NAMESPACE, numberOfWaitingRequests);
         }

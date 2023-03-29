@@ -1,0 +1,9 @@
+{
+    "Parameters" : {
+      "BucketSuffix": "001",
+      "SafeStorageAccountId": "",
+      "LogsStreamRetentionHours": "48",
+      "CdcStreamRetentionHours": "48"  
+    }
+  }
+  

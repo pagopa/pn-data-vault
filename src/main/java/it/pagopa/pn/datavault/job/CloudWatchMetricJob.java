@@ -27,7 +27,7 @@ public class CloudWatchMetricJob {
     public static final String PDV_RATE_LIMITER = "pdv-rate-limiter";
 
     private static final UUID UUID_FOR_CLOUDWATCH_METRIC = UUID.randomUUID();
-    private static final String NAMESPACE = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
+    private static final String NAMESPACE_CW = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
 
     private final RateLimiterRegistry rateLimiterRegistry;
     private final CloudWatchAsyncClient cloudWatchAsyncClient;
@@ -35,7 +35,7 @@ public class CloudWatchMetricJob {
 
     @PostConstruct
     public void init() {
-        log.info("Namespace for CloudWatchMetricJob is: {}", NAMESPACE);
+        log.info("Namespace for CloudWatchMetricJob is: {}", NAMESPACE_CW);
     }
 
 
@@ -45,9 +45,9 @@ public class CloudWatchMetricJob {
 
         int availablePermissions = rateLimiter.getMetrics().getAvailablePermissions();
         int numberOfWaitingRequests = availablePermissions >= 0 ? 0 : Math.abs(availablePermissions);
-        log.trace("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", NAMESPACE, availablePermissions, numberOfWaitingRequests);
+        log.trace("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", NAMESPACE_CW, availablePermissions, numberOfWaitingRequests);
         if(numberOfWaitingRequests > 0) {
-            log.warn("[{}] PDVNumberOfWaitingRequests: {}", NAMESPACE, numberOfWaitingRequests);
+            log.warn("[{}] PDVNumberOfWaitingRequests: {}", NAMESPACE_CW, numberOfWaitingRequests);
         }
 
         MetricDatum metricDatum = MetricDatum.builder()
@@ -62,7 +62,7 @@ public class CloudWatchMetricJob {
                 .build();
 
         PutMetricDataRequest putMetricDataRequest = PutMetricDataRequest.builder()
-                .namespace(NAMESPACE)
+                .namespace(NAMESPACE_CW)
                 .metricData(Collections.singletonList(metricDatum))
                 .build();
 

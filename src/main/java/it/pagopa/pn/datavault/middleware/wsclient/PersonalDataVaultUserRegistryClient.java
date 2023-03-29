@@ -2,7 +2,7 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
-import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
@@ -12,21 +12,16 @@ import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregist
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
-import software.amazon.awssdk.services.cloudwatch.model.*;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
+
+import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.PDV_RATE_LIMITER;
 
 /**
  * Classe wrapper di personal-data-vault, con gestione del backoff
@@ -34,8 +29,6 @@ import java.util.UUID;
 @Component
 @Slf4j
 public class PersonalDataVaultUserRegistryClient extends BaseClient {
-
-    private static final UUID UUID_FOR_CLOUDWATCH_METRIC = UUID.randomUUID();
 
     public static final String FILTER_FAMILY_NAME = "familyName";
     public static final String FILTER_NAME = "name";
@@ -45,50 +38,13 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     private final PnDatavaultConfig pnDatavaultConfig;
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
     private final RateLimiter rateLimiter;
-    private final CloudWatchAsyncClient cloudWatchAsyncClient;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, CloudWatchAsyncClient cloudWatchAsyncClient){
+    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, RateLimiterRegistry rateLimiterRegistry){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.userClientPG = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPg(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.pnDatavaultConfig = pnDatavaultConfig;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
-        this.rateLimiter = buildRateLimiter(pnDatavaultConfig);
-        this.cloudWatchAsyncClient = cloudWatchAsyncClient;
-    }
-
-    @Scheduled(cron = "${pn.data-vault.cloudwatch-metric-cron}")
-    public void sendMetricToCloudWatch() {
-        final String NAMESPACE = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
-
-        int availablePermissions = this.rateLimiter.getMetrics().getAvailablePermissions();
-        int numberOfWaitingRequests = availablePermissions >= 0 ? 0 : Math.abs(availablePermissions);
-        log.trace("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", NAMESPACE, availablePermissions, numberOfWaitingRequests);
-        if(numberOfWaitingRequests > 0) {
-            log.warn("[{}] PDVNumberOfWaitingRequests: {}", NAMESPACE, numberOfWaitingRequests);
-        }
-
-        MetricDatum metricDatum = MetricDatum.builder()
-                .metricName("PDVNumberOfWaitingRequests")
-                .value((double) numberOfWaitingRequests)
-                .unit(StandardUnit.COUNT)
-                .dimensions(Collections.singletonList(Dimension.builder()
-                        .name("Environment")
-                        .value(pnDatavaultConfig.getEnvRuntime())
-                        .build()))
-                .timestamp(Instant.now())
-                .build();
-
-        PutMetricDataRequest putMetricDataRequest = PutMetricDataRequest.builder()
-                .namespace(NAMESPACE)
-                .metricData(Collections.singletonList(metricDatum))
-                .build();
-
-
-        Mono.fromFuture(cloudWatchAsyncClient.putMetricData(putMetricDataRequest))
-                .subscribe(putMetricDataResponse -> log.trace("PutMetricDataResponse: {}", putMetricDataResponse),
-                        throwable -> log.warn("Error sending metric", throwable));
-
-
+        this.rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
     }
 
 
@@ -168,12 +124,4 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         return new String(resultoutput);
     }
 
-
-    private RateLimiter buildRateLimiter(PnDatavaultConfig pnDatavaultConfig) {
-        return RateLimiter.of("user-registry-rate-limit", RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterMillis()))
-                        .limitForPeriod(pnDatavaultConfig.getUserregistryRateLimiterNrequests())
-                        .timeoutDuration(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterTimeoutMillis()))
-                .build());
-    }
 }

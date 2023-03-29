@@ -1,6 +1,9 @@
 package it.pagopa.pn.datavault.middleware.wsclient;
 
 
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.exceptions.PnDatavaultRecipientNotFoundException;
@@ -14,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.PDV_RATE_LIMITER;
+
 /**
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff
  */
@@ -24,15 +29,17 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
     private final TokenApi tokenApiPF;
     private final TokenApi tokenApiPG;
     private final PnDatavaultConfig pnDatavaultConfig;
+    private final RateLimiter rateLimiter;
 
 
-    public PersonalDataVaultTokenizerClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1){
+    public PersonalDataVaultTokenizerClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1, RateLimiterRegistry rateLimiterRegistry){
         // creo 2 istanze diverse, una per PF e l'altra per PG, perchè la differenza
         // sta in un header che viene spedito. Tale header, che è una costante
         // vien definita in fase di creazione, e quindi evito ogni volta di scriverlo.
         this.tokenApiPF = new TokenApi(initApiClient(pnDatavaultConfig.getTokenizerApiKeyPf(), pnDatavaultConfig.getClientTokenizerBasepath()));
         this.tokenApiPG = new TokenApi(initApiClient(pnDatavaultConfig.getTokenizerApiKeyPg(), pnDatavaultConfig.getClientTokenizerBasepath()));
         this.pnDatavaultConfig = pnDatavaultConfig1;
+        this.rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
     }
 
     /**
@@ -54,6 +61,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         pii.setPii(taxId);
         return this.getTokeApiForRecipientType(recipientType)
                     .saveUsingPUT(pii)
+                    .transformDeferred(RateLimiterOperator.of(rateLimiter))
                     .map(r -> {
                         if (r == null)
                         {
@@ -72,6 +80,7 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
         log.info("[enter] findPii token={}", internalId);
         return this.getTokeApiForRecipientType(getRecipientTypeFromInternalId(internalId))
                 .findPiiUsingGET(getUUIDFromInternalId(internalId))
+                .transformDeferred(RateLimiterOperator.of(rateLimiter))
                 .map(r -> {
                     UserResourceDto brd = new UserResourceDto();
                     brd.setId(getUUIDFromInternalId(internalId));

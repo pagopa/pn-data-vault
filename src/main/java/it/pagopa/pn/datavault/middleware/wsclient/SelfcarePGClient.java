@@ -10,6 +10,7 @@ import it.pagopa.pn.datavault.exceptions.PnDatavaultRecipientNotFoundException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.selfcarepg.v1.ApiClient;
+import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.selfcarepg.v1.api.InstitutionsApi;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.selfcarepg.v1.api.InstitutionsPnpgApi;
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.selfcarepg.v1.dto.CreatePnPgInstitutionDtoDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.OcpBaseClient;
@@ -31,6 +32,8 @@ import java.util.List;
 public class SelfcarePGClient extends OcpBaseClient {
 
     private final InstitutionsPnpgApi institutionsPnpgApi;
+
+    private final InstitutionsApi institutionsApi;
     private final PnDatavaultConfig pnDatavaultConfig;
     private final RateLimiter rateLimiter;
 
@@ -38,6 +41,7 @@ public class SelfcarePGClient extends OcpBaseClient {
         ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg()).build());
         apiClient.setBasePath(pnDatavaultConfig.getClientSelfcarepgBasepath());
         this.institutionsPnpgApi = new InstitutionsPnpgApi( apiClient );
+        this.institutionsApi = new InstitutionsApi(apiClient);
         this.pnDatavaultConfig = pnDatavaultConfig;
         this.rateLimiter = buildRateLimiter(pnDatavaultConfig);
     }
@@ -67,7 +71,7 @@ public class SelfcarePGClient extends OcpBaseClient {
 
         CreatePnPgInstitutionDtoDto pii = new CreatePnPgInstitutionDtoDto();
         pii.setExternalId(taxId);
-        return this.institutionsPnpgApi.addInstitutionUsingPOST("toremove-notused",pii)
+        return this.institutionsPnpgApi.addInstitutionUsingPOST(pii)
                     .map(r -> {
                         if (r == null)
                         {
@@ -103,7 +107,7 @@ public class SelfcarePGClient extends OcpBaseClient {
 
         log.debug("[enter] retrieveInstitutionByIdUsingGET internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
-                .flatMap(internalId -> this.institutionsPnpgApi.retrieveInstitutionByIdUsingGET(internalId.internalId().toString())
+                .flatMap(internalId -> this.institutionsApi.getInstitution(internalId.internalId())
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))
                 .map(r ->  { BaseRecipientDto brd = new BaseRecipientDto();
                             brd.setInternalId(internalId.internalIdWithRecipientType());

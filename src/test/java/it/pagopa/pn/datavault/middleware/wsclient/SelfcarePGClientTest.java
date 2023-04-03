@@ -3,7 +3,7 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.selfcarepg.v1.dto.InstitutionResponseDto;
+import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.selfcarepg.v1.dto.InstitutionDto;
 import it.pagopa.pn.datavault.svc.entities.InternalId;
 import it.pagopa.pn.datavault.utils.RecipientUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -18,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,14 +78,13 @@ class SelfcarePGClientTest {
     @Test
     void retrieveInstitutionByIdUsingGET() throws JsonProcessingException {
         //Given
-        String name = "";
         String surname = "mario rossi srl";
         String fc = "12345678909";
         String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
         String expectediuid = "PG-"+iuid;
-        List<String> ids = Arrays.asList(expectediuid);
+        List<String> ids = List.of(expectediuid);
         List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
-        InstitutionResponseDto response = new InstitutionResponseDto();
+        InstitutionDto response = new InstitutionDto();
         response.setDescription(surname);
         response.setExternalId(fc);
         ObjectMapper mapper = new ObjectMapper();

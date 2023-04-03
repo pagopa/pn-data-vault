@@ -5,7 +5,7 @@
       "VpcSubnets": "subnet-0d8c229c7cfe0effd,subnet-0b83536bf40f562ac,subnet-00b535a1f39250db6",
       "VpcSubnetsRoutingTables": "rtb-060e6d8b9c3e9b831,rtb-081180a0c917d410c,rtb-059a740c724452a79",
       "PrivateHostedZone": "Z0232891JUZMO2YDH9M8",
-      "SandboxSafeStorageBaseUrl": "https://14ej9p2krd.execute-api.eu-south-1.amazonaws.com/dev/"
+      "SandboxSafeStorageBaseUrl": "http://alb.confidential.pn.internal:8080/"
     }
 }
   

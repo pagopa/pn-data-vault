@@ -29,17 +29,12 @@ public class PnDatavaultConfig {
 
     private String userregistryApiKeyPf;
     private String userregistryApiKeyPg;
-    private Long userregistryRateLimiterMillis;
-    private Integer userregistryRateLimiterNrequests;
-    private Long userregistryRateLimiterTimeoutMillis;
 
     private String selfcarepgApiKeyPg;
-    private Long selfcarepgRateLimiterMillis;
-    private Integer selfcarepgRateLimiterNrequests;
-    private Long selfcarepgRateLimiterTimeoutMillis;
 
     private int cacheExpireAfterMinutes;
     private int cacheMaxSize;
+
 
     @Value("${pn.env.runtime}")
     private String envRuntime;

@@ -15,20 +15,17 @@ Parameters:
     Type: String
     Description: VpcId of the VPC where to install PN-CORE
 
-  VpcCidr:
-    Type: String
-    Description: Cidr of the VPC where to install PN-CORE
-    
   VpcSubnets:
     Type: String
     Description: subnets where to install PN-CORE
 
-  VpcSubnetsRoutingTables:
+  ECSClusterName:
     Type: String
-    Description: routing table for subnets where to install PN-CORE
-  PrivateHostedZone:
+    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
+
+  ApplicationLoadBalancerListenerArn:
     Type: String
-    Description: private hosted zone where register the application load balancer
+    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
   
   ContainerImageUri:
     Type: String
@@ -204,88 +201,15 @@ Parameters:
   MaxTasksNumber:
     Default: 6
     Type: Number
-    Description: maximum autoscaling number of tasks    
+    Description: maximum autoscaling number of tasks
+
+  CloudWatchMetricCron:
+    Type: String
+    Description: Cron for which you send the custom metric for PDV to CloudWatch
+
 Resources:
 
-  # Private connection from subnets to AWS services
-  VPCEndpoints:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
-      Parameters:
-        VpcName: !Ref ProjectName
-        VpcCidr: !Ref VpcCidr
-        Subnets: !Ref VpcSubnets
-        RouteTableIds: !Ref VpcSubnetsRoutingTables
-        VpcId: !Ref VpcId
-
-  ###                       APPLICATION LOAD BALANCER                       ###
-  #############################################################################
-  # Application load balancer
-  ApplicationLoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Type: application
-      Scheme: internal
-      IpAddressType: ipv4
-      Subnets: !Split [ ',', !Ref VpcSubnets ]
-      SecurityGroups:
-        - !Ref WebappSecurityGroup
-
-  # Application load balancer listener
-  ApplicationLoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref ApplicationLoadBalancer
-      Protocol: HTTP
-      Port: 8080
-      DefaultActions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: 404
-            ContentType: "application/json"
-            MessageBody: "{ \"error\": \"404\", \"message\": \"Load balancer rule not configured\" }"
-          Order: 1
-
-  # Application security groups
-  WebappSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${ProjectName}-webapp-security-group
-      GroupDescription: "ingres tcp 8080, egress all"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
-          CidrIp: "0.0.0.0/0"
-      VpcId: !Ref VpcId
-
-
-  # Load balancer private fixed DNS
-  Route53RecordSetGroup:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub 'alb.confidential.${ProjectName}.internal'
-      Type: A
-      HostedZoneId: !Ref PrivateHostedZone  
-      AliasTarget:
-        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
-        EvaluateTargetHealth: false
-        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
-
-  ###                             ECS CLUSTER                             ###
-  ###########################################################################
-
-  # The cluster
-  ECSCluster:
-    DependsOn: ApplicationLoadBalancerListener
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
-      Parameters:
-        MacroServiceName: !Sub '${ProjectName}-confidential'
-  
-  # PN-Delivery microservice
+  # PN-DataVault microservice
   DataVaultMicroservice:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -314,22 +238,20 @@ Resources:
         ContainerEnvEntry5: !Sub 'PN_DATA_VAULT_CLIENT_SELFCAREPG_BASEPATH=${SelfcarePgBasePath}'
         ContainerEnvEntry6: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
         ContainerEnvEntry7: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
-        ContainerEnvEntry8: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_MILLIS=${PDVUserRegistryRateLimiterMillis}'
-        ContainerEnvEntry9: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_NREQUESTS=${PDVUserRegistryRateLimiterNRequests}'
-        ContainerEnvEntry10: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_TIMEOUT_MILLIS=${PDVUserRegistryRateLimiterTimeoutMillis}'
-        ContainerEnvEntry11: !Sub 'PN_DATA_VAULT_SELFCAREPG_RATE_LIMITER_MILLIS=${SelfcarePgRateLimiterMillis}'
-        ContainerEnvEntry12: !Sub 'PN_DATA_VAULT_SELFCAREPG_RATE_LIMITER_NREQUESTS=${SelfcarePgRateLimiterNRequests}'
-        ContainerEnvEntry13: !Sub 'PN_DATA_VAULT_SELFCAREPG_RATE_LIMITER_TIMEOUT_MILLIS=${SelfcarePgRateLimiterTimeoutMillis}'
+        ContainerEnvEntry8: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_REFRESH_PERIOD=${PDVUserRegistryRateLimiterMillis}'
+        ContainerEnvEntry9: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_FOR_PERIOD=${PDVUserRegistryRateLimiterNRequests}'
+        ContainerEnvEntry10: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_TIMEOUT_DURATION=${PDVUserRegistryRateLimiterTimeoutMillis}'
+        ContainerEnvEntry11: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
         ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=${PnDataVaultSecretArn}:TokenizerApiKeyForPF:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=${PnDataVaultSecretArn}:UserRegistryApiKeyForPF:AWSCURRENT:'
         ContainerSecret3: !Sub 'PN_DATA_VAULT_SELFCAREPG_API_KEY_PG=${PnDataVaultSecretArn}:SelfcareApiKeyForPG:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-PersonalDataVault
         MappedPaths: '/datavault/*,/datavault-private/*'
-        ECSClusterName: !GetAtt ECSCluster.Outputs.ClusterName
+        ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref VpcSubnets
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
-        LoadBalancerListenerArn: !GetAtt ApplicationLoadBalancerListener.ListenerArn
+        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         CloudwatchLogKinesisStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
         TaskRoleManagedPolicyArn: !Ref DataVaultyMicroserviceTaskManagedPolicy
@@ -355,6 +277,13 @@ Resources:
               - dynamodb:DeleteItem
             Resource:
               - !Ref ConfidentialObjectsDynamoTableArn
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - cloudwatch:GetMetricStream
+              - cloudwatch:GetMetricData
+            Resource:
+              - "*"
 
   ## Dashboard
   DataVaultMicroserviceCloudWatchDashboard:

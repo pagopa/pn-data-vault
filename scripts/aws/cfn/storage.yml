@@ -32,6 +32,8 @@ Resources:
 
   ConfidentialObjectsDynamoTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub '${ProjectName}-ConfidentialObjects'
       AttributeDefinitions:

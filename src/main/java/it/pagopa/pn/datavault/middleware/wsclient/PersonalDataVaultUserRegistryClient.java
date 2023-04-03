@@ -2,7 +2,7 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
-import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
@@ -19,9 +19,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+
+import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.PDV_RATE_LIMITER;
 
 /**
  * Classe wrapper di personal-data-vault, con gestione del backoff
@@ -38,11 +39,11 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
     private final RateLimiter rateLimiter;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient){
+    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, RateLimiterRegistry rateLimiterRegistry){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
         this.pnDatavaultConfig = pnDatavaultConfig;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
-        this.rateLimiter = buildRateLimiter(pnDatavaultConfig);
+        this.rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
     }
 
 
@@ -99,11 +100,4 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     }
 
 
-    private RateLimiter buildRateLimiter(PnDatavaultConfig pnDatavaultConfig) {
-        return RateLimiter.of("user-registry-rate-limit", RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterMillis()))
-                        .limitForPeriod(pnDatavaultConfig.getUserregistryRateLimiterNrequests())
-                        .timeoutDuration(Duration.ofMillis(pnDatavaultConfig.getUserregistryRateLimiterTimeoutMillis()))
-                .build());
-    }
 }

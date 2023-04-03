@@ -17,10 +17,22 @@ Parameters:
   VpcId:
     Type: String
     Description: VpcId of the VPC where to install PN-CONFIDENTIAL-INFO
+    
+  VpcCidr:
+    Type: String
+    Description: Cidr of the VPC where to install PN-CORE
 
   VpcSubnets:
     Type: String
     Description: subnets where to install PN-CONFIDENTIAL-INFO
+  
+  VpcSubnetsRoutingTables:
+    Type: String
+    Description: routing table for subnets where to install PN-CORE
+
+  PrivateHostedZone:
+    Type: String
+    Description: private hosted zone where register the application load balancer
 
   BucketSuffix:
     Type: String
@@ -37,34 +49,28 @@ Parameters:
     Default: '-'
     Description: Data lake can read logs
 
-  CdcStreamRetentionHours:
-    Type: Number
-    Default: "24"
-    Description: 'Change Data Capture Kinesis Data Stream retention period in hours'
-
-  LogsStreamRetentionHours:
-    Type: Number
-    Default: "24"
-    Description: 'Cloudwatch Logs Kinesis Data Stream retention period in hours'
-    
   AlarmSNSTopicArn:
     Type: String
     Description: ARN of the Alarm SNS Topic
 
+  LogsBucketKmsKeyArn:
+    Type: String
+  LogsBucketName:
+    Type: String
+  CdcKinesisStreamName:
+    Type: String
+  CdcKinesisStreamArn:
+    Type: String
+  CdcKinesisStreamKeyArn:
+    Type: String
+  LogsKinesisStreamName:
+    Type: String
+  LogsKinesisStreamArn:
+    Type: String
+  LogsKinesisStreamKeyArn:
+    Type: String
 
 Resources:
-  ###                       LOGS STREAMS PREPARATION                      ###
-  ###########################################################################
-  # Logs bucket
-  LogsBucket:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-bucket.yaml"
-      Parameters:
-        ProjectName: !Ref ProjectName
-        BucketSuffix: !Ref BucketSuffix
-        DataLakeAccountId1: !Ref DataLakeAccountId1
-        DataLakeAccountId2: !Ref DataLakeAccountId2
 
   # Exporter role
   LogsExporterRole:
@@ -73,27 +79,12 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-bucket-access-role.yaml"
       Parameters:
         ProjectName: !Ref ProjectName
-        LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
-        LogsAccountId: !Ref AWS::AccountId
+        LogsBucketName: !Ref LogsBucketName
+        LogsBucketKmsKeyArn: !Ref LogsBucketKmsKeyArn
+        DataLakeAccountId1: !Ref DataLakeAccountId1
+        DataLakeAccountId2: !Ref DataLakeAccountId2
+        BucketSuffix: !Ref BucketSuffix 
   
-  ## KINESIS SOURCE STREAM FOR Change Data Capture
-  ConfidentialInfoCdcKinesisSourceStream:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
-      Parameters:
-        StreamName: !Sub '${ProjectName}-confidential-cdc-source-stream'
-        StreamRetentionPeriodHours: !Ref CdcStreamRetentionHours
-
-  ## KINESIS SOURCE STREAM FOR Logs
-  ConfidentialInfoLogsKinesisSourceStream:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
-      Parameters:
-        StreamName: !Sub '${ProjectName}-confidential-logs-source-stream'
-        StreamRetentionPeriodHours: !Ref LogsStreamRetentionHours
-
   ###             Export dynamo CDC to Log saving bucket             ###
   ###########################################################################
   CdcToExternalBucket:
@@ -102,9 +93,9 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
       Parameters:
         ProjectName: !Ref ProjectName
-        SourceKinesisDataStreamArn: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamArn
-        SourceKinesisDataStreamKeyArn: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamKeyArn
-        LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
+        SourceKinesisDataStreamArn: !Ref CdcKinesisStreamArn
+        SourceKinesisDataStreamKeyArn: !Ref CdcKinesisStreamKeyArn
+        LogsBucketName: !Ref LogsBucketName
         LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
         StreamNamePrefix: 'cdcTos3'
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -118,9 +109,9 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-source-stream-to-logs-bucket.yaml"
       Parameters:
         ProjectName: !Ref ProjectName
-        SourceKinesisDataStreamArn: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamArn
-        SourceKinesisDataStreamKeyArn: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamKeyArn
-        LogsBucketName: !GetAtt LogsBucket.Outputs.LogsBucketName
+        SourceKinesisDataStreamArn: !Ref LogsKinesisStreamArn
+        SourceKinesisDataStreamKeyArn: !Ref LogsKinesisStreamKeyArn
+        LogsBucketName: !Ref LogsBucketName
         LogsExporterRoleArn: !GetAtt LogsExporterRole.Outputs.LogsIngestionRoleArn
         StreamNamePrefix: 'logsTos3'
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn    
@@ -147,6 +138,84 @@ Resources:
   #       TopicName: 'dev_alarm'
   #       SNSTopicArn: !Ref AlarmSNSTopic
   #       SlackInfo: !Ref SlackInfo
+
+   # Private connection from subnets to AWS services
+  VPCEndpoints:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
+      Parameters:
+        VpcName: !Ref ProjectName
+        VpcCidr: !Ref VpcCidr
+        Subnets: !Ref VpcSubnets
+        RouteTableIds: !Ref VpcSubnetsRoutingTables
+        VpcId: !Ref VpcId
+
+  ###                       APPLICATION LOAD BALANCER                       ###
+  #############################################################################
+  # Application load balancer
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internal
+      IpAddressType: ipv4
+      Subnets: !Split [ ',', !Ref VpcSubnets ]
+      SecurityGroups:
+        - !Ref WebappSecurityGroup
+
+  # Application load balancer listener
+  ApplicationLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Protocol: HTTP
+      Port: 8080
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: "application/json"
+            MessageBody: "{ \"error\": \"404\", \"message\": \"Load balancer rule not configured\" }"
+          Order: 1
+
+  # Application security groups
+  WebappSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ProjectName}-webapp-security-group
+      GroupDescription: "ingres tcp 8080, egress all"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: "0.0.0.0/0"
+      VpcId: !Ref VpcId
+
+
+  # Load balancer private fixed DNS
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub 'alb.confidential.${ProjectName}.internal'
+      Type: A
+      HostedZoneId: !Ref PrivateHostedZone  
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        EvaluateTargetHealth: false
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
+  ###                             ECS CLUSTER                             ###
+  ###########################################################################
+
+  # The cluster
+  ECSCluster:
+    DependsOn: ApplicationLoadBalancerListener
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
+      Parameters:
+        MacroServiceName: !Sub '${ProjectName}-confidential'
   
 Outputs:
 
@@ -163,37 +232,24 @@ Outputs:
     Value: !Ref VpcSubnets
 
   # Confidential Data Change Data Capture kinesis stream
-  ConfidentialInfoCdcKinesisSourceStreamName:
-    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamName
-    Description: kinesis stream name for ConfidentialObject dynamo table
   ConfidentialInfoCdcKinesisSourceStreamArn:
-    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamArn
+    Value: !Ref CdcKinesisStreamArn
     Description: kinesis stream Arn for ConfidentialObject dynamo table
-  ConfidentialInfoCdcKinesisSourceStreamKeyArn:
-    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamKeyArn
-    Description: KMS key arn for ConfidentialObject stream decryption
-
 
   # Kinesis Source Stream containing the CloudWatch Logs
-  ConfidentialInfoLogsKinesisSourceStreamName:
-    Description: 'Kinesis source Logs stream name'
-    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamName
   ConfidentialInfoLogsKinesisSourceStreamArn:
     Description: 'Kinesis source Logs stream ARN'
-    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamArn
-  ConfidentialInfoLogsKinesisSourceStreamKeyArn:
-    Description: 'Kinesis source Logs stream crypto key ARN'
-    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamKeyArn
+    Value: !Ref LogsKinesisStreamArn
 
   # Back-compatibility for logsaver
   LogsKinesisSourceStreamArn:
     Description: 'Kinesis source Logs stream ARN'
-    Value: !GetAtt ConfidentialInfoLogsKinesisSourceStream.Outputs.KinesisStreamArn
+    Value: !Ref LogsKinesisStreamArn
 
   # Back-compatibility for logsaver
   CdcKinesisSourceStreamArn:
     Description: 'Kinesis source Logs stream ARN'
-    Value: !GetAtt ConfidentialInfoCdcKinesisSourceStream.Outputs.KinesisStreamArn
+    Value: !Ref CdcKinesisStreamArn
 
   # Back-compatibility for logsaver
   LogsExporterPolicyArn:
@@ -201,10 +257,6 @@ Outputs:
     Value: !GetAtt LogsExporterRole.Outputs.LogsIngestionPolicyArn
 
   # Back-compatibility for logsaver
-  LogsBucketName:
-    Description: The name of the bucket where logs must be exported
-    Value: !GetAtt LogsBucket.Outputs.LogsBucketName
-
   LogsToExternalBucketArn:
     Description: 'Logs Delivery stream to S3 ARN'
     Value: !GetAtt LogsToExternalBucket.Outputs.DeliveryStreamArn
@@ -225,3 +277,33 @@ Outputs:
   SubnetsIds:
     Description: subnets where to install PN-CONFIDENTIAL-INFO
     Value: !Ref VpcSubnets
+
+  ApplicationLoadBalancerListenerArn:
+    Value: !Ref ApplicationLoadBalancerListener
+    Description: Application Load Balancer listener Arn
+
+  ApplicationLoadBalancerDomain:
+    Value: !Sub '${ApplicationLoadBalancer.DNSName}'
+    Description: Application Load Balancer Domain to use for http URL
+  
+  # ECS Cluster
+  ECSClusterName:
+    Value: !GetAtt ECSCluster.Outputs.ClusterName
+    Description: ECS cluster name
+
+  LogsBucketKmsKeyArn:
+    Value: !Ref LogsBucketKmsKeyArn
+  LogsBucketName:
+    Value: !Ref LogsBucketName
+  CdcKinesisStreamName:
+    Value: !Ref CdcKinesisStreamName
+  CdcKinesisStreamArn:
+    Value: !Ref CdcKinesisStreamArn
+  CdcKinesisStreamKeyArn:
+    Value: !Ref CdcKinesisStreamKeyArn
+  LogsKinesisStreamName:
+    Value: !Ref LogsKinesisStreamName
+  LogsKinesisStreamArn:
+    Value: !Ref LogsKinesisStreamArn
+  LogsKinesisStreamKeyArn:
+    Value: !Ref LogsKinesisStreamKeyArn

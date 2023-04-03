@@ -2,7 +2,7 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 
 import io.github.resilience4j.ratelimiter.RateLimiter;
-import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
@@ -21,8 +21,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.List;
+
+import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.SELC_RATE_LIMITER;
 
 /**
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff
@@ -37,22 +38,15 @@ public class SelfcarePGClient extends OcpBaseClient {
     private final PnDatavaultConfig pnDatavaultConfig;
     private final RateLimiter rateLimiter;
 
-    public SelfcarePGClient(PnDatavaultConfig pnDatavaultConfig){
+    public SelfcarePGClient(PnDatavaultConfig pnDatavaultConfig, RateLimiterRegistry rateLimiterRegistry){
         ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg()).build());
         apiClient.setBasePath(pnDatavaultConfig.getClientSelfcarepgBasepath());
         this.institutionsPnpgApi = new InstitutionsPnpgApi( apiClient );
         this.institutionsApi = new InstitutionsApi(apiClient);
         this.pnDatavaultConfig = pnDatavaultConfig;
-        this.rateLimiter = buildRateLimiter(pnDatavaultConfig);
+        this.rateLimiter = rateLimiterRegistry.rateLimiter(SELC_RATE_LIMITER);
     }
 
-    private RateLimiter buildRateLimiter(PnDatavaultConfig pnDatavaultConfig) {
-        return RateLimiter.of("selfcarepg-rate-limit", RateLimiterConfig.custom()
-                .limitRefreshPeriod(Duration.ofMillis(pnDatavaultConfig.getSelfcarepgRateLimiterMillis()))
-                .limitForPeriod(pnDatavaultConfig.getSelfcarepgRateLimiterNrequests())
-                .timeoutDuration(Duration.ofMillis(pnDatavaultConfig.getSelfcarepgRateLimiterTimeoutMillis()))
-                .build());
-    }
 
     /**
      * Produce un id OPACO a partire da taxid PG (CF/PIVA)

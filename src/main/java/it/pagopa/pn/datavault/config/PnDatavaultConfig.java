@@ -25,11 +25,7 @@ public class PnDatavaultConfig {
     private String clientSelfcarepgBasepath;
 
     private String tokenizerApiKeyPf;
-    private String tokenizerApiKeyPg;
-
     private String userregistryApiKeyPf;
-    private String userregistryApiKeyPg;
-
     private String selfcarepgApiKeyPg;
 
     private int cacheExpireAfterMinutes;

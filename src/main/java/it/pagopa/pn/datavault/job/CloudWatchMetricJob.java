@@ -25,6 +25,7 @@ import java.util.UUID;
 public class CloudWatchMetricJob {
 
     public static final String PDV_RATE_LIMITER = "pdv-rate-limiter";
+    public static final String SELC_RATE_LIMITER = "selc-rate-limiter";
 
     private static final UUID UUID_FOR_CLOUDWATCH_METRIC = UUID.randomUUID();
     private static final String NAMESPACE_CW = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;

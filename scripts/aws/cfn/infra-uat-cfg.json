@@ -4,7 +4,8 @@
       "VpcCidr": "",
       "VpcSubnets": "",
       "VpcSubnetsRoutingTables": "",
-      "PrivateHostedZone": ""
+      "PrivateHostedZone": "",
+      "SandboxSafeStorageBaseUrl": ""
     }
   }
   

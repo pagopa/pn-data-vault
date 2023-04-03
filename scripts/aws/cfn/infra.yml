@@ -69,7 +69,8 @@ Parameters:
     Type: String
   LogsKinesisStreamKeyArn:
     Type: String
-
+  SandboxSafeStorageBaseUrl:
+    Type: String
 Resources:
 
   # Exporter role
@@ -307,3 +308,5 @@ Outputs:
     Value: !Ref LogsKinesisStreamArn
   LogsKinesisStreamKeyArn:
     Value: !Ref LogsKinesisStreamKeyArn
+  SandboxSafeStorageBaseUrl:
+    Value: !Ref SandboxSafeStorageBaseUrl

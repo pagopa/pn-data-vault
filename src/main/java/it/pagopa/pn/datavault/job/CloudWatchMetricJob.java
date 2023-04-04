@@ -28,7 +28,8 @@ public class CloudWatchMetricJob {
     public static final String SELC_RATE_LIMITER = "selc-rate-limiter";
 
     private static final UUID UUID_FOR_CLOUDWATCH_METRIC = UUID.randomUUID();
-    private static final String NAMESPACE_CW = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
+    private static final String NAMESPACE_CW_PDV = "pn-data-vault-" + UUID_FOR_CLOUDWATCH_METRIC;
+    private static final String NAMESPACE_CW_SELC = "selc-" + UUID_FOR_CLOUDWATCH_METRIC;
 
     private final RateLimiterRegistry rateLimiterRegistry;
     private final CloudWatchAsyncClient cloudWatchAsyncClient;
@@ -36,23 +37,30 @@ public class CloudWatchMetricJob {
 
     @PostConstruct
     public void init() {
-        log.info("Namespace for CloudWatchMetricJob is: {}", NAMESPACE_CW);
+        log.info("UUID in Namespace for CloudWatchMetricJob is: {}", UUID_FOR_CLOUDWATCH_METRIC);
     }
 
 
     @Scheduled(cron = "${pn.data-vault.cloudwatch-metric-cron}")
     public void sendMetricToCloudWatch() {
-        RateLimiter rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
+
+        createAndSendMetric(PDV_RATE_LIMITER, NAMESPACE_CW_PDV, "PDVNumberOfWaitingRequests");
+        createAndSendMetric(SELC_RATE_LIMITER, NAMESPACE_CW_SELC, "SELCNumberOfWaitingRequests");
+
+    }
+
+    private void createAndSendMetric(String rateLimiterName, String namespace, String metricName) {
+        RateLimiter rateLimiter = rateLimiterRegistry.rateLimiter(rateLimiterName);
 
         int availablePermissions = rateLimiter.getMetrics().getAvailablePermissions();
         int numberOfWaitingRequests = availablePermissions >= 0 ? 0 : Math.abs(availablePermissions);
-        log.trace("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", NAMESPACE_CW, availablePermissions, numberOfWaitingRequests);
+        log.trace("[{}] AvailablePermissions: {} - NumberOfWaitingRequest: {}", namespace, availablePermissions, numberOfWaitingRequests);
         if(numberOfWaitingRequests > 0) {
-            log.warn("[{}] PDVNumberOfWaitingRequests: {}", NAMESPACE_CW, numberOfWaitingRequests);
+            log.warn("[{}] {}: {}", namespace, metricName, numberOfWaitingRequests);
         }
 
         MetricDatum metricDatum = MetricDatum.builder()
-                .metricName("PDVNumberOfWaitingRequests")
+                .metricName(metricName)
                 .value((double) numberOfWaitingRequests)
                 .unit(StandardUnit.COUNT)
                 .dimensions(Collections.singletonList(Dimension.builder()
@@ -62,16 +70,14 @@ public class CloudWatchMetricJob {
                 .timestamp(Instant.now())
                 .build();
 
-        PutMetricDataRequest putMetricDataRequest = PutMetricDataRequest.builder()
-                .namespace(NAMESPACE_CW)
+        PutMetricDataRequest metricDataRequest = PutMetricDataRequest.builder()
+                .namespace(namespace)
                 .metricData(Collections.singletonList(metricDatum))
                 .build();
 
-
-        Mono.fromFuture(cloudWatchAsyncClient.putMetricData(putMetricDataRequest))
-                .subscribe(putMetricDataResponse -> log.trace("PutMetricDataResponse: {}", putMetricDataResponse),
-                        throwable -> log.warn("Error sending metric", throwable));
-
+        Mono.fromFuture(cloudWatchAsyncClient.putMetricData(metricDataRequest))
+                .subscribe(putMetricDataResponse -> log.trace("[{}] PutMetricDataResponse: {}", namespace, putMetricDataResponse),
+                        throwable -> log.warn(String.format("[%s] Error sending metric", namespace), throwable));
 
     }
 }

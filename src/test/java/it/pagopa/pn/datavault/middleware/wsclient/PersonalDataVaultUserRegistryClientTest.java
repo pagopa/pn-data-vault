@@ -72,7 +72,7 @@ class PersonalDataVaultUserRegistryClientTest {
         String fc = "RSSMRA85T10A562S";
         String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
         String expectediuid = "PF-"+iuid;
-        List<String> ids = Arrays.asList(expectediuid);
+        List<String> ids = List.of(expectediuid);
         List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
         UserResourceDto response = new UserResourceDto();
         CertifiableFieldResourceOfstringDto certifiableFieldResourceOfstringDto = new CertifiableFieldResourceOfstringDto();
@@ -115,20 +115,109 @@ class PersonalDataVaultUserRegistryClientTest {
     }
 
     @Test
-    void getRecipientDenominationByInternalIdPFMissingUser() throws JsonProcessingException {
+    void getRecipientDenominationByInternalIdPFOnlySurname() throws JsonProcessingException {
         //Given
-        String name = "mario";
         String surname = "rossi";
         String fc = "RSSMRA85T10A562S";
         String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
         String expectediuid = "PF-"+iuid;
-        List<String> ids = Arrays.asList(expectediuid);
+        List<String> ids = List.of(expectediuid);
         List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
         UserResourceDto response = new UserResourceDto();
+        CertifiableFieldResourceOfstringDto certifiableFieldResourceOfstringDto = new CertifiableFieldResourceOfstringDto();
+        certifiableFieldResourceOfstringDto.setCertification(CertifiableFieldResourceOfstringDto.CertificationEnum.NONE);
+        response.setName(certifiableFieldResourceOfstringDto);
+        certifiableFieldResourceOfstringDto = new CertifiableFieldResourceOfstringDto();
+        certifiableFieldResourceOfstringDto.setCertification(CertifiableFieldResourceOfstringDto.CertificationEnum.NONE);
+        certifiableFieldResourceOfstringDto.setValue(surname);
+        response.setFamilyName(certifiableFieldResourceOfstringDto);
         response.setFiscalCode(fc);
         response.setId(UUID.fromString(iuid));
         ObjectMapper mapper = new ObjectMapper();
         String respjson = mapper.writeValueAsString(response);
+
+
+
+
+        new MockServerClient("localhost", 9999)
+                .when(request()
+                        .withMethod("GET")
+                        .withHeader("x-api-key", "pf")
+                        .withQueryStringParameters(Map.of("fl", Arrays.asList("familyName", "name", "fiscalCode")))
+                        .withPath("/users/" + iuid))
+                .respond(response()
+                        .withBody(respjson)
+                        .withContentType(MediaType.APPLICATION_JSON)
+                        .withStatusCode(200));
+
+        //When
+        List<BaseRecipientDto> result = client.getRecipientDenominationByInternalId(iids).collectList().block(Duration.ofMillis(3000));
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(surname, result.get(0).getDenomination());
+        assertEquals(fc, result.get(0).getTaxId());
+        assertEquals(expectediuid, result.get(0).getInternalId());
+
+    }
+
+    @Test
+    void getRecipientDenominationByInternalIdPFOnlyName() throws JsonProcessingException {
+        //Given
+        String name = "mario";
+        String fc = "RSSMRA85T10A562S";
+        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String expectediuid = "PF-"+iuid;
+        List<String> ids = List.of(expectediuid);
+        List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
+        UserResourceDto response = new UserResourceDto();
+        CertifiableFieldResourceOfstringDto certifiableFieldResourceOfstringDto = new CertifiableFieldResourceOfstringDto();
+        certifiableFieldResourceOfstringDto.setCertification(CertifiableFieldResourceOfstringDto.CertificationEnum.NONE);
+        certifiableFieldResourceOfstringDto.setValue(name);
+        response.setName(certifiableFieldResourceOfstringDto);
+        response.setFiscalCode(fc);
+        response.setId(UUID.fromString(iuid));
+        ObjectMapper mapper = new ObjectMapper();
+        String respjson = mapper.writeValueAsString(response);
+
+
+
+
+        new MockServerClient("localhost", 9999)
+                .when(request()
+                        .withMethod("GET")
+                        .withHeader("x-api-key", "pf")
+                        .withQueryStringParameters(Map.of("fl", Arrays.asList("familyName", "name", "fiscalCode")))
+                        .withPath("/users/" + iuid))
+                .respond(response()
+                        .withBody(respjson)
+                        .withContentType(MediaType.APPLICATION_JSON)
+                        .withStatusCode(200));
+
+        //When
+        List<BaseRecipientDto> result = client.getRecipientDenominationByInternalId(iids).collectList().block(Duration.ofMillis(3000));
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(name, result.get(0).getDenomination());
+        assertEquals(fc, result.get(0).getTaxId());
+        assertEquals(expectediuid, result.get(0).getInternalId());
+
+    }
+
+    @Test
+    void getRecipientDenominationByInternalIdPFMissingUser() {
+        //Given
+        String fc = "RSSMRA85T10A562S";
+        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String expectediuid = "PF-"+iuid;
+        List<String> ids = List.of(expectediuid);
+        List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
+        UserResourceDto response = new UserResourceDto();
+        response.setFiscalCode(fc);
+        response.setId(UUID.fromString(iuid));
 
         new MockServerClient("localhost", 9999)
                 .when(request()
@@ -162,7 +251,7 @@ class PersonalDataVaultUserRegistryClientTest {
         String fc = "RSSMRA85T10A562S";
         String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe24";
         String expectediuid = "PF-"+iuid;
-        List<String> ids = Arrays.asList(expectediuid);
+        List<String> ids = List.of(expectediuid);
         List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
         UserResourceDto response = new UserResourceDto();
         CertifiableFieldResourceOfstringDto certifiableFieldResourceOfstringDto = new CertifiableFieldResourceOfstringDto();

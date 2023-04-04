@@ -119,7 +119,7 @@ class PersonalDataVaultUserRegistryClientTest {
         //Given
         String surname = "rossi";
         String fc = "RSSMRA85T10A562S";
-        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String iuid = "b8bdb303-18c0-43dd-b832-ef9f451bfe22";
         String expectediuid = "PF-"+iuid;
         List<String> ids = List.of(expectediuid);
         List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
@@ -167,7 +167,7 @@ class PersonalDataVaultUserRegistryClientTest {
         //Given
         String name = "mario";
         String fc = "RSSMRA85T10A562S";
-        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String iuid = "c8bdb303-18c0-43dd-b832-ef9f451bfe22";
         String expectediuid = "PF-"+iuid;
         List<String> ids = List.of(expectediuid);
         List<InternalId> iids = RecipientUtils.mapToInternalId(ids);

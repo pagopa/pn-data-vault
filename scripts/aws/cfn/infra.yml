@@ -53,6 +53,28 @@ Parameters:
     Type: String
     Description: ARN of the Alarm SNS Topic
 
+  ApplicationLoadBalancerArn: 
+    Type: String
+    Default: '-'
+    Description: Application load balancer
+
+  ApplicationLoadBalancerAwsDns: 
+    Type: String
+    Default: '-'
+    Description: Application load balancer AWS DNS
+
+  ApplicationLoadBalancerAwsDnsZoneId:
+    Type: String
+    Default: '-'
+    Description: Application load balancer AWS DNS Zone ID
+
+  VpcEndpointsRequired:
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -71,6 +93,15 @@ Parameters:
     Type: String
   SandboxSafeStorageBaseUrl:
     Type: String
+
+Conditions:
+  IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
+  IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
+  IsAlbArnDnsZoneIdEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDnsZoneId, '-' ]
+
+  RequiresAlbCreation: !And [ !Condition IsAlbArnEmpty, !Condition IsAlbArnDnsEmpty, !Condition IsAlbArnDnsZoneIdEmpty ]
+
+  RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 Resources:
 
   # Exporter role
@@ -142,6 +173,7 @@ Resources:
 
    # Private connection from subnets to AWS services
   VPCEndpoints:
+    Condition: RequiresVpcEndpoints
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
@@ -156,6 +188,7 @@ Resources:
   #############################################################################
   # Application load balancer
   ApplicationLoadBalancer:
+    Condition: RequiresAlbCreation
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: application
@@ -169,7 +202,7 @@ Resources:
   ApplicationLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      LoadBalancerArn: !If [ RequiresAlbCreation , !Ref ApplicationLoadBalancer, !Ref ApplicationLoadBalancerArn ]
       Protocol: HTTP
       Port: 8080
       DefaultActions:
@@ -182,6 +215,7 @@ Resources:
 
   # Application security groups
   WebappSecurityGroup:
+    Condition: RequiresAlbCreation
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${ProjectName}-webapp-security-group
@@ -196,6 +230,7 @@ Resources:
 
   # Load balancer private fixed DNS
   Route53RecordSetGroup:
+    Condition: RequiresAlbCreation
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !Sub 'alb.confidential.${ProjectName}.internal'
@@ -284,7 +319,7 @@ Outputs:
     Description: Application Load Balancer listener Arn
 
   ApplicationLoadBalancerDomain:
-    Value: !Sub '${ApplicationLoadBalancer.DNSName}'
+    Value: !If [ RequiresAlbCreation, !Sub '${ApplicationLoadBalancer.DNSName}', !Ref ApplicationLoadBalancerAwsDns ]
     Description: Application Load Balancer Domain to use for http URL
   
   # ECS Cluster

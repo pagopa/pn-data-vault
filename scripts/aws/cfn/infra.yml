@@ -68,6 +68,11 @@ Parameters:
     Default: '-'
     Description: Application load balancer AWS DNS Zone ID
 
+  ApplicationLoadBalancerListenerArn:
+    Type: String
+    Default: '-'
+    Description: Application load balancer listener ARN
+
   VpcEndpointsRequired:
     Type: String
     Default: true
@@ -98,8 +103,8 @@ Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
   IsAlbArnDnsZoneIdEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDnsZoneId, '-' ]
-
-  RequiresAlbCreation: !And [ !Condition IsAlbArnEmpty, !Condition IsAlbArnDnsEmpty, !Condition IsAlbArnDnsZoneIdEmpty ]
+  IsAlbListenerArnEmpty: !Equals [ !Ref ApplicationLoadBalancerListenerArn, '-' ]
+  RequiresAlbCreation: !And [ !Condition IsAlbArnEmpty, !Condition IsAlbArnDnsEmpty, !Condition IsAlbArnDnsZoneIdEmpty, !Condition IsAlbListenerArnEmpty ]
 
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 Resources:
@@ -201,8 +206,9 @@ Resources:
   # Application load balancer listener
   ApplicationLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: RequiresAlbCreation
     Properties:
-      LoadBalancerArn: !If [ RequiresAlbCreation , !Ref ApplicationLoadBalancer, !Ref ApplicationLoadBalancerArn ]
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
       Protocol: HTTP
       Port: 8080
       DefaultActions:
@@ -246,7 +252,6 @@ Resources:
 
   # The cluster
   ECSCluster:
-    DependsOn: ApplicationLoadBalancerListener
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
@@ -315,7 +320,7 @@ Outputs:
     Value: !Ref VpcSubnets
 
   ApplicationLoadBalancerListenerArn:
-    Value: !Ref ApplicationLoadBalancerListener
+    Value: !If [ RequiresAlbCreation, !Ref ApplicationLoadBalancerListener, !Ref ApplicationLoadBalancerListenerArn ] 
     Description: Application Load Balancer listener Arn
 
   ApplicationLoadBalancerDomain:

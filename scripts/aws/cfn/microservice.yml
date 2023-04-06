@@ -107,10 +107,6 @@ Parameters:
     Type: String
     Description: 'Cdc delivery stream alarm ARN'
 
-  PnDataVaultSecretArn:
-    Type: String
-    Description: Data Vault secret ARN
-
   # Heath Check parameters
   HealthCheckInterval:
     Description: Seconds between two health check
@@ -225,11 +221,11 @@ Resources:
         ContainerEnvEntry12: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_FOR_PERIOD=${PDVUserRegistryRateLimiterNRequests}'
         ContainerEnvEntry13: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_TIMEOUT_DURATION=${PDVUserRegistryRateLimiterTimeoutMillis}'
         ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
-        ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=${PnDataVaultSecretArn}:TokenizerApiKeyForPF:AWSCURRENT:'
-        ContainerSecret2: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=${PnDataVaultSecretArn}:TokenizerApiKeyForPG:AWSCURRENT:'
-        ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=${PnDataVaultSecretArn}:UserRegistryApiKeyForPF:AWSCURRENT:'
-        ContainerSecret4: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG=${PnDataVaultSecretArn}:UserRegistryApiKeyForPG:AWSCURRENT:'                
-        MicroServiceSecretPrefix: pn-PersonalDataVault
+        ContainerSecret1: 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=pn-PersonalDataVault-Secrets:TokenizerApiKeyForPF:AWSCURRENT:'
+        ContainerSecret2: 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=pn-PersonalDataVault-Secrets:TokenizerApiKeyForPG:AWSCURRENT:'
+        ContainerSecret3: 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPF:AWSCURRENT:'
+        ContainerSecret4: 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG=pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPG:AWSCURRENT:'                
+        MicroServiceSecretPrefix: pn-PersonalDataVault-Secrets
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref VpcSubnets

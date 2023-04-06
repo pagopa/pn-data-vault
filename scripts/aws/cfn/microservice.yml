@@ -221,10 +221,10 @@ Resources:
         ContainerEnvEntry12: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_FOR_PERIOD=${PDVUserRegistryRateLimiterNRequests}'
         ContainerEnvEntry13: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_TIMEOUT_DURATION=${PDVUserRegistryRateLimiterTimeoutMillis}'
         ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
-        ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPF:AWSCURRENT:'
-        ContainerSecret2: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPG:AWSCURRENT:'
-        ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPF:AWSCURRENT:'
-        ContainerSecret4: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPG:AWSCURRENT:'                
+        ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:${AWS::Region}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPF:AWSCURRENT:'
+        ContainerSecret2: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=arn:${AWS::Region}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPG:AWSCURRENT:'
+        ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:${AWS::Region}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPF:AWSCURRENT:'
+        ContainerSecret4: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG=arn:${AWS::Region}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPG:AWSCURRENT:'                
         MicroServiceSecretPrefix: pn-PersonalDataVault-Secrets
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !Ref ECSClusterName

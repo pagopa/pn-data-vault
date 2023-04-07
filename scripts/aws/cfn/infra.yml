@@ -109,11 +109,11 @@ Conditions:
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
   IsAlbArnDnsZoneIdEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDnsZoneId, '-' ]
   IsAlbListenerArnEmpty: !Equals [ !Ref ApplicationLoadBalancerListenerArn, '-' ]
-  RequiresAlbCreation: !And [ !Condition IsAlbArnEmpty, !Condition IsAlbArnDnsEmpty, !Condition IsAlbArnDnsZoneIdEmpty, !Condition IsAlbListenerArnEmpty ]
+  RequiresAlbCreation: !Or [ !Condition IsAlbArnEmpty, !Condition IsAlbArnDnsEmpty, !Condition IsAlbArnDnsZoneIdEmpty, !Condition IsAlbListenerArnEmpty ]
 
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 
-  IsEgressDefined: !Not [ !Equals [ !Ref ApplicationLoadBalancerArn, '-' ] ]
+  IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
 
 Resources:
 

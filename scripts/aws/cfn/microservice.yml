@@ -187,6 +187,11 @@ Parameters:
     Type: String
     Description: Cron for which you send the custom metric for PDV to CloudWatch
 
+  # Log group parameters
+  EcsLogGroup:
+    Type: String
+    Description: 'Ecs log group name'
+
 Resources:
 
   # PN-DataVault microservice
@@ -233,8 +238,8 @@ Resources:
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
-        CloudwatchLogKinesisStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
         TaskRoleManagedPolicyArn: !Ref DataVaultyMicroserviceTaskManagedPolicy
+        EcsLogGroup: !Ref EcsLogGroup
 
   # Grant operational rights to PN-Delivery microservice
   DataVaultyMicroserviceTaskManagedPolicy:
@@ -280,7 +285,7 @@ Resources:
           - - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn
         LogGroupsNames: !Join
           - ','
-          - - !Sub '/ecs/${ProjectName}-data-vault-sep'
+          - - !Sub '/aws/ecs/${ProjectName}-data-vault-sep'
           
   InfraMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack

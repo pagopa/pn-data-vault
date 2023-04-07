@@ -80,6 +80,11 @@ Parameters:
       - true
       - false
 
+  VpcEgressSubnetsIds:
+    Type: String
+    Default: '-'
+    Description: List of egress subnets
+     
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -107,6 +112,9 @@ Conditions:
   RequiresAlbCreation: !And [ !Condition IsAlbArnEmpty, !Condition IsAlbArnDnsEmpty, !Condition IsAlbArnDnsZoneIdEmpty, !Condition IsAlbListenerArnEmpty ]
 
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
+
+  IsEgressDefined: !Not [ !Equals [ !Ref ApplicationLoadBalancerArn, '-' ] ]
+
 Resources:
 
   # Exporter role
@@ -350,3 +358,6 @@ Outputs:
     Value: !Ref LogsKinesisStreamKeyArn
   SandboxSafeStorageBaseUrl:
     Value: !Ref SandboxSafeStorageBaseUrl
+  
+  VpcEgressSubnetsIds:
+    Value: !If [ IsEgressDefined, !Ref VpcEgressSubnetsIds, !!Ref VpcSubnets ]

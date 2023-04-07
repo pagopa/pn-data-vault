@@ -19,6 +19,10 @@ Parameters:
     Type: String
     Description: subnets where to install PN-CORE
 
+  VpcEgressSubnetsIds:
+    Type: String
+    Description: subnets where to install PN-CONFIDENTIAL-INFO
+
   ECSClusterName:
     Type: String
     Description: 'The name of the ECS cluster where the microservice is going to be deployed'
@@ -233,7 +237,7 @@ Resources:
         MicroServiceSecretPrefix: pn-PersonalDataVault-Secrets
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !Ref ECSClusterName
-        Subnets: !Ref VpcSubnets
+        Subnets: !Ref VpcEgressSubnetsIds
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn

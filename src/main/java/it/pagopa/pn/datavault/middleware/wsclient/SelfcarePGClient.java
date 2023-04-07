@@ -73,7 +73,9 @@ public class SelfcarePGClient extends OcpBaseClient {
                             throw new PnDatavaultRecipientNotFoundException();
                         }
 
-                        String res = RecipientUtils.encapsulateRecipientType(RecipientType.PG, r);
+                        // elimino i doppi apici della response di selfcare
+                        String cleanRes = r.replace("\"", "");
+                        String res = RecipientUtils.encapsulateRecipientType(RecipientType.PG, cleanRes);
                         log.debug("[exit] addInstitutionUsingPOST token={}", res);
                         return  res;
                     });

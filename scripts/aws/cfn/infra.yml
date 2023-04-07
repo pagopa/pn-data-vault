@@ -360,4 +360,4 @@ Outputs:
     Value: !Ref SandboxSafeStorageBaseUrl
   
   VpcEgressSubnetsIds:
-    Value: !If [ IsEgressDefined, !Ref VpcEgressSubnetsIds, !!Ref VpcSubnets ]
+    Value: !If [ IsEgressDefined, !Ref VpcEgressSubnetsIds, !Ref VpcSubnets ]

@@ -36,8 +36,10 @@ class CloudWatchMetricJobTest {
 
     @Test
     void testSendMetricToCloudWatch() {
-        RateLimiter rateLimiter = RateLimiter.of("pdv-rate-limiter", RateLimiterConfig.custom().build());
-        when(rateLimiterRegistry.rateLimiter("pdv-rate-limiter")).thenReturn(rateLimiter);
+        RateLimiter rateLimiterPDV = RateLimiter.of("pdv-rate-limiter", RateLimiterConfig.custom().build());
+        RateLimiter rateLimiterSELC = RateLimiter.of("selc-rate-limiter", RateLimiterConfig.custom().build());
+        when(rateLimiterRegistry.rateLimiter("pdv-rate-limiter")).thenReturn(rateLimiterPDV);
+        when(rateLimiterRegistry.rateLimiter("selc-rate-limiter")).thenReturn(rateLimiterSELC);
         when(pnDatavaultConfig.getEnvRuntime()).thenReturn("test");
         PutMetricDataResponse putMetricDataResponse = PutMetricDataResponse.builder().build();
         when(cloudWatchAsyncClient.putMetricData(any(PutMetricDataRequest.class))).thenReturn(CompletableFuture.completedFuture(putMetricDataResponse));

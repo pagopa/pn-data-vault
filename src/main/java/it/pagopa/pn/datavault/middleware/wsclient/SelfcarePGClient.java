@@ -35,7 +35,6 @@ public class SelfcarePGClient extends OcpBaseClient {
     private final InstitutionsPnpgApi institutionsPnpgApi;
 
     private final InstitutionsApi institutionsApi;
-    private final PnDatavaultConfig pnDatavaultConfig;
     private final RateLimiter rateLimiter;
 
     public SelfcarePGClient(PnDatavaultConfig pnDatavaultConfig, RateLimiterRegistry rateLimiterRegistry){
@@ -43,7 +42,6 @@ public class SelfcarePGClient extends OcpBaseClient {
         apiClient.setBasePath(pnDatavaultConfig.getClientSelfcarepgBasepath());
         this.institutionsPnpgApi = new InstitutionsPnpgApi( apiClient );
         this.institutionsApi = new InstitutionsApi(apiClient);
-        this.pnDatavaultConfig = pnDatavaultConfig;
         this.rateLimiter = rateLimiterRegistry.rateLimiter(SELC_RATE_LIMITER);
     }
 
@@ -57,11 +55,6 @@ public class SelfcarePGClient extends OcpBaseClient {
     public Mono<String> addInstitutionUsingPOST(String taxId)
     {
         log.info("[enter] addInstitutionUsingPOST taxid={}", LogUtils.maskTaxId(taxId));
-        if (pnDatavaultConfig.isDevelopment())
-        {
-            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
-            return Mono.just(RecipientUtils.encapsulateRecipientType(RecipientType.PG, RecipientUtils.reverseString(taxId)));
-        }
 
         CreatePnPgInstitutionDtoDto pii = new CreatePnPgInstitutionDtoDto();
         pii.setExternalId(taxId);
@@ -89,17 +82,6 @@ public class SelfcarePGClient extends OcpBaseClient {
      */
     public Flux<BaseRecipientDto> retrieveInstitutionByIdUsingGET(List<InternalId> internalIds)
     {
-        if (pnDatavaultConfig.isDevelopment())
-        {
-            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
-            return Flux.fromIterable(internalIds).map(r -> {
-                BaseRecipientDto brd = new BaseRecipientDto();
-                brd.setDenomination("ragionesociale"+r.internalIdWithRecipientType());
-                brd.setTaxId(RecipientUtils.reverseString(r.internalIdWithRecipientType().replace("PF-","").replace("PG-","")));
-                brd.setInternalId(r.internalIdWithRecipientType());
-                return brd;
-            });
-        }
 
         log.debug("[enter] retrieveInstitutionByIdUsingGET internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)

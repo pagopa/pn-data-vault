@@ -29,6 +29,7 @@ public class RecipientService {
     private final PersonalDataVaultTokenizerClient client;
     private final PersonalDataVaultUserRegistryClient userClient;
     private final SelfcarePGClient selfcareTokenizerClient;
+    private final PnDatavaultConfig pnDatavaultConfig;
     private final AsyncCache<String, String> cacheExtToIntIds;
     private final AsyncCache<String, BaseRecipientDto> cacheIntToExtIds;
 
@@ -38,6 +39,7 @@ public class RecipientService {
         this.client = client;
         this.userClient = userClient;
         this.selfcareTokenizerClient = selfcareTokenizerClient;
+        this.pnDatavaultConfig = pnDatavaultConfig;
         this.cacheExtToIntIds = Caffeine.newBuilder()
                 .expireAfterAccess(pnDatavaultConfig.getCacheExpireAfterMinutes(), TimeUnit.MINUTES)
                 .maximumSize(pnDatavaultConfig.getCacheMaxSize())
@@ -90,6 +92,12 @@ public class RecipientService {
     }
 
     private Mono<String> ensureRecipientByExternalIdPForPG(RecipientType recipientType, String taxId){
+        if (pnDatavaultConfig.isDevelopment())
+        {
+            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
+            return Mono.just(RecipientUtils.encapsulateRecipientType(recipientType, RecipientUtils.reverseString(taxId)));
+        }
+
         if (recipientType == RecipientType.PF) {
             return client.ensureRecipientByExternalId(taxId)
                     .doOnNext(r -> log.debug(LOG_EXIT + " ensureRecipientByExternalId_PF internalId={}",r));
@@ -103,6 +111,13 @@ public class RecipientService {
     private Flux<BaseRecipientDto> getRecipientDenominationByInternalIdPForPG(List<String> internalIds){
         // la risoluzione degli internalIds, va fatta con più attenzione, perchè potrei ricevere liste "miste", ovvero alcuni internalID di PF e altri di PG
         // che devo ovviamente risolvere su client diversi
+
+        if (pnDatavaultConfig.isDevelopment())
+        {
+            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
+            return RecipientUtils.getRecipientDenominationByInternalIdMock(internalIds);
+        }
+
         List<InternalId> allInternalIds = RecipientUtils.mapToInternalId(internalIds);
         List<InternalId> pfInternalIds = allInternalIds.stream().filter(x -> x.recipientType()==RecipientType.PF).toList();
         List<InternalId> pgInternalIds = allInternalIds.stream().filter(x -> x.recipientType()==RecipientType.PG).toList();

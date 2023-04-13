@@ -85,6 +85,10 @@ Parameters:
     Default: '-'
     Description: List of egress subnets
      
+  EcsDefaultSecurityGroup:
+    Type: String
+    Description: ECS default security group
+
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -361,3 +365,6 @@ Outputs:
   
   VpcEgressSubnetsIds:
     Value: !If [ IsEgressDefined, !Ref VpcEgressSubnetsIds, !Ref VpcSubnets ]
+  
+  EcsDefaultSecurityGroup:
+    Value: !Ref EcsDefaultSecurityGroup

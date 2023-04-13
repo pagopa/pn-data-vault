@@ -1,6 +1,5 @@
 {
   "Parameters" : {
-    "EcsDefaultSecurityGroup": "",
     "PDVTokenizerBasePath" : "https://api.uat.tokenizer.pdv.pagopa.it/tokenizer/v1",
     "PDVUserRegistryBasePath" : "https://api.uat.pdv.pagopa.it/user-registry/v1",
     "PDVUserRegistryRateLimiterMillis": "1000",

@@ -1,8 +1,10 @@
 package it.pagopa.pn.datavault.utils;
 
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import it.pagopa.pn.datavault.svc.entities.InternalId;
 import org.springframework.util.CollectionUtils;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +67,27 @@ public class RecipientUtils {
             resultoutput[i] = strAsByteArray[strAsByteArray.length - i - 1];
 
         return new String(resultoutput);
+    }
+
+    public static Flux<BaseRecipientDto> getRecipientDenominationByInternalIdMock(List<String> internalIds) {
+
+        return Flux.fromIterable(internalIds).map(r -> {
+            BaseRecipientDto brd = new BaseRecipientDto();
+            brd.setDenomination(buildPrefixDenomination(r) + r);
+            brd.setTaxId(RecipientUtils.reverseString(r.replace("PF-","").replace("PG-","")));
+            brd.setInternalId(r);
+            return brd;
+        });
+    }
+
+    private static String buildPrefixDenomination(String internalId) {
+        RecipientType recipientType = internalId.startsWith(RecipientType.PG.getValue()) ? RecipientType.PG : RecipientType.PF;
+        if(recipientType == RecipientType.PG) {
+            return  "ragionesociale";
+        }
+        else {
+            return  "Nome cognome";
+        }
     }
 
 }

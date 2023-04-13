@@ -63,7 +63,7 @@ class SelfcarePGClientTest {
                         .withHeader("Ocp-Apim-Subscription-Key", "pg")
                         .withPath("/pn-pg/institutions/add"))
                 .respond(response()
-                        .withBody("425e4567-e89b-12d3-a456-426655449631")
+                        .withBody("{ \"id\": \"425e4567-e89b-12d3-a456-426655449631\" }")
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(200));
 

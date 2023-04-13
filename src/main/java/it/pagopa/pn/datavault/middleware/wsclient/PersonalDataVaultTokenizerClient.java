@@ -29,13 +29,11 @@ import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.PDV_RATE_LIMITER;
 public class PersonalDataVaultTokenizerClient extends BaseClient {
 
     private final TokenApi tokenApiPF;
-    private final PnDatavaultConfig pnDatavaultConfig;
     private final RateLimiter rateLimiter;
 
 
-    public PersonalDataVaultTokenizerClient(PnDatavaultConfig pnDatavaultConfig, PnDatavaultConfig pnDatavaultConfig1, RateLimiterRegistry rateLimiterRegistry){
+    public PersonalDataVaultTokenizerClient(PnDatavaultConfig pnDatavaultConfig, RateLimiterRegistry rateLimiterRegistry){
         this.tokenApiPF = new TokenApi(initApiClient(pnDatavaultConfig.getTokenizerApiKeyPf(), pnDatavaultConfig.getClientTokenizerBasepath()));
-        this.pnDatavaultConfig = pnDatavaultConfig1;
         this.rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
     }
 
@@ -48,11 +46,6 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
     public Mono<String> ensureRecipientByExternalId(String taxId)
     {
         log.info("[enter] ensureRecipientByExternalId taxid={}", LogUtils.maskTaxId(taxId));
-        if (pnDatavaultConfig.isDevelopment())
-        {
-            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
-            return Mono.just(RecipientUtils.encapsulateRecipientType(RecipientType.PF, reverseString(taxId)));
-        }
 
         PiiResourceDto pii = new PiiResourceDto();
         pii.setPii(taxId);
@@ -93,12 +86,4 @@ public class PersonalDataVaultTokenizerClient extends BaseClient {
          return  apiClient;
     }
 
-    private String reverseString(String inputvalue) {
-        byte[] strAsByteArray = inputvalue.getBytes();
-        byte[] resultoutput = new byte[strAsByteArray.length];
-        for (int i = 0; i < strAsByteArray.length; i++)
-            resultoutput[i] = strAsByteArray[strAsByteArray.length - i - 1];
-
-        return new String(resultoutput);
-    }
 }

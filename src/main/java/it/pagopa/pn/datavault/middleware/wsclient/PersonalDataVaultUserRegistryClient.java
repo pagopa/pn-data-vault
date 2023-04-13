@@ -11,7 +11,6 @@ import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregist
 import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import it.pagopa.pn.datavault.svc.entities.InternalId;
-import it.pagopa.pn.datavault.utils.RecipientUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -35,13 +34,11 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     public static final String FILTER_NAME = "name";
     public static final String FILTER_FISCAL_CODE = "fiscalCode";
     private final UserApi userClientPF;
-    private final PnDatavaultConfig pnDatavaultConfig;
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
     private final RateLimiter rateLimiter;
 
     public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, RateLimiterRegistry rateLimiterRegistry){
         this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
-        this.pnDatavaultConfig = pnDatavaultConfig;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
         this.rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
     }
@@ -49,17 +46,6 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
 
     public Flux<BaseRecipientDto> getRecipientDenominationByInternalId(List<InternalId> internalIds)
     {
-        if (pnDatavaultConfig.isDevelopment())
-        {
-            log.warn("DEVELOPMENT IS ACTIVE, MOCKING REQUEST!!!!");
-            return Flux.fromIterable(internalIds).map(r -> {
-                BaseRecipientDto brd = new BaseRecipientDto();
-                brd.setDenomination("Nome cognome"+r.internalIdWithRecipientType());
-                brd.setTaxId(RecipientUtils.reverseString(r.internalIdWithRecipientType().replace("PF-","").replace("PG-","")));
-                brd.setInternalId(r.internalIdWithRecipientType());
-                return brd;
-            });
-        }
 
         log.debug("[enter] getRecipientDenominationByInternalId internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)

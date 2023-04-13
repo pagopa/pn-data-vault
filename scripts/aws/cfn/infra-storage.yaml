@@ -235,57 +235,57 @@ Resources:
       StreamModeDetails:
         StreamMode: !Ref LogsStreamMode   
         
-# Outputs:
-#   LogsBucketKmsKeyArn:
-#     Value: 
-#       Fn::If:
-#         - MakeBucketCondition
-#         - !GetAtt LogsBucketKmsKey.Arn
-#         - ''
+Outputs:
+  LogsBucketKmsKeyArn:
+    Value: 
+      Fn::If:
+        - MakeBucketCondition
+        - !GetAtt LogsBucketKmsKey.Arn
+        - ''
   
-#   LogsBucketName:
-#     Value: 
-#       Fn::If:
-#         - MakeBucketCondition
-#         - !Ref LogsBucket
-#         - ''
+  LogsBucketName:
+    Value: 
+      Fn::If:
+        - MakeBucketCondition
+        - !Ref LogsBucket
+        - ''
 
-#   CdcKinesisStreamName:
-#     Value: !Ref CdcKinesisStream
-#     Description: 'Kinesis source stream name'
+  CdcKinesisStreamName:
+    Value: !Ref CdcKinesisStream
+    Description: 'Kinesis source stream name'
   
-#   CdcKinesisStreamArn:
-#     Value: !GetAtt CdcKinesisStream.Arn
-#     Description: 'Kinesis source stream name ARN'
+  CdcKinesisStreamArn:
+    Value: !GetAtt CdcKinesisStream.Arn
+    Description: 'Kinesis source stream name ARN'
 
-#   CdcKinesisStreamKeyArn:
-#     Value: !GetAtt CdcKinesisServerSideEncryptionKey.Arn
-#     Description: 'Arn of the KMS key used to encrypt the Kinesis source stream'
+  CdcKinesisStreamKeyArn:
+    Value: !GetAtt CdcKinesisServerSideEncryptionKey.Arn
+    Description: 'Arn of the KMS key used to encrypt the Kinesis source stream'
 
-#   LogsKinesisStreamName:
-#     Value: !Ref LogsKinesisStream
-#     Description: 'Kinesis source stream name'
+  LogsKinesisStreamName:
+    Value: !Ref LogsKinesisStream
+    Description: 'Kinesis source stream name'
   
-#   LogsKinesisStreamArn:
-#     Value: !GetAtt LogsKinesisStream.Arn
-#     Description: 'Kinesis source stream name ARN'
+  LogsKinesisStreamArn:
+    Value: !GetAtt LogsKinesisStream.Arn
+    Description: 'Kinesis source stream name ARN'
 
-#   LogsKinesisStreamKeyArn:
-#     Value: !GetAtt LogsKinesisServerSideEncryptionKey.Arn
-#     Description: 'Arn of the KMS key used to encrypt the Kinesis source stream'
+  LogsKinesisStreamKeyArn:
+    Value: !GetAtt LogsKinesisServerSideEncryptionKey.Arn
+    Description: 'Arn of the KMS key used to encrypt the Kinesis source stream'
 
-#   BucketSuffix: # used to generate kms alias
-#     Value: !Ref BucketSuffix 
+  BucketSuffix: # used to generate kms alias
+    Value: !Ref BucketSuffix 
 
-#   # Pass through parameters
-#   AlarmSNSTopicArn:
-#     Value: !Ref AlarmSNSTopicArn
+  # Pass through parameters
+  AlarmSNSTopicArn:
+    Value: !Ref AlarmSNSTopicArn
 
-#   AlarmSNSTopicName:
-#     Value: !Ref AlarmSNSTopicName
+  AlarmSNSTopicName:
+    Value: !Ref AlarmSNSTopicName
   
-#   SafeStorageAccountId:
-#     Value: !Ref SafeStorageAccountId
+  SafeStorageAccountId:
+    Value: !Ref SafeStorageAccountId
 
-#   Version:
-#     Value: !Ref Version
+  Version:
+    Value: !Ref Version

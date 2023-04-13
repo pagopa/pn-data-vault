@@ -6,7 +6,8 @@
       "VpcSubnetsRoutingTables": "rtb-060e6d8b9c3e9b831,rtb-081180a0c917d410c,rtb-059a740c724452a79",
       "PrivateHostedZone": "Z0232891JUZMO2YDH9M8",
       "SandboxSafeStorageBaseUrl": "http://alb.confidential.pn.internal:8080/",
-      "EcsDefaultSecurityGroup": ""
+      "EcsDefaultSecurityGroup": "",
+      "PnVPCDefaultSecurityGroup": "sg-0edd50b1733dcf45b"
     }
 }
   

@@ -89,6 +89,11 @@ Parameters:
     Type: String
     Description: ECS default security group
 
+  PnVPCDefaultSecurityGroup:
+    Type: String
+    Default: ''
+    Description: 'Default VPC security group'
+
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -368,3 +373,5 @@ Outputs:
   
   EcsDefaultSecurityGroup:
     Value: !Ref EcsDefaultSecurityGroup
+  PnVPCDefaultSecurityGroup:
+    Value: !Ref PnVPCDefaultSecurityGroup

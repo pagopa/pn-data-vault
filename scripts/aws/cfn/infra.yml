@@ -94,6 +94,11 @@ Parameters:
     Default: ''
     Description: 'Default VPC security group'
 
+  PnCoreAwsAccountId:
+    Type: String
+    Default: '-'
+    Description: 'AWS account id of pn-core. Usefull for resource policy and EventBridge Routes'
+
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -123,6 +128,8 @@ Conditions:
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 
   IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
+
+  HaveToDefineEventBridgeRule: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
 
 Resources:
 
@@ -183,17 +190,8 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-cloudwatch-dashboard-transform.yaml"
 
-  # - Connect dev alarm to slack developers channel
-  # AlarmSNSTopicSlackConnection:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sns-topic-to-slack-channel.yaml"
-  #     Parameters:
-  #       TopicName: 'dev_alarm'
-  #       SNSTopicArn: !Ref AlarmSNSTopic
-  #       SlackInfo: !Ref SlackInfo
-
-   # Private connection from subnets to AWS services
+  
+  # Private connection from subnets to AWS services
   VPCEndpoints:
     Condition: RequiresVpcEndpoints
     Type: AWS::CloudFormation::Stack
@@ -275,6 +273,47 @@ Resources:
       Parameters:
         MacroServiceName: !Sub '${ProjectName}-confidential'
   
+  
+  ###            FORWARD EVENT BRIDGE EVENTS TO PN-CORE ACCOUNT           ###
+  ###########################################################################
+
+  ForwardEventToPnCoreRule:
+    Condition: HaveToDefineEventBridgeRule
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: Route SafeStorage Events to pn-core Event Bus
+      RoleArn: !GetAtt "ForwardEventToPnCoreRuleRole.Arn"
+      # EventBusName: No EventBus specified, use the default one
+      EventPattern:
+        detail-type: 
+          - "SafeStorageOutcomeEvent"
+      Targets: 
+        - Arn: !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${PnCoreAwsAccountId}:event-bus/pn-CoreEventBus"
+          Id: PnCoreEvtBusTarget
+
+  ForwardEventToPnCoreRuleRole:
+    Condition: HaveToDefineEventBridgeRule
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: SentEventToEventBridge
+          PolicyDocument:
+            Statement:
+              - Sid: SentEventToEventBridge
+                Action:
+                  - events:PutEvents
+                Effect: Allow
+                Resource: 
+                  - !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${PnCoreAwsAccountId}:event-bus/pn-CoreEventBus"
+
+
 Outputs:
 
   AlarmSNSTopicArn:

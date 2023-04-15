@@ -288,8 +288,9 @@ Resources:
         detail-type: 
           - "SafeStorageOutcomeEvent"
       Targets: 
-        - Arn: !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${PnCoreAwsAccountId}:event-bus/pn-CoreEventBus"
-          Id: PnCoreEvtBusTarget
+        - Id: PnCoreEvtBusTarget
+          Arn: !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${PnCoreAwsAccountId}:event-bus/pn-CoreEventBus"
+          RoleArn: !GetAtt "ForwardEventToPnCoreRuleRole.Arn"
 
   ForwardEventToPnCoreRuleRole:
     Condition: HaveToDefineEventBridgeRule

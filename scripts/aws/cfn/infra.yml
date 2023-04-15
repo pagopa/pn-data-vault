@@ -286,8 +286,9 @@ Resources:
         source:
           - prefix: ""
       Targets: 
-        - Arn: !GetAtt DefaultEventBusEventsLogGroup.Arn
-          Id: LogTarget
+        - Id: LogTarget
+          Arn: !GetAtt DefaultEventBusEventsLogGroup.Arn
+          RoleArn: !GetAtt "EventBusLogRole.Arn"
   
   DefaultEventBusEventsLogGroup:
     Type: AWS::Logs::LogGroup

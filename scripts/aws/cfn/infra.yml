@@ -274,6 +274,49 @@ Resources:
         MacroServiceName: !Sub '${ProjectName}-confidential'
   
   
+  ###                      EVENT BRIDGE LOG ALL EVENTS                    ###
+  ###########################################################################
+  DefaultEventBusToLogGroup:
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: Route all events to a Log Group
+      RoleArn: !GetAtt "EventBusLogRole.Arn"
+      # EventBusName: No EventBus specified, use the default one
+      EventPattern:
+        source:
+          - prefix: ""
+      Targets: 
+        - Arn: !GetAtt DefaultEventBusEventsLogGroup.Arn
+          Id: LogTarget
+  
+  DefaultEventBusEventsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/events/core-event-bus-input-events
+      RetentionInDays: 14
+
+  EventBusLogRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: logEventToCloudwatch
+          PolicyDocument:
+            Statement:
+              - Sid: AllowEventBusToCreateLogs
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: 
+                  - !GetAtt DefaultEventBusEventsLogGroup.Arn
+
   ###            FORWARD EVENT BRIDGE EVENTS TO PN-CORE ACCOUNT           ###
   ###########################################################################
 

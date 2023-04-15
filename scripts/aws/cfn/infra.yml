@@ -277,6 +277,8 @@ Resources:
   ###                      EVENT BRIDGE LOG ALL EVENTS                    ###
   ###########################################################################
   DefaultEventBusToLogGroup:
+    DependsOn:
+      - DefaultEventBusEventsLogGroup
     Type: AWS::Events::Rule
     Properties: 
       Description: Route all events to a Log Group
@@ -287,7 +289,8 @@ Resources:
           - prefix: ""
       Targets: 
         - Id: LogTarget
-          Arn: !GetAtt DefaultEventBusEventsLogGroup.Arn
+          Arn: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/events/core-event-bus-input-events"
+          #!GetAtt DefaultEventBusEventsLogGroup.Arn
   
   DefaultEventBusEventsLogGroup:
     Type: AWS::Logs::LogGroup

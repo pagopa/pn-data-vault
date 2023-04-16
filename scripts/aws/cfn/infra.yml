@@ -94,11 +94,6 @@ Parameters:
     Default: ''
     Description: 'Default VPC security group'
 
-  PnCoreAwsAccountId:
-    Type: String
-    Default: '-'
-    Description: 'AWS account id of pn-core. Usefull for resource policy and EventBridge Routes'
-
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -131,8 +126,6 @@ Conditions:
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 
   IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
-
-  HaveToDefineEventBridgeRule: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
 
 Resources:
 

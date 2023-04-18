@@ -26,7 +26,7 @@ Parameters:
   ECSClusterName:
     Type: String
     Description: 'The name of the ECS cluster where the microservice is going to be deployed'
-  
+
   ApplicationLoadBalancerListenerArn:
     Type: String
     Description: 'Load balancer listener where HTTP endpoints is going to be registered'
@@ -74,7 +74,23 @@ Parameters:
   PDVUserRegistryRateLimiterTimeoutMillis:
     Type: Number
     Description: 'Periodo di timeout in millisecondi nel rate limiter per le API di user-registry'
-  
+
+  SelfcarePgBasePath:
+    Type: String
+    Description: 'Path base di invocazione al servizio di SelfcarePg'
+
+  SelfcarePgRateLimiterMillis:
+    Type: Number
+    Description: 'Periodo di aggiornamento in millisecondi del rate limiter per le API di SelfcarePg'
+
+  SelfcarePgRateLimiterNRequests:
+    Type: Number
+    Description: 'Numero richieste impostate nel rate limiter per le API di SelfcarePg'
+
+  SelfcarePgRateLimiterTimeoutMillis:
+    Type: Number
+    Description: 'Periodo di timeout in millisecondi nel rate limiter per le API di SelfcarePg'
+
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -224,16 +240,19 @@ Resources:
         ContainerEnvEntry2: !Sub 'PN_DATA_VAULT_DYNAMODB_TABLE_NAME=${ConfidentialObjectsDynamoTableName}'
         ContainerEnvEntry3: !Sub 'PN_DATA_VAULT_CLIENT_TOKENIZER_BASEPATH=${PDVTokenizerBasePath}'
         ContainerEnvEntry4: !Sub 'PN_DATA_VAULT_CLIENT_USERREGISTRY_BASEPATH=${PDVUserRegistryBasePath}'
-        ContainerEnvEntry9: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
-        ContainerEnvEntry10: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
-        ContainerEnvEntry11: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_REFRESH_PERIOD=${PDVUserRegistryRateLimiterMillis}'
-        ContainerEnvEntry12: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_FOR_PERIOD=${PDVUserRegistryRateLimiterNRequests}'
-        ContainerEnvEntry13: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_TIMEOUT_DURATION=${PDVUserRegistryRateLimiterTimeoutMillis}'
+        ContainerEnvEntry5: !Sub 'PN_DATA_VAULT_CLIENT_SELFCAREPG_BASEPATH=${SelfcarePgBasePath}'
+        ContainerEnvEntry6: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
+        ContainerEnvEntry7: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
+        ContainerEnvEntry8: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_REFRESH_PERIOD=${PDVUserRegistryRateLimiterMillis}'
+        ContainerEnvEntry9: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_FOR_PERIOD=${PDVUserRegistryRateLimiterNRequests}'
+        ContainerEnvEntry10: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_TIMEOUT_DURATION=${PDVUserRegistryRateLimiterTimeoutMillis}'
+        ContainerEnvEntry11: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_LIMIT_REFRESH_PERIOD=${SelfcarePgRateLimiterMillis}'
+        ContainerEnvEntry12: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_LIMIT_FOR_PERIOD=${SelfcarePgRateLimiterNRequests}'
+        ContainerEnvEntry13: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_TIMEOUT_DURATION=${SelfcarePgRateLimiterTimeoutMillis}'
         ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
         ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPF:AWSCURRENT:'
-        ContainerSecret2: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPG:AWSCURRENT:'
         ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPF:AWSCURRENT:'
-        ContainerSecret4: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPG:AWSCURRENT:'                
+        ContainerSecret4: !Sub 'PN_DATA_VAULT_SELFCAREPG_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:SelfcareApiKeyForPG:AWSCURRENT:'                
         MicroServiceSecretPrefix: pn-PersonalDataVault-Secrets
         MappedPaths: '/datavault/*,/datavault-private/*'
         ECSClusterName: !Ref ECSClusterName

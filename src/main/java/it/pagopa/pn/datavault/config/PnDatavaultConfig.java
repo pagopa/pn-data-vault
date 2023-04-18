@@ -22,14 +22,15 @@ public class PnDatavaultConfig {
     private String dynamodbTableName;
     private String clientTokenizerBasepath;
     private String clientUserregistryBasepath;
+    private String clientSelfcarepgBasepath;
 
     private String tokenizerApiKeyPf;
-    private String tokenizerApiKeyPg;
-
     private String userregistryApiKeyPf;
-    private String userregistryApiKeyPg;
+    private String selfcarepgApiKeyPg;
+
     private int cacheExpireAfterMinutes;
     private int cacheMaxSize;
+
 
     @Value("${pn.env.runtime}")
     private String envRuntime;

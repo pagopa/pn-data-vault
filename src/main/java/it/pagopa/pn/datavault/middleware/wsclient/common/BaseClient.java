@@ -1,10 +1,7 @@
 package it.pagopa.pn.datavault.middleware.wsclient.common;
 
 import it.pagopa.pn.commons.pnclients.CommonBaseClient;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.UUID;
 
 public abstract class BaseClient extends CommonBaseClient {
 
@@ -20,18 +17,4 @@ public abstract class BaseClient extends CommonBaseClient {
                 .build();
     }
 
-
-    protected UUID getUUIDFromInternalId(String internalId)
-    {
-        internalId = internalId.substring(3);
-        return UUID.fromString(internalId);
-    }
-
-    protected RecipientType getRecipientTypeFromInternalId(String internalId)
-    {
-        if (internalId.startsWith(RecipientType.PF.getValue()))
-            return RecipientType.PF;
-        else
-            return RecipientType.PG;
-    }
 }

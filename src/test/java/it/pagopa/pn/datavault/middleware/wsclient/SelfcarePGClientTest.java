@@ -2,9 +2,8 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.PiiResourceDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.TokenResourceDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
+import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.selfcarepg.v1.dto.InstitutionDto;
 import it.pagopa.pn.datavault.svc.entities.InternalId;
 import it.pagopa.pn.datavault.utils.RecipientUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +19,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
@@ -30,16 +28,15 @@ import static org.mockserver.model.HttpResponse.response;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-        "pn.data-vault.client_tokenizer_basepath=http://localhost:9999",
-        "pn.data-vault.tokenizer_api_key_pf=pf",
-        "pn.data-vault.tokenizer_api_key_pg=pg"
+        "pn.data-vault.client_selfcarepg_basepath=http://localhost:9999",
+         "pn.data-vault.selfcarepg_api_key_pg=pg"
 })
-class PersonalDataVaultTokenizerClientTest {
+class SelfcarePGClientTest {
 
     Duration d = Duration.ofMillis(3000);
 
     @Autowired
-    private PersonalDataVaultTokenizerClient client;
+    private SelfcarePGClient client;
 
     private static ClientAndServer mockServer;
 
@@ -53,33 +50,25 @@ class PersonalDataVaultTokenizerClientTest {
         mockServer.stop();
     }
 
-
     @Test
-    void ensureRecipientByExternalIdPF() throws JsonProcessingException {
+    void addInstitutionUsingPOST() {
         //Given
-        String cf = "RSSMRA85T10A562S";
+        String cf = "123456789";
         String iuid = "425e4567-e89b-12d3-a456-426655449631";
-        String expectediuid = "PF-"+iuid;
-        TokenResourceDto response = new TokenResourceDto();
-        response.setToken(UUID.fromString(iuid));
-        response.setRootToken(UUID.fromString(iuid));
-        ObjectMapper mapper = new ObjectMapper();
-        String respjson = mapper.writeValueAsString(response);
-
-
+        String expectediuid = "PG-"+iuid;
 
         new MockServerClient("localhost", 9999)
                 .when(request()
-                        .withMethod("PUT")
-                        .withHeader("x-api-key", "pf")
-                        .withPath("/tokens"))
+                        .withMethod("POST")
+                        .withHeader("Ocp-Apim-Subscription-Key", "pg")
+                        .withPath("/pn-pg/institutions/add"))
                 .respond(response()
-                        .withBody(respjson)
+                        .withBody("{ \"id\": \"425e4567-e89b-12d3-a456-426655449631\" }")
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(200));
 
         //When
-        String result = client.ensureRecipientByExternalId(cf).block(d);
+        String result = client.addInstitutionUsingPOST(cf).block(d);
 
         //Then
         assertNotNull(result);
@@ -87,34 +76,40 @@ class PersonalDataVaultTokenizerClientTest {
     }
 
     @Test
-    void findPii() throws JsonProcessingException {
-
-        String internalId_noPF = "425e4567-e89b-12d3-a456-426655449631";
-        String internalId = "PF-" + internalId_noPF;
-        InternalId internalId1 = RecipientUtils.mapToInternalId(List.of(internalId)).get(0);
-        String pii = "PII";
-
-
-        PiiResourceDto response = new PiiResourceDto();
-
-        response.setPii(pii);
-
+    void retrieveInstitutionByIdUsingGET() throws JsonProcessingException {
+        //Given
+        String surname = "mario rossi srl";
+        String fc = "12345678909";
+        String iuid = "a8bdb303-18c0-43dd-b832-ef9f451bfe22";
+        String expectediuid = "PG-"+iuid;
+        List<String> ids = List.of(expectediuid);
+        List<InternalId> iids = RecipientUtils.mapToInternalId(ids);
+        InstitutionDto response = new InstitutionDto();
+        response.setDescription(surname);
+        response.setExternalId(fc);
         ObjectMapper mapper = new ObjectMapper();
         String respjson = mapper.writeValueAsString(response);
 
         new MockServerClient("localhost", 9999)
                 .when(request()
                         .withMethod("GET")
-                        .withHeader("x-api-key", "pf")
-                        .withPath("/tokens/{token}/pii".replace("{token}", internalId_noPF)))
+                        .withHeader("Ocp-Apim-Subscription-Key", "pg")
+                        .withPath("/institutions/" + iuid))
                 .respond(response()
                         .withBody(respjson)
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(200));
 
-        UserResourceDto result = client.findPii(internalId1).block(d);
-        assertNotNull(result);
-        assertEquals(result.getFiscalCode(), pii);
+        //When
+        List<BaseRecipientDto> result = client.retrieveInstitutionByIdUsingGET(iids).collectList().block(Duration.ofMillis(3000));
 
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(surname, result.get(0).getDenomination());
+        assertEquals(fc, result.get(0).getTaxId());
+        assertEquals(expectediuid, result.get(0).getInternalId());
     }
+
+
 }

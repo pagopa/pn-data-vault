@@ -39,10 +39,10 @@ Parameters:
     Default: "001"
     Description: Suffix to the log bucket name
 
-  PnCoreAccountId:
+  PnCoreAwsAccountId:
     Type: String
     Default: '-'
-    Description: Data lake can read logs
+    Description: AWS AccountId of pn-core account in same environment
 
   AlarmSNSTopicArn:
     Type: String
@@ -128,7 +128,7 @@ Conditions:
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 
   IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
-  HasPnCoreAccountId: !Not [ !Equals [ !Ref PnCoreAccountId, '-' ] ]
+  HasPnCoreAwsAccountId: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
 
 Resources:
 
@@ -141,13 +141,13 @@ Resources:
         ProjectName: !Ref ProjectName
         LogsBucketName: !Ref LogsBucketName
         LogsBucketKmsKeyArn: !Ref LogsBucketKmsKeyArn
-        DataLakeAccountId1: !Ref PnCoreAccountId
-        DataLakeAccountId2: !Ref PnCoreAccountId
+        DataLakeAccountId1: !Ref PnCoreAwsAccountId
+        DataLakeAccountId2: !Ref PnCoreAwsAccountId
         BucketSuffix: !Ref BucketSuffix 
   
   # Export new safestorage cloudtrail file events
   NewSafeStorageCloudTrailFileQueueResourcePolicy:
-    Condition: HasPnCoreAccountId
+    Condition: HasPnCoreAwsAccountId
     Type: AWS::SQS::QueuePolicy
     Properties: 
       Queues: 
@@ -157,7 +157,7 @@ Resources:
           - Effect: "Allow"
             Principal:  
               AWS: 
-                - !Ref PnCoreAccountId
+                - !Ref PnCoreAwsAccountId
             Action: 
               - "sqs:ReceiveMessage"
               - "sqs:DeleteMessage"

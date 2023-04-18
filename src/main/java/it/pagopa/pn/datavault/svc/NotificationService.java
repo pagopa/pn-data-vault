@@ -45,12 +45,21 @@ public class NotificationService {
         return notificationDao.deleteNotificationByIun(iun);
     }
 
-    public Flux<NotificationRecipientAddressesDto> getNotificationAddressesByIun(String iun) {
-        return notificationDao.listNotificationRecipientAddressesDtoById(iun)
+    public Flux<NotificationRecipientAddressesDto> getNotificationAddressesByIun(String iun, Boolean normalized) {
+        if(normalized == null) {
+            /*
+            Se il parametro non viene passato allora il metodo dovrà prima comportarsi come se il parametro fosse presente
+            e valorizzato true. Se gli indirizzi normalizzati non sono presenti allora deve comportarsi come se il paramtro fosse presente e valorizzato false
+             */
+            return notificationDao.listNotificationRecipientAddressesDtoById(iun, Boolean.TRUE)
+                    .switchIfEmpty(notificationDao.listNotificationRecipientAddressesDtoById(iun, Boolean.FALSE))
+                    .map(mappingsDao::toDto);
+        }
+        return notificationDao.listNotificationRecipientAddressesDtoById(iun, normalized)
                 .map(mappingsDao::toDto);
     }
 
-    public Mono<Object> updateNotificationAddressesByIun(String iun, NotificationRecipientAddressesDto[] dtoArray) {
+    public Mono<Object> updateNotificationAddressesByIun(String iun, NotificationRecipientAddressesDto[] dtoArray, Boolean normalized) {
 
         List<NotificationEntity> nelist = new ArrayList<>();
 
@@ -62,6 +71,7 @@ public class NotificationService {
             NotificationEntity ne = mappingsDao.toEntity(dto);
             ne.setRecipientIndex( String.format("%03d", recipientIndex.getAndIncrement() ) );
             ne.setInternalId(iun);  // il mapping non può mappare l'internalid, non è presente nel dto
+            ne.setNormalizedAddress(normalized);
             nelist.add(ne);
         });
 

@@ -64,7 +64,8 @@ public class NotificationDao extends BaseDao {
         // dato che devo cancellare TUTTI gli indirizzi e le timeline per un certo iun
         // devo necessariamente chiedere quali sono con una query, e poi
         // ricavarmi dai risultati le chiavi per poter eseguire la cancellazione
-        return  listNotificationRecipientAddressesDtoById(iun)
+        return  listNotificationRecipientAddressesDtoById(iun, true)
+                .concatWith(listNotificationRecipientAddressesDtoById(iun, false))
                 .collectList()
                 .zipWith(notificationTimelineDao.getNotificationTimelineByIun(iun).collectList()
                 , (listaddresses,listtimeline) -> {
@@ -81,10 +82,10 @@ public class NotificationDao extends BaseDao {
                 .flatMap(r -> Mono.fromFuture(dynamoDbEnhancedAsyncClient.transactWriteItems(r.build())));
     }
 
-    public Flux<NotificationEntity> listNotificationRecipientAddressesDtoById(String iun) {
-        log.debug("listNotificationRecipientAddressesDtoById notifications list-by-id internalid:{}", iun);
+    public Flux<NotificationEntity> listNotificationRecipientAddressesDtoById(String iun, Boolean normalized) {
+        log.debug("listNotificationRecipientAddressesDtoById notifications list-by-id internalid:{}, normalized:{}", iun, normalized);
 
-        NotificationEntity ne = new NotificationEntity(iun, "");
+        NotificationEntity ne = new NotificationEntity(iun, "", normalized);
         QueryConditional queryConditional = QueryConditional.keyEqualTo(getKeyBuild(ne.getPk()));
 
         QueryEnhancedRequest qeRequest = QueryEnhancedRequest

@@ -12,10 +12,12 @@ import it.pagopa.pn.datavault.middleware.db.NotificationDao;
 import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
+import it.pagopa.pn.datavault.middleware.db.entities.PhysicalAddress;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Flux;
@@ -44,7 +46,7 @@ class NotificationServiceTest {
     @Mock
     NotificationTimelineDao objtimelineDao;
 
-    @Mock
+    @Spy
     NotificationEntityNotificationRecipientAddressesDtoMapper mapper;
 
     @Mock
@@ -78,21 +80,82 @@ class NotificationServiceTest {
     }
 
     @Test
-    void getNotificationAddressesByIun() {
+    void getNotificationAddressesByIunWithNormalizedFalse() {
         //Given
         NotificationEntity notificationEntity = TestUtils.newNotification();
         List<NotificationEntity> list = new ArrayList<>();
         list.add(notificationEntity);
 
-        when(objDao.listNotificationRecipientAddressesDtoById(Mockito.any())).thenReturn(Flux.fromIterable(list));
-        when(mapper.toDto(Mockito.any())).thenReturn(new NotificationRecipientAddressesDto());
+        when(objDao.listNotificationRecipientAddressesDtoById(notificationEntity.getInternalId(), false)).thenReturn(Flux.fromIterable(list));
 
         //When
-        List<NotificationRecipientAddressesDto> result = privateService.getNotificationAddressesByIun("").collectList().block(d);
+        List<NotificationRecipientAddressesDto> result = privateService.getNotificationAddressesByIun(notificationEntity.getInternalId(), false).collectList().block(d);
 
         //Then
         assertNotNull(result);
         assertEquals(1, result.size());
+    }
+
+    @Test
+    void getNotificationAddressesByIunWithNormalizedTrue() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification(true);
+        List<NotificationEntity> list = new ArrayList<>();
+        list.add(notificationEntity);
+
+        when(objDao.listNotificationRecipientAddressesDtoById(notificationEntity.getInternalId(), true)).thenReturn(Flux.fromIterable(list));
+
+        //When
+        List<NotificationRecipientAddressesDto> result = privateService.getNotificationAddressesByIun(notificationEntity.getInternalId(), true).collectList().block(d);
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getNotificationAddressesByIunWithNormalizedNullAndNormalizedListNotEmpty() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification(true);
+        notificationEntity.getPhysicalAddress().setAddress("NORMALIZED");
+        List<NotificationEntity> list = new ArrayList<>();
+        list.add(notificationEntity);
+        NotificationEntity notificationEntityNotNormalized = new NotificationEntity(list.get(0).getInternalId(), "001", false);
+        notificationEntityNotNormalized.setPhysicalAddress(notificationEntity.getPhysicalAddress());
+        PhysicalAddress physicalAddressNotNormalized = new PhysicalAddress();
+        physicalAddressNotNormalized.setAddress("NOT NORMALIZED");
+
+        when(objDao.listNotificationRecipientAddressesDtoById(notificationEntity.getInternalId(), true)).thenReturn(Flux.fromIterable(list));
+        when(objDao.listNotificationRecipientAddressesDtoById(notificationEntity.getInternalId(), false)).thenReturn(Flux.fromIterable(List.of(notificationEntityNotNormalized)));
+
+        //When
+        List<NotificationRecipientAddressesDto> result = privateService.getNotificationAddressesByIun(notificationEntity.getInternalId(), null).collectList().block(d);
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("NORMALIZED", result.get(0).getPhysicalAddress().getAddress());
+    }
+
+    @Test
+    void getNotificationAddressesByIunWithNormalizedNullAndNormalizedListEmpty() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification(false);
+        notificationEntity.getPhysicalAddress().setAddress("NOT NORMALIZED");
+        List<NotificationEntity> list = new ArrayList<>();
+        list.add(notificationEntity);
+
+
+        when(objDao.listNotificationRecipientAddressesDtoById(notificationEntity.getInternalId(), true)).thenReturn(Flux.empty());
+        when(objDao.listNotificationRecipientAddressesDtoById(notificationEntity.getInternalId(), false)).thenReturn(Flux.fromIterable(list));
+
+        //When
+        List<NotificationRecipientAddressesDto> result = privateService.getNotificationAddressesByIun(notificationEntity.getInternalId(), null).collectList().block(d);
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("NOT NORMALIZED", result.get(0).getPhysicalAddress().getAddress());
     }
 
     @Test
@@ -108,11 +171,10 @@ class NotificationServiceTest {
         listdto.add(dto);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
-        when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
         assertDoesNotThrow(() -> {
-            privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0])).block(d);
+            privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]), false).block(d);
         });
 
         //Then
@@ -132,12 +194,11 @@ class NotificationServiceTest {
         listdto.add(dto);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
-        when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
         String iun = notificationEntity.getInternalId();
         NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
-        assertDoesNotThrow(() -> privateService.updateNotificationAddressesByIun(iun, dtos));
+        assertDoesNotThrow(() -> privateService.updateNotificationAddressesByIun(iun, dtos, false));
 
         //Then
         // nothing
@@ -157,12 +218,11 @@ class NotificationServiceTest {
         listdto.add(dto);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
-        when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
         String iun = notificationEntity.getInternalId();
         NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
-        assertThrows(PnInvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos, false));
 
         //Then
         // nothing
@@ -182,12 +242,11 @@ class NotificationServiceTest {
         listdto.add(dto);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
-        when(mapper.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
         String iun = notificationEntity.getInternalId();
         NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
-        assertThrows(PnInvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateNotificationAddressesByIun(iun, dtos, false));
 
         //Then
         // nothing
@@ -211,6 +270,7 @@ class NotificationServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
     }
+
 
     @Test
     void getNotificationTimelineByIunAndTimelineElementId() {

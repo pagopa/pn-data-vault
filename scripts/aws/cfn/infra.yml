@@ -39,12 +39,7 @@ Parameters:
     Default: "001"
     Description: Suffix to the log bucket name
 
-  DataLakeAccountId1:
-    Type: String
-    Default: '-'
-    Description: Data lake can read logs
-
-  DataLakeAccountId2:
+  PnCoreAccountId:
     Type: String
     Default: '-'
     Description: Data lake can read logs
@@ -94,6 +89,9 @@ Parameters:
     Default: ''
     Description: 'Default VPC security group'
 
+  NewSafeStorageCloudTrailFileQueueARN:
+    Type: String
+
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -112,6 +110,10 @@ Parameters:
     Type: String
   SandboxSafeStorageBaseUrl:
     Type: String
+  SafeStorageFileAccessLogsBucketName:
+    Type: String
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Type: String
   PnCoreTargetEventBus:
     Type: String
     Default: ''
@@ -126,10 +128,11 @@ Conditions:
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 
   IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
+  HasPnCoreAccountId: !Not [ !Equals [ !Ref PnCoreAccountId, '-' ] ]
 
 Resources:
 
-  # Exporter role
+  # Log Exporter role
   LogsExporterRole:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -138,9 +141,32 @@ Resources:
         ProjectName: !Ref ProjectName
         LogsBucketName: !Ref LogsBucketName
         LogsBucketKmsKeyArn: !Ref LogsBucketKmsKeyArn
-        DataLakeAccountId1: !Ref DataLakeAccountId1
-        DataLakeAccountId2: !Ref DataLakeAccountId2
+        DataLakeAccountId1: !Ref PnCoreAccountId
+        DataLakeAccountId2: !Ref PnCoreAccountId
         BucketSuffix: !Ref BucketSuffix 
+  
+  # Export new safestorage cloudtrail file events
+  NewSafeStorageCloudTrailFileQueueResourcePolicy:
+    Condition: HasPnCoreAccountId
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !Ref NewSafeStorageCloudTrailFileQueueARN
+      PolicyDocument:
+        Statement: 
+          - Effect: "Allow"
+            Principal:  
+              AWS: 
+                - !Ref PnCoreAccountId
+            Action: 
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !Ref NewSafeStorageCloudTrailFileQueueARN
+            
+  
   
   ###             Export dynamo CDC to Log saving bucket             ###
   ###########################################################################
@@ -373,3 +399,7 @@ Outputs:
     Value: !Ref EcsDefaultSecurityGroup
   PnVPCDefaultSecurityGroup:
     Value: !Ref PnVPCDefaultSecurityGroup
+  SafeStorageFileAccessLogsBucketName:
+    Value: !Ref SafeStorageFileAccessLogsBucketName
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix

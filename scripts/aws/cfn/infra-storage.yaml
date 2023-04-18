@@ -49,6 +49,10 @@ Parameters:
     Default: ON_DEMAND
     Type: String
     AllowedValues: [ON_DEMAND, PROVISIONED]
+  
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Type: String
+    Default: safeStorageObjectPutAndGetTracing
 
   AlarmSNSTopicArn:
     Type: String
@@ -90,7 +94,16 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Filter: 
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix
+            Queue: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+      
   # - Log storage cryptography key 
   LogsBucketKmsKey:
     Condition: MakeBucketCondition
@@ -152,6 +165,17 @@ Resources:
                   aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${SafeStorageAccountId}:trail/*"
             - !Ref AWS::NoValue
 
+
+  NewSafeStorageCloudTrailFileQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain      
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-new-safestorage-cloudtrail-file'
+        DelaySeconds: 1
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName    
 
 ## KINESIS SOURCE STREAM FOR Change Data Capture
 
@@ -275,7 +299,25 @@ Outputs:
     Description: 'Arn of the KMS key used to encrypt the Kinesis source stream'
 
   BucketSuffix: # used to generate kms alias
-    Value: !Ref BucketSuffix 
+    Value: !Ref BucketSuffix
+  
+  # new safestorage cloudtrail file event queue
+  NewSafeStorageCloudTrailFileQueueName:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueName
+    Description: new safestorage cloudtrail file event queue name
+  NewSafeStorageCloudTrailFileQueueURL:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueURL
+    Description: new safestorage cloudtrail file event queue URL
+  NewSafeStorageCloudTrailFileQueueARN:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+    Description: new safestorage cloudtrail file event queue ARN
+  NewSafeStorageCloudTrailFileQueueAlarmARN:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.SqsDLQAlarmArn
+    Description: new safestorage cloudtrail file event queue alarm ARN
+  NewSafeStorageCloudTrailFileQueueAgeAlarmARN:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.SqsAgeAlarmArn
+    Description: new safestorage cloudtrail file event queue ARN
+  
 
   # Pass through parameters
   AlarmSNSTopicArn:
@@ -286,6 +328,16 @@ Outputs:
   
   SafeStorageAccountId:
     Value: !Ref SafeStorageAccountId
+  
+  SafeStorageFileAccessLogsBucketName:
+    Value: 
+      Fn::If:
+        - MakeBucketCondition
+        - !Ref LogsBucket
+        - ''
+    
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix
 
   Version:
     Value: !Ref Version

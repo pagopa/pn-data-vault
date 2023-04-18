@@ -15,6 +15,10 @@ Parameters:
     Type: String
     Description: Suffix to the log bucket name
   
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: infra fragment source
+  
   SafeStorageAccountId:
     Type: String
     Default: '-'

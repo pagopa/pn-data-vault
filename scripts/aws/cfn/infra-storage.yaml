@@ -203,7 +203,7 @@ Resources:
     Condition: MakeBucketCondition
     Properties: 
       Queues: 
-        - !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+        - !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueURL
       PolicyDocument:
         Statement: 
           - Sid: pnCoreAccountGet

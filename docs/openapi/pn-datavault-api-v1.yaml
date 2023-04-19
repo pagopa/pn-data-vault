@@ -325,7 +325,11 @@ paths:
         - Notifications
       parameters:
         - name: normalized
-          description: Se valorizzato con true, indica che gli indirizzi da salvare sono normalizzati
+          description: >- 
+            Se valorizzato con true, indica che si dovranno leggere gli indirizzi normalizzati della notifica. <br/>
+            Se valorizzato con false, indica che si dovranno leggere gli indirizzi non normalizzati. <br/>
+            Se non valorizzato, si tenterà di leggere gli indirizzi normalizzati. Se non trovati, si tenta di leggere
+            quelli non normalizzati.
           in: query
           required: false
           schema:

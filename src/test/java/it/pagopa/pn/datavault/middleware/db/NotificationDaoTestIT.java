@@ -345,6 +345,65 @@ class NotificationDaoTestIT {
         }
     }
 
+    @Test
+    void deleteNotificationByIunMultipleWithNoNormalizedAddress() {
+        //Given
+        List<NotificationEntity> notificationsEntities = new ArrayList<>();
+        int N = 4;
+        for(int i = 0;i<N;i++)
+        {
+            NotificationEntity ae = TestUtils.newNotification(false);
+            ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
+            notificationsEntities.add(ae);
+        }
+
+
+        try {
+            notificationsEntities.forEach(m -> {
+                try {
+                    testDao.delete(m.getPk(), m.getRecipientIndex());
+                } catch (ExecutionException e) {
+                    System.out.println("Nothing to remove");
+                } catch (InterruptedException e) {
+                    System.out.println("Nothing to remove");
+                    Thread.currentThread().interrupt();
+                }
+
+            });
+            notificationDao.updateNotifications(notificationsEntities).block(d);
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        // basta cercare per un internalid qualsiasi
+        notificationDao.deleteNotificationByIun(notificationsEntities.get(0).getInternalId()).block(d);
+
+        //Then
+        try {
+            NotificationEntity elementFromDb = testDao.get(notificationsEntities.get(0).getPk(), notificationsEntities.get(0).getRecipientIndex());
+
+            Assertions.assertNull( elementFromDb);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        } finally {
+            try {
+                notificationsEntities.forEach(m -> {
+                    try {
+                        testDao.delete(m.getPk(), m.getRecipientIndex());
+                    } catch (ExecutionException e) {
+                        System.out.println("Nothing to remove");
+                    } catch (InterruptedException e) {
+                        System.out.println("Nothing to remove");
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
 
     @Test
     void deleteNotificationByIunMultipleWithTimeline() {

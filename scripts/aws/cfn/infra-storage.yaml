@@ -54,6 +54,11 @@ Parameters:
     Type: String
     AllowedValues: [ON_DEMAND, PROVISIONED]
   
+  PnCoreAwsAccountId:
+    Type: String
+    Default: '-'
+    Description: AWS AccountId of pn-core account in same environment
+  
   SafeStorageFileAccessLogsBucketPathPrefix:
     Type: String
     Default: safeStorageObjectPutAndGetTracing
@@ -74,6 +79,8 @@ Conditions:
   CdcOnDemandDisabled: !Not [!Equals [!Ref CdcStreamMode, ON_DEMAND]]
   LogsOnDemandDisabled: !Not [!Equals [!Ref LogsStreamMode, ON_DEMAND]]
 
+  HasPnCoreAwsAccountId: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
+
 Resources:
   
   ### - S3 Bucket for logs storages
@@ -93,6 +100,9 @@ Resources:
               KMSMasterKeyID: !Ref LogsBucketKmsKey              
               SSEAlgorithm: 'aws:kms'
             BucketKeyEnabled: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
       PublicAccessBlockConfiguration: 
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -145,7 +155,11 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !Sub arn:aws:iam::${AWS::AccountId}:root
+                Fn::If:
+                  - HasPnCoreAwsAccountId
+                  - - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+                    - !Sub arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root
+                  - - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
             Action:
               - kms:Encrypt
               - kms:Decrypt
@@ -332,6 +346,9 @@ Outputs:
   
   SafeStorageAccountId:
     Value: !Ref SafeStorageAccountId
+  
+  PnCoreAwsAccountId:
+    Value: !Ref PnCoreAwsAccountId
   
   SafeStorageFileAccessLogsBucketName:
     Value: 

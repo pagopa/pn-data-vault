@@ -141,9 +141,33 @@ Resources:
         ProjectName: !Ref ProjectName
         LogsBucketName: !Ref LogsBucketName
         LogsBucketKmsKeyArn: !Ref LogsBucketKmsKeyArn
+        SafeStorageAccountId: !Ref AWS::AccountId
         DataLakeAccountId1: !Ref PnCoreAwsAccountId
         DataLakeAccountId2: !Ref PnCoreAwsAccountId
         BucketSuffix: !Ref BucketSuffix 
+        MoreBucketResourcePolicyStatements: 
+          Fn::If:
+            - HasPnCoreAwsAccountId
+            - !Sub |
+                ,{
+                  "Sid": "pnCoreListing",
+                  "Effect": "Allow",
+                  "Principal": {
+                      "AWS": "arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root"
+                  },
+                  "Action": "s3:ListBucket",
+                  "Resource": "arn:${AWS::Partition}:s3:::${LogsBucketName}"
+                },
+                {
+                  "Sid": "pnCoreLimitedGet",
+                  "Effect": "Allow",
+                  "Principal": {
+                      "AWS": "arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root"
+                  },
+                  "Action": "s3:GetObject",
+                  "Resource": "arn:${AWS::Partition}:s3:::${LogsBucketName}/safeStorageObjectPutAndGetTracing/*"
+                }
+            - "" 
   
   # Export new safestorage cloudtrail file events
   NewSafeStorageCloudTrailFileQueueResourcePolicy:
@@ -154,7 +178,8 @@ Resources:
         - !Ref NewSafeStorageCloudTrailFileQueueARN
       PolicyDocument:
         Statement: 
-          - Effect: "Allow"
+          - Sid: pnCoreAccountGet
+            Effect: "Allow"
             Principal:  
               AWS: 
                 - !Ref PnCoreAwsAccountId
@@ -165,7 +190,22 @@ Resources:
               - "sqs:ChangeMessageVisibility"
               - "sqs:GetQueueUrl"
             Resource: !Ref NewSafeStorageCloudTrailFileQueueARN
-            
+          - Sid: s3ServicePut
+            Effect: "Allow"
+            Principal:  
+              Service: 
+                - "s3.amazonaws.com"
+            Action: 
+              - "sqs:SendMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !Ref NewSafeStorageCloudTrailFileQueueARN
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:aws:s3:*:*:${LogsBucketName}"
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
   
   
   ###             Export dynamo CDC to Log saving bucket             ###

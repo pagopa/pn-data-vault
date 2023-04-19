@@ -33,9 +33,9 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
     }
 
     @Override
-    public Mono<ResponseEntity<Flux<NotificationRecipientAddressesDto>>> getNotificationAddressesByIun(String iun, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Flux<NotificationRecipientAddressesDto>>> getNotificationAddressesByIun(String iun, Boolean normalized, ServerWebExchange exchange) {
         log.info("[enter] getNotificationAddressesByIun internalid:{}", iun);
-        return this.svc.getNotificationAddressesByIun( iun )
+        return this.svc.getNotificationAddressesByIun( iun, normalized )
                 .collectList()
                 .map( result -> {
                     log.debug("[exit] getNotificationAddressesByIun");
@@ -45,14 +45,14 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
     }
 
     @Override
-    public Mono<ResponseEntity<Void>> updateNotificationAddressesByIun(String iun, Flux<NotificationRecipientAddressesDto> notificationRecipientAddressesDto, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Void>> updateNotificationAddressesByIun(String iun, Boolean normalized, Flux<NotificationRecipientAddressesDto> notificationRecipientAddressesDto, ServerWebExchange exchange) {
         log.info("[enter] updateNotificationAddressesByIun internalid:{}", iun);
         return notificationRecipientAddressesDto
                     .collectList()
                     .flatMap( dtoList -> {
                         NotificationRecipientAddressesDto[] dtoArray;
                         dtoArray = dtoList.toArray( new NotificationRecipientAddressesDto[0] );
-                        return svc.updateNotificationAddressesByIun( iun, dtoArray );
+                        return svc.updateNotificationAddressesByIun( iun, dtoArray, normalized );
                     })
                     .map( updateResult -> {
                         log.debug("[exit] updateNotificationAddressesByIun");

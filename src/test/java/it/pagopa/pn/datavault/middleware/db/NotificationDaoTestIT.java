@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
@@ -45,14 +46,14 @@ class NotificationDaoTestIT {
     }
 
     @Test
-    void updateNotifications() {
+    void updateNotificationsNormalized() {
         //Given
-        NotificationEntity addresToInsert = TestUtils.newNotification();
+        NotificationEntity addressToInsert = TestUtils.newNotification(true);
         List<NotificationEntity> l = new ArrayList<>();
-        l.add(addresToInsert);
+        l.add(addressToInsert);
 
         try {
-            testDao.delete(addresToInsert.getPk(), addresToInsert.getRecipientIndex());
+            testDao.delete(addressToInsert.getPk(), addressToInsert.getRecipientIndex());
         } catch (Exception e) {
             System.out.println("Nothing to remove");
         }
@@ -62,15 +63,50 @@ class NotificationDaoTestIT {
 
         //Then
         try {
-            NotificationEntity elementFromDb = testDao.get(addresToInsert.getPk(), addresToInsert.getRecipientIndex());
+            NotificationEntity elementFromDb = testDao.get(addressToInsert.getPk(), addressToInsert.getRecipientIndex());
 
             Assertions.assertNotNull( elementFromDb);
-            Assertions.assertEquals(addresToInsert, elementFromDb);
+            Assertions.assertEquals(addressToInsert, elementFromDb);
+            Assertions.assertEquals(Boolean.TRUE, elementFromDb.getNormalizedAddress());
         } catch (Exception e) {
             fail(e);
         } finally {
             try {
-                testDao.delete(addresToInsert.getPk(), addresToInsert.getRecipientIndex());
+                testDao.delete(addressToInsert.getPk(), addressToInsert.getRecipientIndex());
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    @Test
+    void updateNotificationsNotNormalized() {
+        //Given
+        NotificationEntity addressToInsert = TestUtils.newNotification(false);
+        List<NotificationEntity> l = new ArrayList<>();
+        l.add(addressToInsert);
+
+        try {
+            testDao.delete(addressToInsert.getPk(), addressToInsert.getRecipientIndex());
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        notificationDao.updateNotifications(l).block(d);
+
+        //Then
+        try {
+            NotificationEntity elementFromDb = testDao.get(addressToInsert.getPk(), addressToInsert.getRecipientIndex());
+
+            Assertions.assertNotNull( elementFromDb);
+            Assertions.assertEquals(addressToInsert, elementFromDb);
+            Assertions.assertEquals(Boolean.FALSE, elementFromDb.getNormalizedAddress());
+        } catch (Exception e) {
+            fail(e);
+        } finally {
+            try {
+                testDao.delete(addressToInsert.getPk(), addressToInsert.getRecipientIndex());
             } catch (Exception e) {
                 System.out.println("Nothing to remove");
             }
@@ -180,13 +216,143 @@ class NotificationDaoTestIT {
     }
 
     @Test
-    void deleteNotificationByIunMultiple() {
+    void deleteNotificationByIunMultipleNotNormalizedAndOneNormalized() {
         //Given
         List<NotificationEntity> notificationsEntities = new ArrayList<>();
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationEntity ae = TestUtils.newNotification();
+            NotificationEntity ae = TestUtils.newNotification(false);
+            ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
+            notificationsEntities.add(ae);
+        }
+
+        // aggiunto per lo stesso IUN un oggetto con indirizzo fisico normalizzato
+        NotificationEntity entityWithNormalizedAddress = new NotificationEntity(notificationsEntities.get(0).getInternalId(), "000_4", true);
+        entityWithNormalizedAddress.setDigitalAddress(notificationsEntities.get(0).getDigitalAddress());
+        entityWithNormalizedAddress.setPhysicalAddress(notificationsEntities.get(0).getPhysicalAddress());
+        notificationsEntities.add(entityWithNormalizedAddress);
+
+
+        try {
+            notificationsEntities.forEach(m -> {
+                try {
+                    testDao.delete(m.getPk(), m.getRecipientIndex());
+                } catch (ExecutionException e) {
+                    System.out.println("Nothing to remove");
+                } catch (InterruptedException e) {
+                    System.out.println("Nothing to remove");
+                    Thread.currentThread().interrupt();
+                }
+
+            });
+            notificationDao.updateNotifications(notificationsEntities).block(d);
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        // basta cercare per un internalid qualsiasi
+        notificationDao.deleteNotificationByIun(notificationsEntities.get(0).getInternalId()).block(d);
+
+        //Then
+        try {
+            NotificationEntity elementFromDb = testDao.get(notificationsEntities.get(0).getPk(), notificationsEntities.get(0).getRecipientIndex());
+
+            Assertions.assertNull( elementFromDb);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        } finally {
+            try {
+                notificationsEntities.forEach(m -> {
+                    try {
+                        testDao.delete(m.getPk(), m.getRecipientIndex());
+                    } catch (ExecutionException e) {
+                        System.out.println("Nothing to remove");
+                    } catch (InterruptedException e) {
+                        System.out.println("Nothing to remove");
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    @Test
+    void deleteNotificationByIunMultipleNormalizedAndOneNotNormalized() {
+        //Given
+        List<NotificationEntity> notificationsEntities = new ArrayList<>();
+        int N = 4;
+        for(int i = 0;i<N;i++)
+        {
+            NotificationEntity ae = TestUtils.newNotification(true);
+            ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
+            notificationsEntities.add(ae);
+        }
+
+        // aggiunto per lo stesso IUN un oggetto con indirizzo fisico NON normalizzato
+        NotificationEntity entityWithNotNormalizedAddress = new NotificationEntity(notificationsEntities.get(0).getInternalId(), "000_4", false);
+        entityWithNotNormalizedAddress.setDigitalAddress(notificationsEntities.get(0).getDigitalAddress());
+        entityWithNotNormalizedAddress.setPhysicalAddress(notificationsEntities.get(0).getPhysicalAddress());
+        notificationsEntities.add(entityWithNotNormalizedAddress);
+
+
+        try {
+            notificationsEntities.forEach(m -> {
+                try {
+                    testDao.delete(m.getPk(), m.getRecipientIndex());
+                } catch (ExecutionException e) {
+                    System.out.println("Nothing to remove");
+                } catch (InterruptedException e) {
+                    System.out.println("Nothing to remove");
+                    Thread.currentThread().interrupt();
+                }
+
+            });
+            notificationDao.updateNotifications(notificationsEntities).block(d);
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        // basta cercare per un internalid qualsiasi
+        notificationDao.deleteNotificationByIun(notificationsEntities.get(0).getInternalId()).block(d);
+
+        //Then
+        try {
+            NotificationEntity elementFromDb = testDao.get(notificationsEntities.get(0).getPk(), notificationsEntities.get(0).getRecipientIndex());
+
+            Assertions.assertNull( elementFromDb);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        } finally {
+            try {
+                notificationsEntities.forEach(m -> {
+                    try {
+                        testDao.delete(m.getPk(), m.getRecipientIndex());
+                    } catch (ExecutionException e) {
+                        System.out.println("Nothing to remove");
+                    } catch (InterruptedException e) {
+                        System.out.println("Nothing to remove");
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    @Test
+    void deleteNotificationByIunMultipleWithNoNormalizedAddress() {
+        //Given
+        List<NotificationEntity> notificationsEntities = new ArrayList<>();
+        int N = 4;
+        for(int i = 0;i<N;i++)
+        {
+            NotificationEntity ae = TestUtils.newNotification(false);
             ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
             notificationsEntities.add(ae);
         }
@@ -338,13 +504,14 @@ class NotificationDaoTestIT {
     }
 
     @Test
-    void listNotificationRecipientnotificationsDtoById() {
+    void listNotificationRecipientnotificationsDtoByIdWithNormalizedNull() {
         //Given
         List<NotificationEntity> notificationsEntities = new ArrayList<>();
         int N = 4;
         for(int i = 0;i<N;i++)
         {
-            NotificationEntity ae = TestUtils.newNotification();
+            NotificationEntity ae = TestUtils.newNotification(null);
+            assertThat(ae.getPrefixPk()).isEqualTo(NotificationEntity.ADDRESS_PREFIX);
             ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
             notificationsEntities.add(ae);
         }
@@ -369,7 +536,7 @@ class NotificationDaoTestIT {
 
         //When
         // basta cercare per un internalid qualsiasi
-        List<NotificationEntity> results = notificationDao.listNotificationRecipientAddressesDtoById(notificationsEntities.get(0).getInternalId()).collectList().block(d);
+        List<NotificationEntity> results = notificationDao.listNotificationRecipientAddressesDtoById(notificationsEntities.get(0).getInternalId(), null).collectList().block(d);
 
         //Then
         try {
@@ -377,7 +544,133 @@ class NotificationDaoTestIT {
             Assertions.assertEquals(N, results.size());
             for(int i = 0;i<N;i++)
             {
-                Assertions.assertTrue(results.contains(notificationsEntities.get(i)));
+                assertThat(results).contains(notificationsEntities.get(i));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException();
+        } finally {
+            try {
+                notificationsEntities.forEach(m -> {
+                    try {
+                        testDao.delete(m.getPk(), m.getRecipientIndex());
+                    } catch (ExecutionException e) {
+                        System.out.println("Nothing to remove");
+                    } catch (InterruptedException e) {
+                        System.out.println("Nothing to remove");
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    @Test
+    void listNotificationRecipientnotificationsDtoByIdWithNormalizedFalse() {
+        //Given
+        List<NotificationEntity> notificationsEntities = new ArrayList<>();
+        int N = 4;
+        for(int i = 0;i<N;i++)
+        {
+            NotificationEntity ae = TestUtils.newNotification(false);
+            assertThat(ae.getPrefixPk()).isEqualTo(NotificationEntity.ADDRESS_PREFIX);
+            ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
+            notificationsEntities.add(ae);
+        }
+
+
+        try {
+            notificationsEntities.forEach(m -> {
+                try {
+                    testDao.delete(m.getPk(), m.getRecipientIndex());
+                } catch (ExecutionException e) {
+                    System.out.println("Nothing to remove");
+                } catch (InterruptedException e) {
+                    System.out.println("Nothing to remove");
+                    Thread.currentThread().interrupt();
+                }
+
+            });
+            notificationDao.updateNotifications(notificationsEntities).block(d);
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        // basta cercare per un internalid qualsiasi
+        List<NotificationEntity> results = notificationDao.listNotificationRecipientAddressesDtoById(notificationsEntities.get(0).getInternalId(), false).collectList().block(d);
+
+        //Then
+        try {
+            Assertions.assertNotNull(results);
+            Assertions.assertEquals(N, results.size());
+            for(int i = 0;i<N;i++)
+            {
+                assertThat(results).contains(notificationsEntities.get(i));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException();
+        } finally {
+            try {
+                notificationsEntities.forEach(m -> {
+                    try {
+                        testDao.delete(m.getPk(), m.getRecipientIndex());
+                    } catch (ExecutionException e) {
+                        System.out.println("Nothing to remove");
+                    } catch (InterruptedException e) {
+                        System.out.println("Nothing to remove");
+                        Thread.currentThread().interrupt();
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    @Test
+    void listNotificationRecipientnotificationsDtoByIdWithNormalizedTrue() {
+        //Given
+        List<NotificationEntity> notificationsEntities = new ArrayList<>();
+        int N = 4;
+        for(int i = 0;i<N;i++)
+        {
+            NotificationEntity ae = TestUtils.newNotification(true);
+            assertThat(ae.getPrefixPk()).isEqualTo(NotificationEntity.NORMALIZED_ADDRESS_PREFIX);
+            ae.setRecipientIndex(ae.getRecipientIndex() + "_" + i);
+            notificationsEntities.add(ae);
+        }
+
+
+        try {
+            notificationsEntities.forEach(m -> {
+                try {
+                    testDao.delete(m.getPk(), m.getRecipientIndex());
+                } catch (ExecutionException e) {
+                    System.out.println("Nothing to remove");
+                } catch (InterruptedException e) {
+                    System.out.println("Nothing to remove");
+                    Thread.currentThread().interrupt();
+                }
+
+            });
+            notificationDao.updateNotifications(notificationsEntities).block(d);
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        // basta cercare per un internalid qualsiasi
+        List<NotificationEntity> results = notificationDao.listNotificationRecipientAddressesDtoById(notificationsEntities.get(0).getInternalId(), true).collectList().block(d);
+
+        //Then
+        try {
+            Assertions.assertNotNull(results);
+            Assertions.assertEquals(N, results.size());
+            for(int i = 0;i<N;i++)
+            {
+                assertThat(results).contains(notificationsEntities.get(i));
             }
         } catch (Exception e) {
             throw new RuntimeException();

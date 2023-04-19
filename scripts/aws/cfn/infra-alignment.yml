@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'Template containing the infra resources for pn data vault'
+Description: 'Template containing the infra resources for pn data vault. The template is used only in task PN-4668 to remove some resource that need to be moved in a separate stack.'
 
 Parameters:
   ProjectName:

@@ -139,8 +139,8 @@ Resources:
         LogsBucketName: !Ref LogsBucketName
         LogsBucketKmsKeyArn: !Ref LogsBucketKmsKeyArn
         SafeStorageAccountId: !Ref AWS::AccountId
-        DataLakeAccountId1: !Ref PnCoreAwsAccountId
-        DataLakeAccountId2: !Ref PnCoreAwsAccountId
+        DataLakeAccountId1: '-'
+        DataLakeAccountId2: '-'
         BucketSuffix: !Ref BucketSuffix 
         MoreBucketResourcePolicyStatements: 
           Fn::If:

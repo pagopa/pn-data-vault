@@ -1,6 +1,5 @@
 {
   "Parameters" : {
-    "EcsDefaultSecurityGroup": "sg-063225b050d342247",
     "PDVTokenizerBasePath" : "https://api.uat.tokenizer.pdv.pagopa.it/tokenizer/v1",
     "PDVUserRegistryBasePath" : "https://api.uat.pdv.pagopa.it/user-registry/v1",
     "PDVUserRegistryRateLimiterMillis": "1000",
@@ -12,7 +11,6 @@
     "SelfcarePgRateLimiterTimeoutMillis": "10000",
     "CacheExpireMinutes": "600",
     "CacheMaxSize": "100000",
-    "PnDataVaultSecretArn": "arn:aws:secretsmanager:eu-south-1:153517439884:secret:pn-PersonalDataVault-Apikey-izQtMn" ,
     "CloudWatchMetricCron": "*/10 * * * * *"
   }
 }

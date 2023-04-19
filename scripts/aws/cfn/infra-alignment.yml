@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'Template containing the infra resources for pn data vault'
+Description: 'Template containing the infra resources for pn data vault. The template is used only in task PN-4668 to remove some resource that need to be moved in a separate stack.'
 
 Parameters:
   ProjectName:
@@ -53,47 +53,6 @@ Parameters:
     Type: String
     Description: ARN of the Alarm SNS Topic
 
-  ApplicationLoadBalancerArn: 
-    Type: String
-    Default: '-'
-    Description: Application load balancer
-
-  ApplicationLoadBalancerAwsDns: 
-    Type: String
-    Default: '-'
-    Description: Application load balancer AWS DNS
-
-  ApplicationLoadBalancerAwsDnsZoneId:
-    Type: String
-    Default: '-'
-    Description: Application load balancer AWS DNS Zone ID
-
-  ApplicationLoadBalancerListenerArn:
-    Type: String
-    Default: '-'
-    Description: Application load balancer listener ARN
-
-  VpcEndpointsRequired:
-    Type: String
-    Default: true
-    AllowedValues:
-      - true
-      - false
-
-  VpcEgressSubnetsIds:
-    Type: String
-    Default: '-'
-    Description: List of egress subnets
-     
-  EcsDefaultSecurityGroup:
-    Type: String
-    Description: ECS default security group
-
-  PnVPCDefaultSecurityGroup:
-    Type: String
-    Default: ''
-    Description: 'Default VPC security group'
-
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -110,24 +69,20 @@ Parameters:
     Type: String
   LogsKinesisStreamKeyArn:
     Type: String
-  SandboxSafeStorageBaseUrl:
-    Type: String
-  PnCoreTargetEventBus:
-    Type: String
-    Default: ''
-
-Conditions:
-  IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
-  IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
-  IsAlbArnDnsZoneIdEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDnsZoneId, '-' ]
-  IsAlbListenerArnEmpty: !Equals [ !Ref ApplicationLoadBalancerListenerArn, '-' ]
-  RequiresAlbCreation: !Or [ !Condition IsAlbArnEmpty, !Condition IsAlbArnDnsEmpty, !Condition IsAlbArnDnsZoneIdEmpty, !Condition IsAlbListenerArnEmpty ]
-
-  RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
-
-  IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
 
 Resources:
+  ###                       LOGS STREAMS PREPARATION                      ###
+  ###########################################################################
+  # Logs bucket
+  # LogsBucket:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-bucket.yaml"
+  #     Parameters:
+  #       ProjectName: !Ref ProjectName
+  #       BucketSuffix: !Ref BucketSuffix
+  #       DataLakeAccountId1: !Ref DataLakeAccountId1
+  #       DataLakeAccountId2: !Ref DataLakeAccountId2
 
   # Exporter role
   LogsExporterRole:
@@ -137,11 +92,26 @@ Resources:
       Parameters:
         ProjectName: !Ref ProjectName
         LogsBucketName: !Ref LogsBucketName
-        LogsBucketKmsKeyArn: !Ref LogsBucketKmsKeyArn
-        DataLakeAccountId1: !Ref DataLakeAccountId1
-        DataLakeAccountId2: !Ref DataLakeAccountId2
-        BucketSuffix: !Ref BucketSuffix 
+        LogsAccountId: !Ref AWS::AccountId
   
+  ## KINESIS SOURCE STREAM FOR Change Data Capture
+  # ConfidentialInfoCdcKinesisSourceStream:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
+  #     Parameters:
+  #       StreamName: !Sub '${ProjectName}-confidential-cdc-source-stream'
+  #       StreamRetentionPeriodHours: !Ref CdcStreamRetentionHours
+
+  ## KINESIS SOURCE STREAM FOR Logs
+  # ConfidentialInfoLogsKinesisSourceStream:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-stream.yaml"
+  #     Parameters:
+  #       StreamName: !Sub '${ProjectName}-confidential-logs-source-stream'
+  #       StreamRetentionPeriodHours: !Ref LogsStreamRetentionHours
+
   ###             Export dynamo CDC to Log saving bucket             ###
   ###########################################################################
   CdcToExternalBucket:
@@ -186,10 +156,18 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-cloudwatch-dashboard-transform.yaml"
 
-  
-  # Private connection from subnets to AWS services
+  # - Connect dev alarm to slack developers channel
+  # AlarmSNSTopicSlackConnection:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sns-topic-to-slack-channel.yaml"
+  #     Parameters:
+  #       TopicName: 'dev_alarm'
+  #       SNSTopicArn: !Ref AlarmSNSTopic
+  #       SlackInfo: !Ref SlackInfo
+
+   # Private connection from subnets to AWS services
   VPCEndpoints:
-    Condition: RequiresVpcEndpoints
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
@@ -204,7 +182,6 @@ Resources:
   #############################################################################
   # Application load balancer
   ApplicationLoadBalancer:
-    Condition: RequiresAlbCreation
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: application
@@ -217,7 +194,6 @@ Resources:
   # Application load balancer listener
   ApplicationLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    Condition: RequiresAlbCreation
     Properties:
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Protocol: HTTP
@@ -232,7 +208,6 @@ Resources:
 
   # Application security groups
   WebappSecurityGroup:
-    Condition: RequiresAlbCreation
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${ProjectName}-webapp-security-group
@@ -247,7 +222,6 @@ Resources:
 
   # Load balancer private fixed DNS
   Route53RecordSetGroup:
-    Condition: RequiresAlbCreation
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !Sub 'alb.confidential.${ProjectName}.internal'
@@ -263,14 +237,13 @@ Resources:
 
   # The cluster
   ECSCluster:
+    DependsOn: ApplicationLoadBalancerListener
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
       Parameters:
         MacroServiceName: !Sub '${ProjectName}-confidential'
   
-
-
 Outputs:
 
   AlarmSNSTopicArn:
@@ -333,11 +306,11 @@ Outputs:
     Value: !Ref VpcSubnets
 
   ApplicationLoadBalancerListenerArn:
-    Value: !If [ RequiresAlbCreation, !Ref ApplicationLoadBalancerListener, !Ref ApplicationLoadBalancerListenerArn ] 
+    Value: !Ref ApplicationLoadBalancerListener
     Description: Application Load Balancer listener Arn
 
   ApplicationLoadBalancerDomain:
-    Value: !If [ RequiresAlbCreation, !Sub '${ApplicationLoadBalancer.DNSName}', !Ref ApplicationLoadBalancerAwsDns ]
+    Value: !Sub '${ApplicationLoadBalancer.DNSName}'
     Description: Application Load Balancer Domain to use for http URL
   
   # ECS Cluster
@@ -361,15 +334,3 @@ Outputs:
     Value: !Ref LogsKinesisStreamArn
   LogsKinesisStreamKeyArn:
     Value: !Ref LogsKinesisStreamKeyArn
-  SandboxSafeStorageBaseUrl:
-    Value: !Ref SandboxSafeStorageBaseUrl
-  PnCoreTargetEventBus:
-    Value: !Ref PnCoreTargetEventBus
-  
-  VpcEgressSubnetsIds:
-    Value: !If [ IsEgressDefined, !Ref VpcEgressSubnetsIds, !Ref VpcSubnets ]
-  
-  EcsDefaultSecurityGroup:
-    Value: !Ref EcsDefaultSecurityGroup
-  PnVPCDefaultSecurityGroup:
-    Value: !Ref PnVPCDefaultSecurityGroup

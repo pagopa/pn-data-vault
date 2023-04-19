@@ -121,6 +121,8 @@ Resources:
   # - Log storage cryptography key 
   LogsBucketKmsKey:
     Condition: MakeBucketCondition
+    DependsOn:
+      - NewSafeStorageCloudTrailFileQueueResourcePolicy
     Type: AWS::KMS::Key
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -201,7 +203,7 @@ Resources:
     Condition: MakeBucketCondition
     Properties: 
       Queues: 
-        - !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+        - !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueURL
       PolicyDocument:
         Statement: 
           - Sid: pnCoreAccountGet
@@ -229,7 +231,7 @@ Resources:
             Resource: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:${AWS::Partition}:s3:*:*:${LogsBucket}"
+                "aws:SourceArn": !Sub "arn:${AWS::Partition}:s3:*:*:${ProjectName}-logs-bucket-${AWS::Region}-${AWS::AccountId}-${BucketSuffix}"
               StringEquals:
                 "aws:SourceAccount": !Ref AWS::AccountId
   

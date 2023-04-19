@@ -195,6 +195,45 @@ Resources:
         DelaySeconds: 1
         AlarmSNSTopicName: !Ref AlarmSNSTopicName    
 
+  # Export new safestorage cloudtrail file events
+  NewSafeStorageCloudTrailFileQueueResourcePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Condition: MakeBucketCondition
+    Properties: 
+      Queues: 
+        - !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+      PolicyDocument:
+        Statement: 
+          - Sid: pnCoreAccountGet
+            Effect: "Allow"
+            Principal:  
+              AWS: 
+                - !Ref PnCoreAwsAccountId
+            Action: 
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+          - Sid: s3ServicePut
+            Effect: "Allow"
+            Principal:  
+              Service: 
+                - "s3.amazonaws.com"
+            Action: 
+              - "sqs:SendMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:${AWS::Partition}:s3:*:*:${LogsBucket}"
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+  
+
 ## KINESIS SOURCE STREAM FOR Change Data Capture
 
   ### AWS KMS / Server-side encryption for Kinesis Stream 

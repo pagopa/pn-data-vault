@@ -89,9 +89,6 @@ Parameters:
     Default: ''
     Description: 'Default VPC security group'
 
-  NewSafeStorageCloudTrailFileQueueARN:
-    Type: String
-
   LogsBucketKmsKeyArn:
     Type: String
   LogsBucketName:
@@ -168,45 +165,6 @@ Resources:
                   "Resource": "arn:${AWS::Partition}:s3:::${LogsBucketName}/safeStorageObjectPutAndGetTracing/*"
                 }
             - "" 
-  
-  # Export new safestorage cloudtrail file events
-  NewSafeStorageCloudTrailFileQueueResourcePolicy:
-    Condition: HasPnCoreAwsAccountId
-    Type: AWS::SQS::QueuePolicy
-    Properties: 
-      Queues: 
-        - !Ref NewSafeStorageCloudTrailFileQueueARN
-      PolicyDocument:
-        Statement: 
-          - Sid: pnCoreAccountGet
-            Effect: "Allow"
-            Principal:  
-              AWS: 
-                - !Ref PnCoreAwsAccountId
-            Action: 
-              - "sqs:ReceiveMessage"
-              - "sqs:DeleteMessage"
-              - "sqs:GetQueueAttributes"
-              - "sqs:ChangeMessageVisibility"
-              - "sqs:GetQueueUrl"
-            Resource: !Ref NewSafeStorageCloudTrailFileQueueARN
-          - Sid: s3ServicePut
-            Effect: "Allow"
-            Principal:  
-              Service: 
-                - "s3.amazonaws.com"
-            Action: 
-              - "sqs:SendMessage"
-              - "sqs:GetQueueAttributes"
-              - "sqs:ChangeMessageVisibility"
-              - "sqs:GetQueueUrl"
-            Resource: !Ref NewSafeStorageCloudTrailFileQueueARN
-            Condition:
-              ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:s3:*:*:${LogsBucketName}"
-              StringEquals:
-                "aws:SourceAccount": !Ref AWS::AccountId
-  
   
   ###             Export dynamo CDC to Log saving bucket             ###
   ###########################################################################

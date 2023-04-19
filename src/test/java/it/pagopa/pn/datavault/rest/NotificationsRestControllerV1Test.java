@@ -58,22 +58,25 @@ class NotificationsRestControllerV1Test {
     }
 
     @Test
-    void getNotificationAddressesByIun() {
+    void getNotificationAddressesByIunWithNormalizedTrue() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/addresses"
                 .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
-        NotificationRecipientAddressesDto dto = mapper.toDto(TestUtils.newNotification());
+        NotificationRecipientAddressesDto dto = mapper.toDto(TestUtils.newNotification(true));
         List<NotificationRecipientAddressesDto> list = new ArrayList<>();
         list.add(dto);
 
         //When
-        Mockito.when( privateService.getNotificationAddressesByIun( Mockito.any()))
+        Mockito.when( privateService.getNotificationAddressesByIun( "MXLQ-XMWD-YMLH-202206-K-1", true))
                 .thenReturn(Flux.fromIterable(list));
 
         //Then
         webTestClient.get()
-                .uri(url)
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .queryParam("normalized", true)
+                        .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk().expectBodyList(NotificationRecipientAddressesDto.class);
@@ -81,18 +84,113 @@ class NotificationsRestControllerV1Test {
     }
 
     @Test
-    void updateNotificationAddressesByIun() {
+    void getNotificationAddressesByIunWithNormalizedFalse() {
+        //Given
+        String url = "/datavault-private/v1/notifications/{iun}/addresses"
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
+
+        NotificationRecipientAddressesDto dto = mapper.toDto(TestUtils.newNotification(false));
+        List<NotificationRecipientAddressesDto> list = new ArrayList<>();
+        list.add(dto);
+
+        //When
+        Mockito.when( privateService.getNotificationAddressesByIun( "MXLQ-XMWD-YMLH-202206-K-1", false))
+                .thenReturn(Flux.fromIterable(list));
+
+        //Then
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .queryParam("normalized", false)
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk().expectBodyList(NotificationRecipientAddressesDto.class);
+
+    }
+
+    @Test
+    void getNotificationAddressesByIunWithNotNormalizedParameter() {
+        //Given
+        String url = "/datavault-private/v1/notifications/{iun}/addresses"
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
+
+        NotificationRecipientAddressesDto dto = mapper.toDto(TestUtils.newNotification(false));
+        List<NotificationRecipientAddressesDto> list = new ArrayList<>();
+        list.add(dto);
+
+        //When
+        Mockito.when( privateService.getNotificationAddressesByIun( "MXLQ-XMWD-YMLH-202206-K-1", null))
+                .thenReturn(Flux.fromIterable(list));
+
+        //Then
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk().expectBodyList(NotificationRecipientAddressesDto.class);
+
+    }
+
+    @Test
+    void updateNotificationAddressesByIunWithNormalizedTrue() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/addresses"
                 .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
 
         //When
-        Mockito.when( privateService.updateNotificationAddressesByIun( Mockito.anyString(), Mockito.any() ))
+        Mockito.when( privateService.updateNotificationAddressesByIun( Mockito.eq("MXLQ-XMWD-YMLH-202206-K-1"), Mockito.any(), Mockito.eq(true) ))
                 .thenReturn(Mono.just("OK"));
 
         //Then
         webTestClient.put()
-                .uri(url)
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .queryParam("normalized", true)
+                        .build())
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
+                .exchange()
+                .expectStatus().isNoContent();
+    }
+
+    @Test
+    void updateNotificationAddressesByIunWithNormalizedFalse() {
+        //Given
+        String url = "/datavault-private/v1/notifications/{iun}/addresses"
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
+
+        //When
+        Mockito.when( privateService.updateNotificationAddressesByIun( Mockito.eq("MXLQ-XMWD-YMLH-202206-K-1"), Mockito.any(), Mockito.eq(false) ))
+                .thenReturn(Mono.just("OK"));
+
+        //Then
+        webTestClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .queryParam("normalized", false)
+                        .build())
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
+                .exchange()
+                .expectStatus().isNoContent();
+    }
+
+    @Test
+    void updateNotificationAddressesByIunWithNotNormalizedParameter() {
+        //Given
+        String url = "/datavault-private/v1/notifications/{iun}/addresses"
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
+
+        //When
+        Mockito.when( privateService.updateNotificationAddressesByIun( Mockito.eq("MXLQ-XMWD-YMLH-202206-K-1"), Mockito.any(), Mockito.nullable(Boolean.class) ))
+                .thenReturn(Mono.just("OK"));
+
+        //Then
+        webTestClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .build())
                 .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .exchange()
                 .expectStatus().isNoContent();

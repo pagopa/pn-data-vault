@@ -15,6 +15,10 @@ Parameters:
     Type: String
     Description: Suffix to the log bucket name
   
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: infra fragment source
+  
   SafeStorageAccountId:
     Type: String
     Default: '-'
@@ -49,6 +53,15 @@ Parameters:
     Default: ON_DEMAND
     Type: String
     AllowedValues: [ON_DEMAND, PROVISIONED]
+  
+  PnCoreAwsAccountId:
+    Type: String
+    Default: '-'
+    Description: AWS AccountId of pn-core account in same environment
+  
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Type: String
+    Default: safeStorageObjectPutAndGetTracing
 
   AlarmSNSTopicArn:
     Type: String
@@ -65,6 +78,8 @@ Conditions:
 
   CdcOnDemandDisabled: !Not [!Equals [!Ref CdcStreamMode, ON_DEMAND]]
   LogsOnDemandDisabled: !Not [!Equals [!Ref LogsStreamMode, ON_DEMAND]]
+
+  HasPnCoreAwsAccountId: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
 
 Resources:
   
@@ -85,15 +100,29 @@ Resources:
               KMSMasterKeyID: !Ref LogsBucketKmsKey              
               SSEAlgorithm: 'aws:kms'
             BucketKeyEnabled: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
       PublicAccessBlockConfiguration: 
         BlockPublicAcls: true
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Filter: 
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix
+            Queue: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+      
   # - Log storage cryptography key 
   LogsBucketKmsKey:
     Condition: MakeBucketCondition
+    DependsOn:
+      - NewSafeStorageCloudTrailFileQueueResourcePolicy
     Type: AWS::KMS::Key
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -128,7 +157,11 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !Sub arn:aws:iam::${AWS::AccountId}:root
+                Fn::If:
+                  - HasPnCoreAwsAccountId
+                  - - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+                    - !Sub arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root
+                  - - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
             Action:
               - kms:Encrypt
               - kms:Decrypt
@@ -152,6 +185,56 @@ Resources:
                   aws:SourceArn: !Sub "arn:${AWS::Partition}:cloudtrail:${AWS::Region}:${SafeStorageAccountId}:trail/*"
             - !Ref AWS::NoValue
 
+
+  NewSafeStorageCloudTrailFileQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain      
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-new-safestorage-cloudtrail-file'
+        DelaySeconds: 1
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName    
+
+  # Export new safestorage cloudtrail file events
+  NewSafeStorageCloudTrailFileQueueResourcePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Condition: MakeBucketCondition
+    Properties: 
+      Queues: 
+        - !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueURL
+      PolicyDocument:
+        Statement: 
+          - Sid: pnCoreAccountGet
+            Effect: "Allow"
+            Principal:  
+              AWS: 
+                - !Ref PnCoreAwsAccountId
+            Action: 
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+          - Sid: s3ServicePut
+            Effect: "Allow"
+            Principal:  
+              Service: 
+                - "s3.amazonaws.com"
+            Action: 
+              - "sqs:SendMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:${AWS::Partition}:s3:*:*:${ProjectName}-logs-bucket-${AWS::Region}-${AWS::AccountId}-${BucketSuffix}"
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+  
 
 ## KINESIS SOURCE STREAM FOR Change Data Capture
 
@@ -275,7 +358,25 @@ Outputs:
     Description: 'Arn of the KMS key used to encrypt the Kinesis source stream'
 
   BucketSuffix: # used to generate kms alias
-    Value: !Ref BucketSuffix 
+    Value: !Ref BucketSuffix
+  
+  # new safestorage cloudtrail file event queue
+  NewSafeStorageCloudTrailFileQueueName:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueName
+    Description: new safestorage cloudtrail file event queue name
+  NewSafeStorageCloudTrailFileQueueURL:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueURL
+    Description: new safestorage cloudtrail file event queue URL
+  NewSafeStorageCloudTrailFileQueueARN:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+    Description: new safestorage cloudtrail file event queue ARN
+  NewSafeStorageCloudTrailFileQueueAlarmARN:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.SqsDLQAlarmArn
+    Description: new safestorage cloudtrail file event queue alarm ARN
+  NewSafeStorageCloudTrailFileQueueAgeAlarmARN:
+    Value: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.SqsAgeAlarmArn
+    Description: new safestorage cloudtrail file event queue ARN
+  
 
   # Pass through parameters
   AlarmSNSTopicArn:
@@ -286,6 +387,19 @@ Outputs:
   
   SafeStorageAccountId:
     Value: !Ref SafeStorageAccountId
+  
+  PnCoreAwsAccountId:
+    Value: !Ref PnCoreAwsAccountId
+  
+  SafeStorageFileAccessLogsBucketName:
+    Value: 
+      Fn::If:
+        - MakeBucketCondition
+        - !Ref LogsBucket
+        - ''
+    
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix
 
   Version:
     Value: !Ref Version

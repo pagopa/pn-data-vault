@@ -39,15 +39,10 @@ Parameters:
     Default: "001"
     Description: Suffix to the log bucket name
 
-  DataLakeAccountId1:
+  PnCoreAwsAccountId:
     Type: String
     Default: '-'
-    Description: Data lake can read logs
-
-  DataLakeAccountId2:
-    Type: String
-    Default: '-'
-    Description: Data lake can read logs
+    Description: AWS AccountId of pn-core account in same environment
 
   AlarmSNSTopicArn:
     Type: String
@@ -112,6 +107,10 @@ Parameters:
     Type: String
   SandboxSafeStorageBaseUrl:
     Type: String
+  SafeStorageFileAccessLogsBucketName:
+    Type: String
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Type: String
   PnCoreTargetEventBus:
     Type: String
     Default: ''
@@ -126,10 +125,11 @@ Conditions:
   RequiresVpcEndpoints: !Equals [ !Ref VpcEndpointsRequired, true ]
 
   IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
+  HasPnCoreAwsAccountId: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
 
 Resources:
 
-  # Exporter role
+  # Log Exporter role
   LogsExporterRole:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -138,9 +138,33 @@ Resources:
         ProjectName: !Ref ProjectName
         LogsBucketName: !Ref LogsBucketName
         LogsBucketKmsKeyArn: !Ref LogsBucketKmsKeyArn
-        DataLakeAccountId1: !Ref DataLakeAccountId1
-        DataLakeAccountId2: !Ref DataLakeAccountId2
+        SafeStorageAccountId: !Ref AWS::AccountId
+        DataLakeAccountId1: '-'
+        DataLakeAccountId2: '-'
         BucketSuffix: !Ref BucketSuffix 
+        MoreBucketResourcePolicyStatements: 
+          Fn::If:
+            - HasPnCoreAwsAccountId
+            - !Sub |
+                ,{
+                  "Sid": "pnCoreListing",
+                  "Effect": "Allow",
+                  "Principal": {
+                      "AWS": "arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root"
+                  },
+                  "Action": "s3:ListBucket",
+                  "Resource": "arn:${AWS::Partition}:s3:::${LogsBucketName}"
+                },
+                {
+                  "Sid": "pnCoreLimitedGet",
+                  "Effect": "Allow",
+                  "Principal": {
+                      "AWS": "arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root"
+                  },
+                  "Action": "s3:GetObject",
+                  "Resource": "arn:${AWS::Partition}:s3:::${LogsBucketName}/safeStorageObjectPutAndGetTracing/*"
+                }
+            - "" 
   
   ###             Export dynamo CDC to Log saving bucket             ###
   ###########################################################################
@@ -373,3 +397,7 @@ Outputs:
     Value: !Ref EcsDefaultSecurityGroup
   PnVPCDefaultSecurityGroup:
     Value: !Ref PnVPCDefaultSecurityGroup
+  SafeStorageFileAccessLogsBucketName:
+    Value: !Ref SafeStorageFileAccessLogsBucketName
+  SafeStorageFileAccessLogsBucketPathPrefix:
+    Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix

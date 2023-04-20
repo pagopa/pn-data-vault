@@ -57,24 +57,24 @@ Resources:
                 aws:SourceArn: !Ref AlarmSNSTopic   
 
   # - Deploy Eventbridge rules for CodePipeline/CodeBuild
-  EventBridgeNotifications:
-    Type: AWS::CloudFormation::Stack
-    Properties: 
-      Parameters: 
-        AlarmSNSTopicName: !GetAtt  AlarmSNSTopic.TopicName
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/once4account/dev-slack/no-codestar-deploy-notifications.yaml"
-      TimeoutInMinutes: 15
+  # EventBridgeNotifications:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties: 
+  #     Parameters: 
+  #       AlarmSNSTopicName: !GetAtt  AlarmSNSTopic.TopicName
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/once4account/dev-slack/no-codestar-deploy-notifications.yaml"
+  #     TimeoutInMinutes: 15
 
   # - Deploy Lambda to enrich messages
-  EnrichNotificationsForSlack:
-    Type: AWS::CloudFormation::Stack
-    Properties: 
-      Parameters: 
-        AlarmSNSTopicName: !GetAtt  AlarmSNSTopic.TopicName
-        SlackInfo: !Ref SlackInfo
-        TemplateBucketBaseUrl: !Ref TemplateBucketBaseUrl
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/once4account/dev-slack/slack-message-enrichment.yaml"
-      TimeoutInMinutes: 15
+  # EnrichNotificationsForSlack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties: 
+  #     Parameters: 
+  #       AlarmSNSTopicName: !GetAtt  AlarmSNSTopic.TopicName
+  #       SlackInfo: !Ref SlackInfo
+  #       TemplateBucketBaseUrl: !Ref TemplateBucketBaseUrl
+  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/once4account/dev-slack/slack-message-enrichment.yaml"
+  #     TimeoutInMinutes: 15
   
 Outputs:
 

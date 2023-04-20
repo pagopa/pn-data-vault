@@ -69,9 +69,10 @@ public class NotificationService {
             validate(dto);
 
             NotificationEntity ne = mappingsDao.toEntity(dto);
+            //il setNormalized deve essere richiamato prima del setInternalId per generare nel modo corretto il prefisso della pk
+            ne.setNormalizedAddress(normalized);
             ne.setRecipientIndex( String.format("%03d", recipientIndex.getAndIncrement() ) );
             ne.setInternalId(iun);  // il mapping non può mappare l'internalid, non è presente nel dto
-            ne.setNormalizedAddress(normalized);
             nelist.add(ne);
         });
 

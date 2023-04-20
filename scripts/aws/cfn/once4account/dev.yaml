@@ -9,7 +9,7 @@ Parameters:
   SlackInfo:
     Type: String
     Description: <slack workspace id>:<slack channel id>. 'team_notifiche_dev_alarm' by default
-    Default: TQSBH3ZS4:C030L43BXGE
+    Default: TQSBH3ZS4:C02V0SRC4TV
   
   Version:
     Type: String
@@ -56,15 +56,25 @@ Resources:
               ArnEquals: 
                 aws:SourceArn: !Ref AlarmSNSTopic   
 
-  # - Connect dev alarm to slack developers channel
-  # AlarmSNSTopicSlackConnection:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sns-topic-to-slack-channel.yaml"
-  #     Parameters:
-  #       TopicName: 'dev_alarm'
-  #       SNSTopicArn: !Ref AlarmSNSTopic
-  #       SlackInfo: !Ref SlackInfo
+  # - Deploy Eventbridge rules for CodePipeline/CodeBuild
+  EventBridgeNotifications:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      Parameters: 
+        AlarmSNSTopicName: !GetAtt  AlarmSNSTopic.TopicName
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/once4account/dev-slack/no-codestar-deploy-notifications.yaml"
+      TimeoutInMinutes: 15
+
+  # - Deploy Lambda to enrich messages
+  EnrichNotificationsForSlack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      Parameters: 
+        AlarmSNSTopicName: !GetAtt  AlarmSNSTopic.TopicName
+        SlackInfo: !Ref SlackInfo
+        TemplateBucketBaseUrl: !Ref TemplateBucketBaseUrl
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/once4account/dev-slack/slack-message-enrichment.yaml"
+      TimeoutInMinutes: 15
   
 Outputs:
 

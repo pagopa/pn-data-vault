@@ -386,7 +386,7 @@ Outputs:
   LogsKinesisStreamKeyArn:
     Value: !Ref LogsKinesisStreamKeyArn
   SandboxSafeStorageBaseUrl:
-    Value: !If [ RequiresAlbCreation, !Ref SandboxSafeStorageBaseUrl, !Sub 'http://${ApplicationLoadBalancer.DNSName}:8080/' ]
+    Value: !If [ RequiresAlbCreation, !Ref SandboxSafeStorageBaseUrl, !Sub 'http://${ApplicationLoadBalancerAwsDns}:8080/' ]
 
   PnCoreTargetEventBus:
     Value: !Ref PnCoreTargetEventBus

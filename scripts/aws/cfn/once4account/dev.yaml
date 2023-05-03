@@ -160,6 +160,26 @@ Resources:
           Region: !Sub ${AWS::Region}
       Role: !GetAtt LambdaFunctionExecutionRole.Arn
 
+  # Create alarm
+  LambdaInvocationErrorLogsMetricAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasCoreAccount 
+    Properties:
+      AlarmName: !Sub "${LambdaFunction}-Alarm"
+      AlarmDescription: "CloudWatch alarm for when lambda invocation error happens."
+      TreatMissingData: notBreaching
+      DatapointsToAlarm: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Threshold: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref LambdaFunction
+      Statistic: Sum
+      MetricName: "Errors"
+      Period: 60
+      Namespace: AWS/Lambda
+
   # Creating a log group for lambda
   LogGroupLambdaPublisher:
     Type: AWS::Logs::LogGroup

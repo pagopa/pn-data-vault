@@ -15,6 +15,9 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+  PnCoreAwsAccountId:
+    Type: String
+    Description: Core AWS Account Id
     
 Resources:
 
@@ -103,7 +106,7 @@ Resources:
                 Action:
                   - sns:Publish
                 Resource:
-                  - !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:pn-AllAlarmSnsTopic
+                  - !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${PnCoreAwsAccountId}:pn-AllAlarmSnsTopic
 
   LambdaFunction:
     Type: AWS::Lambda::Function
@@ -147,7 +150,7 @@ Resources:
       Runtime: nodejs16.x
       Environment:
         Variables:
-          AlarmArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:pn-AllAlarmSnsTopic
+          AlarmArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${PnCoreAwsAccountId}:pn-AllAlarmSnsTopic
           Region: !Sub ${AWS::Region}
       Role: !GetAtt LambdaFunctionExecutionRole.Arn
 

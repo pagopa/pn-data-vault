@@ -56,6 +56,101 @@ Resources:
               ArnEquals: 
                 aws:SourceArn: !Ref AlarmSNSTopic   
 
+  # - Alarm message lambda subscription
+  AlarmSNSTopicToLambda:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: lambda
+      Endpoint: !GetAtt LambdaFunction.Arn
+      Region: !Ref AWS::Region
+      TopicArn: !Ref AlarmSNSTopic
+
+  LambdaFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Principal: sns.amazonaws.com
+
+  LambdaFunctionExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: PublisherPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                Resource:
+                  - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/*'
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:*'
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:pn-AllAlarmSnsTopic
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: pn-LambdaAlarmSnsPublisher
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk')
+
+          // Set region
+          AWS.config.update({region: process.env.Region});
+
+          exports.handler = async(event) => {
+            console.log(JSON.stringify(event))
+
+            for(let i=0; i<event.Records.length; i++){
+              const record = event.Records[i]
+              
+              // Create publish parameters
+              const params = {
+                Message: record.Sns.Message,
+                TopicArn: process.env.AlarmArn,
+                Subject: record.Sns.Subject
+              };
+            
+              // Create promise and SNS service object
+              var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+            
+              // Handle promise's fulfilled/rejected states
+              await publishTextPromise
+            }
+
+            const response = {
+                statusCode: 200,
+                body: JSON.stringify('OK'),
+            };
+            return response;
+          };
+
+      Handler: index.handler
+      Runtime: nodejs16.x
+      Environment:
+        Variables:
+          AlarmArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:pn-AllAlarmSnsTopic
+          Region: !Sub ${AWS::Region}
+      Role: !GetAtt LambdaFunctionExecutionRole.Arn
+
   # - Deploy Eventbridge rules for CodePipeline/CodeBuild
   # EventBridgeNotifications:
   #   Type: AWS::CloudFormation::Stack

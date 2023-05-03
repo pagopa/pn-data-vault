@@ -19,6 +19,8 @@ Parameters:
     Type: String
     Description: Core AWS Account Id
     
+Conditions:
+     HasCoreAccount: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '' ] ]
 Resources:
 
   ###                          DEFINE ALARM TOPIC                          ###
@@ -61,6 +63,7 @@ Resources:
 
   # - Alarm message lambda subscription
   AlarmSNSTopicToLambda:
+    Condition: HasCoreAccount
     Type: AWS::SNS::Subscription
     Properties:
       Protocol: lambda
@@ -70,6 +73,7 @@ Resources:
 
   LambdaFunctionPermission:
     Type: AWS::Lambda::Permission
+    Condition: HasCoreAccount
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt LambdaFunction.Arn
@@ -77,6 +81,7 @@ Resources:
 
   LambdaFunctionExecutionRole:
     Type: AWS::IAM::Role
+    Condition: HasCoreAccount
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -110,8 +115,9 @@ Resources:
 
   LambdaFunction:
     Type: AWS::Lambda::Function
+    Condition: HasCoreAccount
     Properties:
-      FunctionName: pn-LambdaAlarmSnsPublisher
+      FunctionName: pn-LambdaAllAlarmSnsPublisher
       Code:
         ZipFile: |
           const AWS = require('aws-sdk')
@@ -153,6 +159,14 @@ Resources:
           AlarmArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${PnCoreAwsAccountId}:pn-AllAlarmSnsTopic
           Region: !Sub ${AWS::Region}
       Role: !GetAtt LambdaFunctionExecutionRole.Arn
+
+  # Creating a log group for lambda
+  LogGroupLambdaPublisher:
+    Type: AWS::Logs::LogGroup
+    Condition: HasCoreAccount
+    Properties:
+      LogGroupName: "/aws/lambda/pn-LambdaAllAlarmSnsPublisher"
+      RetentionInDays: 14
 
   # - Deploy Eventbridge rules for CodePipeline/CodeBuild
   # EventBridgeNotifications:

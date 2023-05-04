@@ -48,6 +48,10 @@ Parameters:
     Type: String
     Description: ARN of the Alarm SNS Topic
 
+  AlarmSNSTopicName:
+    Type: String
+    Description: Alarm SNS Topic Name
+
   ApplicationLoadBalancerArn: 
     Type: String
     Default: '-'
@@ -300,6 +304,10 @@ Outputs:
   AlarmSNSTopicArn:
     Value: !Ref AlarmSNSTopicArn
     Description: ARN of the Alarm SNS Topic
+
+  AlarmSNSTopicName:
+    Value: !Ref AlarmSNSTopicName
+    Description: Alarm SNS Topic name
 
   VpcId:
     Description: VpcId of the VPC where to install PN-CONFIDENTIAL-INFO

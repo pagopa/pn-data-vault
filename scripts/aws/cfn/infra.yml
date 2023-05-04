@@ -118,6 +118,10 @@ Parameters:
   PnCoreTargetEventBus:
     Type: String
     Default: ''
+  
+  SafeStorageBucketName:
+    Type: String
+    Default: '-'
 
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
@@ -130,6 +134,8 @@ Conditions:
 
   IsEgressDefined: !Not [ !Equals [ !Ref VpcEgressSubnetsIds, '-' ] ]
   HasPnCoreAwsAccountId: !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
+
+  HasFixedSafeStorageBucketName: !Not [ !Equals [ !Ref SafeStorageBucketName, '-' ] ]
 
 Resources:
 
@@ -410,3 +416,6 @@ Outputs:
     Value: !Ref SafeStorageFileAccessLogsBucketName
   SafeStorageFileAccessLogsBucketPathPrefix:
     Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix
+  
+  SafeStorageBucketName:
+    Value: !If [ HasFixedSafeStorageBucketName, !Ref SafeStorageBucketName, !Sub "${ProjectName}-safestorage-${AWS::Region}-${AWS::AccountId}" ]

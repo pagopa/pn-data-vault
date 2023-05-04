@@ -5,7 +5,7 @@
     "PDVUserRegistryRateLimiterMillis": "1000",
     "PDVUserRegistryRateLimiterNRequests": "80",
     "PDVUserRegistryRateLimiterTimeoutMillis": "10000",
-    "SelfcarePgBasePath" : "https://api.dev.selfcare.pagopa.it/external/data-vault/v1",
+    "SelfcarePgBasePath" : "https://api.uat.selfcare.pagopa.it/external/data-vault/v1",
     "SelfcarePgRateLimiterMillis": "1000",
     "SelfcarePgRateLimiterNRequests": "20",
     "SelfcarePgRateLimiterTimeoutMillis": "10000",

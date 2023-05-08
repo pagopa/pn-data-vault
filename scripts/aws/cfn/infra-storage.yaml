@@ -206,18 +206,21 @@ Resources:
         - !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueURL
       PolicyDocument:
         Statement: 
-          - Sid: pnCoreAccountGet
-            Effect: "Allow"
-            Principal:  
-              AWS: 
-                - !Ref PnCoreAwsAccountId
-            Action: 
-              - "sqs:ReceiveMessage"
-              - "sqs:DeleteMessage"
-              - "sqs:GetQueueAttributes"
-              - "sqs:ChangeMessageVisibility"
-              - "sqs:GetQueueUrl"
-            Resource: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+          - Fn::If:
+            - HasPnCoreAwsAccountId
+            - Sid: pnCoreAccountGet
+              Effect: "Allow"
+              Principal:  
+                AWS:
+                  - !Sub arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root
+              Action: 
+                - "sqs:ReceiveMessage"
+                - "sqs:DeleteMessage"
+                - "sqs:GetQueueAttributes"
+                - "sqs:ChangeMessageVisibility"
+                - "sqs:GetQueueUrl"
+              Resource: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+            - !Ref "AWS::NoValue"
           - Sid: s3ServicePut
             Effect: "Allow"
             Principal:  

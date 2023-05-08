@@ -28,6 +28,10 @@ Parameters:
     Type: String
     Description: kinesis stream Arn for ConfidentialObject log
 
+  LogRetention:
+    Type: Number
+    Default: 14
+
 Resources:
 
   ConfidentialObjectsDynamoTable:
@@ -62,6 +66,7 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
       Parameters:
         LogGroupName: !Sub '${ProjectName}-data-vault-sep'
+        LogGroupRetention: !Ref LogRetention
         LogsKinesisSourceStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
 
 Outputs:

@@ -123,6 +123,10 @@ Parameters:
     Type: String
     Default: '-'
 
+  LogRetention:
+    Type: Number
+    Default: 14
+    
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -419,3 +423,6 @@ Outputs:
   
   SafeStorageBucketName:
     Value: !If [ HasFixedSafeStorageBucketName, !Ref SafeStorageBucketName, !Sub "${ProjectName}-safestorage-${AWS::Region}-${AWS::AccountId}" ]
+
+  LogRetention:
+    Value: !Ref LogRetention

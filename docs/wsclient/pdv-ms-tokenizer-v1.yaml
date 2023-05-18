@@ -143,6 +143,7 @@ components:
         pii:
           type: string
           description: Personal Identifiable Information
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     TokenResource:
       title: TokenResource
       required:

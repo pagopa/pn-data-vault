@@ -154,6 +154,7 @@ components:
         description:
           type: string
           description: Institution's legal name
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         externalId:
           type: string
           description: Institution's unique external identifier
@@ -260,15 +261,19 @@ components:
           type: string
           format: email
           example: email@pec.mail.org
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         address:
           type: string
           example: via del campo
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         zipCode:
           type: string
           example: '20100'
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         taxCode:
           type: string
           description: institution tax code
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         origin:
           type: string
           description: The origin form which the institution has been retrieved

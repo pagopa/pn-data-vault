@@ -278,9 +278,11 @@ components:
         value:
           type: string
           description: Field value
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     MutableUserFieldsDto:
       title: MutableUserFieldsDto
       type: object
+      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       properties:
         birthDate:
           description: User date of birth
@@ -301,6 +303,7 @@ components:
           description: User work contacts
     SaveUserDto:
       title: SaveUserDto
+      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       required:
         - fiscalCode
       type: object
@@ -353,6 +356,7 @@ components:
         fiscalCode:
           type: string
           description: User fiscal code
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         id:
           type: string
           description: User internal id
@@ -367,6 +371,7 @@ components:
           description: User work contacts
     UserSearchDto:
       title: UserSearchDto
+      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       required:
         - fiscalCode
       type: object
@@ -374,6 +379,7 @@ components:
         fiscalCode:
           type: string
           description: User fiscal code
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     WorkContactResource:
       title: WorkContactResource
       type: object

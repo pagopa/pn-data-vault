@@ -507,6 +507,7 @@ components:
         denomination:
           description: Nome + cognome __oppure__ ragione sociale
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: PagoP.A. S.p.A.
 
   
@@ -523,7 +524,6 @@ components:
     RecipientAddressesDto:
       title: Request for new object creation
       type: object
-      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       required:
         - addresses
       properties:
@@ -541,12 +541,12 @@ components:
 
     AddressDto:
       type: object
-      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       required:
         - value
       properties:
         value:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     
   
   ###############################################################################################
@@ -572,16 +572,18 @@ components:
     
     DenominationDto:
       type: object
-      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       properties:            
         destName: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Nome
         destSurname: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Cognome
         destBusinessName: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Ragione sociale
       example:
         destName: Nome
@@ -602,18 +604,17 @@ components:
     
     NotificationAddressesDto:
       type: array
-      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
-      items: 
+      items:
         $ref: '#/components/schemas/NotificationRecipientAddressesDto'
     
     NotificationRecipientAddressesDto:
       type: object
-      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       required:
         - denomination
       properties:
         denomination:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Nome Dott. Cognome
         digitalAddress:
           $ref: '#/components/schemas/AddressDto'
@@ -623,31 +624,38 @@ components:
     AnalogDomicile:
       title: dettagli di un domicilio analogico; ovvero un indirizzo fisico
       type: object
-      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       properties:
         at:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'presso famiglia Rossi'
         address: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'Via senza Nome 15'
         addressDetails:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'scala A'
         cap:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: '40129'
         municipality:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'Bologna'
         municipalityDetails:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'borgo qualcosa'
         province:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'BO'
         state:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'it'     
 
 

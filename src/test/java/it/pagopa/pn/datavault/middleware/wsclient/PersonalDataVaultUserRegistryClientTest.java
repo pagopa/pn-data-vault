@@ -2,9 +2,9 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.dto.CertifiableFieldResourceOfstringDto;
+import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.CertifiableFieldResourceOfstringDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.svc.entities.InternalId;
 import it.pagopa.pn.datavault.utils.RecipientUtils;
 import org.junit.jupiter.api.AfterAll;

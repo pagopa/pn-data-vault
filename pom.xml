@@ -7,7 +7,7 @@
     <version>2.0.0</version>
     <relativePath />
   </parent>
-  <groupId>it.pagopa.pn.datavault</groupId>
+  <groupId>it.pagopa.pn</groupId>
   <artifactId>pn-data-vault</artifactId>
   <version>2.0.0-SNAPSHOT</version>
   <name>pn-data-vault</name>
@@ -153,10 +153,10 @@
               <generateModelTests>false</generateModelTests>
               <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
               <configOptions>
-                <basePackage>it.pagopa.pn.datavault.generated.openapi.server.v1</basePackage>
-                <modelPackage>it.pagopa.pn.datavault.generated.openapi.server.v1.dto</modelPackage>
-                <apiPackage>it.pagopa.pn.datavault.generated.openapi.server.v1.api</apiPackage>
-                <configPackage>it.pagopa.pn.datavault.generated.openapi.server.v1.config</configPackage>
+                <basePackage>${project.groupId}.datavault.generated.openapi.server.v1</basePackage>
+                <modelPackage>${project.groupId}.datavault.generated.openapi.server.v1.dto</modelPackage>
+                <apiPackage>${project.groupId}.datavault.generated.openapi.server.v1.api</apiPackage>
+                <configPackage>${project.groupId}.datavault.generated.openapi.server.v1.config</configPackage>
                 <dateLibrary>java11</dateLibrary>
                 <delegatePattern>true</delegatePattern>
                 <interfaceOnly>true</interfaceOnly>
@@ -187,8 +187,8 @@
                 <swaggerAnnotations>false</swaggerAnnotations>
                 <openApiNullable>false</openApiNullable>
               </configOptions>
-              <modelPackage>${project.groupId}.mandate.microservice.msclient.generated.tokenizer.v1.dto</modelPackage>
-              <apiPackage>${project.groupId}.mandate.microservice.msclient.generated.tokenizer.v1.api</apiPackage>
+              <modelPackage>${project.groupId}.datavault.generated.openapi.msclient.tokenizer.v1.dto</modelPackage>
+              <apiPackage>${project.groupId}.datavault.generated.openapi.msclient.tokenizer.v1.api</apiPackage>
               <modelNameSuffix>Dto</modelNameSuffix>
               <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
             </configuration>
@@ -211,8 +211,8 @@
                 <swaggerAnnotations>false</swaggerAnnotations>
                 <openApiNullable>false</openApiNullable>
               </configOptions>
-              <modelPackage>${project.groupId}.mandate.microservice.msclient.generated.userregistry.v1.dto</modelPackage>
-              <apiPackage>${project.groupId}.mandate.microservice.msclient.generated.userregistry.v1.api</apiPackage>
+              <modelPackage>${project.groupId}.datavault.generated.openapi.msclient.userregistry.v1.dto</modelPackage>
+              <apiPackage>${project.groupId}.datavault.generated.openapi.msclient.userregistry.v1.api</apiPackage>
               <modelNameSuffix>Dto</modelNameSuffix>
               <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
             </configuration>
@@ -235,8 +235,8 @@
                 <swaggerAnnotations>false</swaggerAnnotations>
                 <openApiNullable>false</openApiNullable>
               </configOptions>
-              <modelPackage>${project.groupId}.mandate.microservice.msclient.generated.selfcarepg.v1.dto</modelPackage>
-              <apiPackage>${project.groupId}.mandate.microservice.msclient.generated.selfcarepg.v1.api</apiPackage>
+              <modelPackage>${project.groupId}.datavault.generated.openapi.msclient.selfcarepg.v1.dto</modelPackage>
+              <apiPackage>${project.groupId}.datavault.generated.openapi.msclient.selfcarepg.v1.api</apiPackage>
               <modelNameSuffix>Dto</modelNameSuffix>
               <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
             </configuration>

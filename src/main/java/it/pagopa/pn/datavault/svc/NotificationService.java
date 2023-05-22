@@ -103,7 +103,7 @@ public class NotificationService {
         if (!ValidationUtils.checkDenomination(dto.getDenomination()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "denomination");
 
-        if (ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
+        if (! ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "digitalAddress.value");
     }
 }

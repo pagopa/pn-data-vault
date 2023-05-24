@@ -151,7 +151,7 @@
               <modelNameSuffix />
               <generateApiTests>false</generateApiTests>
               <generateModelTests>false</generateModelTests>
-              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
+              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/server</templateDirectory>
               <configOptions>
                 <basePackage>${project.groupId}.datavault.generated.openapi.server.v1</basePackage>
                 <modelPackage>${project.groupId}.datavault.generated.openapi.server.v1.dto</modelPackage>
@@ -190,7 +190,7 @@
               <modelPackage>${project.groupId}.datavault.generated.openapi.msclient.tokenizer.v1.dto</modelPackage>
               <apiPackage>${project.groupId}.datavault.generated.openapi.msclient.tokenizer.v1.api</apiPackage>
               <modelNameSuffix>Dto</modelNameSuffix>
-              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
+              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
             </configuration>
           </execution>
           <execution>
@@ -214,7 +214,7 @@
               <modelPackage>${project.groupId}.datavault.generated.openapi.msclient.userregistry.v1.dto</modelPackage>
               <apiPackage>${project.groupId}.datavault.generated.openapi.msclient.userregistry.v1.api</apiPackage>
               <modelNameSuffix>Dto</modelNameSuffix>
-              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
+              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
             </configuration>
           </execution>
           <execution>
@@ -238,7 +238,7 @@
               <modelPackage>${project.groupId}.datavault.generated.openapi.msclient.selfcarepg.v1.dto</modelPackage>
               <apiPackage>${project.groupId}.datavault.generated.openapi.msclient.selfcarepg.v1.api</apiPackage>
               <modelNameSuffix>Dto</modelNameSuffix>
-              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates</templateDirectory>
+              <templateDirectory>${project.build.directory}/dependency-resources/scripts/openapi/templates/5.4.0/client</templateDirectory>
             </configuration>
           </execution>
         </executions>

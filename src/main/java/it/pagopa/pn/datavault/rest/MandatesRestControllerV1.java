@@ -40,11 +40,10 @@ public class MandatesRestControllerV1 implements MandatesApi {
     @Override
     public Mono<ResponseEntity<Flux<MandateDto>>> getMandatesByIds(List<String> mandateId, ServerWebExchange exchange) {
         logMandateIds(mandateId);
-        return Mono.fromSupplier( () -> {
-                    log.debug(EXIT_LOG);
-                    return ResponseEntity.ok(svc.getMandatesByInternalIds(mandateId));
-                }
-        );
+        return svc.getMandatesByInternalIds(mandateId)
+                .collectList()
+                .doOnNext(baseRecipientDtos -> log.debug(EXIT_LOG))
+                .map(baseRecipientDtos -> ResponseEntity.ok(Flux.fromIterable(baseRecipientDtos)));
     }
 
     @Override

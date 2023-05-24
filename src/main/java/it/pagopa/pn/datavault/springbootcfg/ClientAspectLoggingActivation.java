@@ -1,5 +1,8 @@
 package it.pagopa.pn.datavault.springbootcfg;
 
-//TODO estendere ClientAspectLogging
-public class ClientAspectLoggingActivation {
+import it.pagopa.pn.commons.utils.ClientAspectLogging;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ClientAspectLoggingActivation extends ClientAspectLogging {
 }

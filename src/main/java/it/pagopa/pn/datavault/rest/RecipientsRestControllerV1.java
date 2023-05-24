@@ -38,11 +38,10 @@ public class RecipientsRestControllerV1 implements RecipientsApi {
     @Override
     public Mono<ResponseEntity<Flux<BaseRecipientDto>>> getRecipientDenominationByInternalId(List<String> internalId, ServerWebExchange exchange) {
         log.info("[enter] getRecipientDenominationByInternalId internalIds:{}", internalId);
-        return Mono.fromSupplier( () -> {
-                    log.debug("[exit] getRecipientDenominationByInternalId");
-                    return ResponseEntity.ok(svc.getRecipientDenominationByInternalId(internalId));
-                }
-        );
+        return svc.getRecipientDenominationByInternalId(internalId)
+                .collectList()
+                .doOnNext(baseRecipientDtos -> log.debug("[exit] getRecipientDenominationByInternalId"))
+                .map(baseRecipientDtos -> ResponseEntity.ok(Flux.fromIterable(baseRecipientDtos)));
     }
 
 }

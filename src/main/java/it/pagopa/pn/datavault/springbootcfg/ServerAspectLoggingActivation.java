@@ -1,5 +1,8 @@
 package it.pagopa.pn.datavault.springbootcfg;
 
-//TODO estendere ServerAspectLogging
-public class ServerAspectLoggingActivation {
+import it.pagopa.pn.commons.utils.ServerAspectLogging;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ServerAspectLoggingActivation extends ServerAspectLogging {
 }

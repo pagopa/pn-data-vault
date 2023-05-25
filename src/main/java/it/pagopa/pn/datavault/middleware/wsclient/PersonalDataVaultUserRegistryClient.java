@@ -4,14 +4,11 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
-import it.pagopa.pn.datavault.config.PnDatavaultConfig;
+import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.api.UserApi;
+import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.ApiClient;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.api.UserApi;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
-import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import it.pagopa.pn.datavault.svc.entities.InternalId;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -27,8 +24,8 @@ import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.PDV_RATE_LIMITER;
  * Classe wrapper di personal-data-vault, con gestione del backoff
  */
 @Component
-@Slf4j
-public class PersonalDataVaultUserRegistryClient extends BaseClient {
+@CustomLog
+public class PersonalDataVaultUserRegistryClient {
 
     public static final String FILTER_FAMILY_NAME = "familyName";
     public static final String FILTER_NAME = "name";
@@ -37,8 +34,8 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
     private final RateLimiter rateLimiter;
 
-    public PersonalDataVaultUserRegistryClient(PnDatavaultConfig pnDatavaultConfig, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, RateLimiterRegistry rateLimiterRegistry){
-        this.userClientPF = new UserApi(initApiClient(pnDatavaultConfig.getUserregistryApiKeyPf(), pnDatavaultConfig.getClientUserregistryBasepath()));
+    public PersonalDataVaultUserRegistryClient(UserApi userClientPF, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, RateLimiterRegistry rateLimiterRegistry){
+        this.userClientPF = userClientPF;
         this.personalDataVaultTokenizerClient = personalDataVaultTokenizerClient;
         this.rateLimiter = rateLimiterRegistry.rateLimiter(PDV_RATE_LIMITER);
     }
@@ -47,6 +44,7 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
     public Flux<BaseRecipientDto> getRecipientDenominationByInternalId(List<InternalId> internalIds)
     {
 
+        log.logInvokingExternalService("PDV User Registry", "getRecipientDenominationByInternalId");
         log.debug("[enter] getRecipientDenominationByInternalId internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.userClientPF.findByIdUsingGET(uid.internalId(), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
@@ -76,14 +74,5 @@ public class PersonalDataVaultUserRegistryClient extends BaseClient {
         else
             return "";
     }
-
-
-    private ApiClient initApiClient(String apiKey, String basepath)
-    {
-        ApiClient apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), apiKey));
-        apiClient.setBasePath(basepath);
-        return  apiClient;
-    }
-
 
 }

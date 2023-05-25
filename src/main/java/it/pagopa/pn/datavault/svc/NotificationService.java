@@ -9,6 +9,8 @@ import it.pagopa.pn.datavault.middleware.db.NotificationDao;
 import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
+import it.pagopa.pn.datavault.utils.ValidationUtils;
+import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
@@ -22,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
 @Service
+@CustomLog
 public class NotificationService {
 
     private final NotificationDao notificationDao;
@@ -97,9 +100,10 @@ public class NotificationService {
     }
 
     private void validate(NotificationRecipientAddressesDto dto) {
-        if (!StringUtils.hasText(dto.getDenomination()))
+        if (!ValidationUtils.checkDenomination(dto.getDenomination()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "denomination");
-        if (dto.getDigitalAddress() != null && !StringUtils.hasText(dto.getDigitalAddress().getValue()))
+
+        if (! ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "digitalAddress.value");
     }
 }

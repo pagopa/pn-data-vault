@@ -2,6 +2,7 @@ package it.pagopa.pn.datavault.middleware.db.entities;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 /**
@@ -40,7 +41,7 @@ public class MandateEntity {
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;
     @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String sk;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_NAME)})) private String name;
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_SURNAME)})) private String surname;
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_BUSINESSNAME)})) private String businessName;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_NAME)})) private String name;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_SURNAME)})) private String surname;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_BUSINESSNAME)})) private String businessName;
 }

@@ -480,6 +480,7 @@ components:
       title: Codice Fiscale
       description: Codice Fiscale del destinatario, del delagao o dlegante
       type: string
+      x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       example: CGNNMO01T10A944Q
     
     InternalId:
@@ -506,6 +507,7 @@ components:
         denomination:
           description: Nome + cognome __oppure__ ragione sociale
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: PagoP.A. S.p.A.
 
   
@@ -544,6 +546,7 @@ components:
       properties:
         value:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     
   
   ###############################################################################################
@@ -572,12 +575,15 @@ components:
       properties:            
         destName: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Nome
         destSurname: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Cognome
         destBusinessName: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Ragione sociale
       example:
         destName: Nome
@@ -598,7 +604,7 @@ components:
     
     NotificationAddressesDto:
       type: array
-      items: 
+      items:
         $ref: '#/components/schemas/NotificationRecipientAddressesDto'
     
     NotificationRecipientAddressesDto:
@@ -608,6 +614,7 @@ components:
       properties:
         denomination:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Nome Dott. Cognome
         digitalAddress:
           $ref: '#/components/schemas/AddressDto'
@@ -620,27 +627,35 @@ components:
       properties:
         at:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'presso famiglia Rossi'
         address: 
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'Via senza Nome 15'
         addressDetails:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'scala A'
         cap:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: '40129'
         municipality:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'Bologna'
         municipalityDetails:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'borgo qualcosa'
         province:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'BO'
         state:
           type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'it'     
 
 
@@ -652,11 +667,13 @@ components:
             type: string
           taxId:
             type: string
+            x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           denomination:
             type: string
+            x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           digitalAddress:
             $ref: '#/components/schemas/AddressDto'
-          physicalAddress: 
+          physicalAddress:
             $ref: '#/components/schemas/AnalogDomicile'
           newPhysicalAddress:
             $ref: '#/components/schemas/AnalogDomicile'

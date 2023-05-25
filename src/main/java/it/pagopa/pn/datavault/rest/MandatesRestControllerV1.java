@@ -1,10 +1,12 @@
 package it.pagopa.pn.datavault.rest;
 
+import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.api.MandatesApi;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.DenominationDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.svc.MandateService;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -28,6 +30,7 @@ public class MandatesRestControllerV1 implements MandatesApi {
 
     @Override
     public Mono<ResponseEntity<Void>> updateMandateById(String mandateId, Mono<DenominationDto> addressAndDenominationDto, ServerWebExchange exchange) {
+        MDC.put(MDCUtils.MDC_PN_MANDATEID_KEY, mandateId);
         logMandateId(mandateId);
         return addressAndDenominationDto
                 .flatMap( dtoValue -> svc.updateMandateByInternalId( mandateId, dtoValue))
@@ -39,21 +42,23 @@ public class MandatesRestControllerV1 implements MandatesApi {
 
     @Override
     public Mono<ResponseEntity<Flux<MandateDto>>> getMandatesByIds(List<String> mandateId, ServerWebExchange exchange) {
+        MDC.put(MDCUtils.MDC_PN_MANDATEID_KEY, mandateId.toString());
         logMandateIds(mandateId);
-        return svc.getMandatesByInternalIds(mandateId)
+        return MDCUtils.addMDCToContextAndExecute(svc.getMandatesByInternalIds(mandateId)
                 .collectList()
                 .doOnNext(baseRecipientDtos -> log.debug(EXIT_LOG))
-                .map(baseRecipientDtos -> ResponseEntity.ok(Flux.fromIterable(baseRecipientDtos)));
+                .map(baseRecipientDtos -> ResponseEntity.ok(Flux.fromIterable(baseRecipientDtos))));
     }
 
     @Override
     public Mono<ResponseEntity<Void>> deleteMandateById(String mandateId, ServerWebExchange exchange) {
+        MDC.put(MDCUtils.MDC_PN_MANDATEID_KEY, mandateId);
         logMandateId(mandateId);
-        return svc.deleteMandateByInternalId( mandateId )
+        return MDCUtils.addMDCToContextAndExecute(svc.deleteMandateByInternalId( mandateId )
                 .map( result -> {
                     log.debug(EXIT_LOG);
                     return ResponseEntity.noContent().build();
-                });
+                }));
     }
 
     private void logMandateId(String mandateId) {

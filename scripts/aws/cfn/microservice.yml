@@ -212,6 +212,9 @@ Parameters:
     Type: String
     Description: 'Ecs log group name'
 
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
 Resources:
 
   # PN-DataVault microservice
@@ -263,6 +266,7 @@ Resources:
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         TaskRoleManagedPolicyArn: !Ref DataVaultyMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
   # Grant operational rights to PN-Delivery microservice
   DataVaultyMicroserviceTaskManagedPolicy:

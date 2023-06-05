@@ -8,7 +8,8 @@
       "SandboxSafeStorageBaseUrl": "https://ewlg4idc89.execute-api.eu-south-1.amazonaws.com/dev/",
       "EcsDefaultSecurityGroup": "sg-063225b050d342247",
       "SafeStorageBucketName": "-",
-      "PnCoreTargetEventBus": "arn:aws:events:eu-south-1:748275689270:event-bus/pn-CoreEventBus"
+      "PnCoreTargetEventBus": "arn:aws:events:eu-south-1:748275689270:event-bus/pn-CoreEventBus",
+      "EnvType": "svil"      
     }
   }
   

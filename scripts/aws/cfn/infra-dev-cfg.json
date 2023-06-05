@@ -9,7 +9,8 @@
       "EcsDefaultSecurityGroup": "",
       "PnVPCDefaultSecurityGroup": "sg-0edd50b1733dcf45b",
       "PnCoreTargetEventBus": "arn:aws:events:eu-south-1:558518206506:event-bus/pn-CoreEventBus",
-      "SafeStorageBucketName": "-"
+      "SafeStorageBucketName": "-",
+      "EnvType": "dev"
     }
 }
   

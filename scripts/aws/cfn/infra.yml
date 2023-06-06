@@ -127,6 +127,9 @@ Parameters:
     Type: Number
     Default: 14
     
+  EnvType:
+    Type: String
+
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -426,3 +429,6 @@ Outputs:
 
   LogRetention:
     Value: !Ref LogRetention
+
+  EnvType:
+    Value: !Ref EnvType

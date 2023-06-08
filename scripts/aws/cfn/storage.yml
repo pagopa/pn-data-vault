@@ -34,6 +34,24 @@ Parameters:
 
 Resources:
 
+  PCKmsEncDecDynamoDataKey:
+    Type: 'AWS::KMS::Key'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: A symmetric encryption KMS key AES-256-GCM
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+
   ConfidentialObjectsDynamoTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
@@ -57,6 +75,10 @@ Resources:
         StreamViewType: NEW_IMAGE
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !Ref PCKmsEncDecDynamoDataKey
+        SSEEnabled: true
+        SSEType: KMS   
                 
   PnDataVaultLogGroup:
     Type: AWS::CloudFormation::Stack
@@ -70,6 +92,11 @@ Resources:
         LogsKinesisSourceStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
 
 Outputs:
+
+  PCKmsEncDecDynamoDataKeyARN:
+    Description: Name of KMS Key for Dynamo encode/decode data
+    Value: !Sub '${PCKmsEncDecDynamoDataKey.Arn}'
+
   ConfidentialObjectsDynamoTableName:
     Description: Name of dynamodb table containing fake confidentials informations
     Value: !Ref ConfidentialObjectsDynamoTable

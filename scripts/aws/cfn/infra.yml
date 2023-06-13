@@ -130,6 +130,9 @@ Parameters:
   EnvType:
     Type: String
 
+  BackupCronExpression:
+    Type: String
+
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -432,3 +435,6 @@ Outputs:
 
   EnvType:
     Value: !Ref EnvType
+
+  BackupCronExpression:
+    Value: !Ref BackupCronExpression

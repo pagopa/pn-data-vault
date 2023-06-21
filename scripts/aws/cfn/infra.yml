@@ -133,6 +133,10 @@ Parameters:
   BackupCronExpression:
     Type: String
 
+  ApplicationLoadBalancerMetricsDimensionName:
+    Type: String
+    Default: ''
+    
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -438,3 +442,6 @@ Outputs:
 
   BackupCronExpression:
     Value: !Ref BackupCronExpression
+
+  ApplicationLoadBalancerMetricsDimensionName:
+    Value: !Ref ApplicationLoadBalancerMetricsDimensionName

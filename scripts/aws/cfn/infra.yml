@@ -137,6 +137,12 @@ Parameters:
     Type: String
     Default: ''
     
+  EventBusDeadLetterQueueMaximumRetentionPeriod:
+    Type: Number
+    Default: "1209600"
+    Description: "The number of seconds that Amazon SQS retains a message. You can specify an integer 
+      value from 60 seconds (1 minute) to 1,209,600 seconds (14 days)."
+
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -326,6 +332,44 @@ Resources:
     Properties: 
       Name: !Sub '${ProjectName}-ConfinfoEventBus'
 
+  # Allow access from confinfo
+  PnConfinfoEventBusAccessPolicy: 
+    Type: AWS::Events::EventBusPolicy
+    Properties: 
+      EventBusName: !Ref PnConfinfoEventBus
+      StatementId: "AllowEventPutByConfinfoAccount"
+      Statement: 
+        Effect: "Allow"
+        Principal: 
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+        Action: "events:PutEvents"
+        Resource: !GetAtt "PnConfinfoEventBus.Arn"
+
+  # Standard Queue for events Dead Letter Queue
+  EventBusDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !Ref EventBusDeadLetterQueueMaximumRetentionPeriod
+      QueueName: !Sub '${ProjectName}-ConfinfoEventBus-DLQ'
+
+  # Dead Letter Queue policy 
+  EventBusDeadLetterQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref "EventBusDeadLetterQueue"
+      PolicyDocument:
+        Statement:
+          - Sid: "SendEventsToDLQ"
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "events.amazonaws.com"
+            Action: 
+              - "SQS:SendMessage"
+            Resource:
+              - !GetAtt "EventBusDeadLetterQueue.Arn"
+
 Outputs:
 
   AlarmSNSTopicArn:
@@ -458,3 +502,12 @@ Outputs:
 
   ConfinfoEventBusArn:
     Value: !GetAtt PnConfinfoEventBus.Arn
+
+  EventBusDeadLetterQueueArn:
+    Value: !GetAtt EventBusDeadLetterQueue.Arn
+
+  EventBusDeadLetterQueueUrl:
+    Value: !Ref EventBusDeadLetterQueue
+
+  EventBusDeadLetterQueueName:
+    Value: !GetAtt EventBusDeadLetterQueue.QueueName

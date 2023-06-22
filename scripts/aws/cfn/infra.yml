@@ -453,8 +453,8 @@ Outputs:
   ApplicationLoadBalancerMetricsDimensionName:
     Value: !Ref ApplicationLoadBalancerMetricsDimensionName
 
-  EventBusName:
+  ConfinfoEventBusName:
     Value: !Ref PnConfinfoEventBus
 
-  EventBusArn:
+  ConfinfoEventBusArn:
     Value: !GetAtt PnConfinfoEventBus.Arn

@@ -319,6 +319,13 @@ Resources:
   
 
 
+  ###                          PN-CONFINFO EVENT BUS                       ###
+  ###########################################################################
+  PnConfinfoEventBus:
+    Type: AWS::Events::EventBus
+    Properties: 
+      Name: !Sub '${ProjectName}-ConfinfoEventBus'
+
 Outputs:
 
   AlarmSNSTopicArn:
@@ -445,3 +452,9 @@ Outputs:
 
   ApplicationLoadBalancerMetricsDimensionName:
     Value: !Ref ApplicationLoadBalancerMetricsDimensionName
+
+  EventBusName:
+    Value: !Ref PnConfinfoEventBus
+
+  EventBusArn:
+    Value: !GetAtt PnConfinfoEventBus.Arn

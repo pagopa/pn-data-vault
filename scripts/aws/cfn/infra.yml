@@ -332,19 +332,6 @@ Resources:
     Properties: 
       Name: !Sub '${ProjectName}-ConfinfoEventBus'
 
-  # Allow access from confinfo
-  PnConfinfoEventBusAccessPolicy: 
-    Type: AWS::Events::EventBusPolicy
-    Properties: 
-      EventBusName: !Ref PnConfinfoEventBus
-      StatementId: "AllowEventPutByConfinfoAccount"
-      Statement: 
-        Effect: "Allow"
-        Principal: 
-            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-        Action: "events:PutEvents"
-        Resource: !GetAtt "PnConfinfoEventBus.Arn"
-
   # Standard Queue for events Dead Letter Queue
   EventBusDeadLetterQueue:
     Type: AWS::SQS::Queue

@@ -143,6 +143,11 @@ Parameters:
     Description: "The number of seconds that Amazon SQS retains a message. You can specify an integer 
       value from 60 seconds (1 minute) to 1,209,600 seconds (14 days)."
 
+  OncallDlqRatio:
+    Type: Number
+    Default: 0.1
+    Description: Wakeup alarm ratio between messages written to DLQ and messages read from queue
+    
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -356,6 +361,72 @@ Resources:
               - "SQS:SendMessage"
             Resource:
               - !GetAtt "EventBusDeadLetterQueue.Arn"
+
+  # Alarm for Dead letter queue has messages
+  DLQHasMessagesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-ConfinfoEventBus-DLQ-HasMessage'
+      AlarmDescription: "CloudWatch alarm for when DLQ has 1 or more messages."
+      Namespace: "AWS/SQS"
+      MetricName: "ApproximateNumberOfMessagesVisible"
+      Dimensions:
+        - Name: "QueueName"
+          Value: !Sub '${EventBusDeadLetterQueue.QueueName}'
+      Statistic: "Sum"
+      TreatMissingData: "notBreaching"
+      Period: 60
+      Threshold: 1
+      ComparisonOperator: "GreaterThanOrEqualToThreshold" 
+      EvaluationPeriods: 1       
+      AlarmActions:
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+      InsufficientDataActions:
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+      OKActions:
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+
+  OncallDLQHasMessagesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'oncall-${ProjectName}-ConfinfoEventBus-DLQ-HasMessage'
+      AlarmDescription: "CloudWatch alarm for when DLQ has 1 or more messages."
+      TreatMissingData: "notBreaching"
+      Threshold: 1
+      ComparisonOperator: "GreaterThanOrEqualToThreshold" 
+      EvaluationPeriods: 5      
+      Metrics:
+        - Id: m1
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: QueueName
+                  Value: !Sub '${EventBusDeadLetterQueue.QueueName}'
+              MetricName: NumberOfMessagesReceived
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m2
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: EventBusName
+                  Value: !Sub '${ProjectName}-ConfinfoEventBus'
+              MetricName: Events
+              Namespace: AWS/Events
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: e1
+          Expression: !Sub IF(m1>0 AND m1/m2>${OncallDlqRatio}, 1, 0)
+          Label: !Sub "${ProjectName}-ConfinfoEventBus-HasDLQMessage-OnCall-Metric"        
+      AlarmActions:
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+      InsufficientDataActions:
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+      OKActions:
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
 
 Outputs:
 

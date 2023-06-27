@@ -344,6 +344,19 @@ Resources:
       MessageRetentionPeriod: !Ref EventBusDeadLetterQueueMaximumRetentionPeriod
       QueueName: !Sub '${ProjectName}-ConfinfoEventBus-DLQ'
 
+  # Allow access from the same confinfo system
+  PnConfinfoEventBusAccessPolicy: 
+    Type: AWS::Events::EventBusPolicy
+    Properties: 
+      EventBusName: !Ref PnConfinfoEventBus
+      StatementId: "AllowEventPutBySafeStorage"
+      Statement: 
+        Effect: "Allow"
+        Principal: 
+          AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+        Action: "events:PutEvents"
+        Resource: !GetAtt "PnConfinfoEventBus.Arn"
+
   # Dead Letter Queue policy 
   EventBusDeadLetterQueuePolicy:
     Type: AWS::SQS::QueuePolicy

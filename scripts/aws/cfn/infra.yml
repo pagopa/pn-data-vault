@@ -441,6 +441,200 @@ Resources:
       OKActions:
         - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
 
+# SNS Subscription for SES log
+  SnsSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+          Protocol: lambda
+          Endpoint: !GetAtt SesLambdaFunction.Arn
+          TopicArn: !Ref SesSnsTopic
+
+# SES Lambda for Log
+  SesLambdaInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+          Action: lambda:InvokeFunction
+          Principal: sns.amazonaws.com
+          SourceArn:  !Ref SesSnsTopic
+          FunctionName: !Ref SesLambdaFunction
+
+  SesLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: SesLambdaFunctionPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: '*'
+            
+  SesLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Join
+        - ""
+        - -  "/aws/lambda/"
+          - !Ref SesLambdaFunction
+  SesLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.10
+      Timeout: 5
+      Handler: index.lambda_handler
+      Role: !GetAtt SesLambdaFunctionRole.Arn
+      Code:
+        ZipFile: |
+              import re
+
+              def replace_email(string):
+                  pattern = r'\b([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-]+\.[A-Za-z]{2,})\b'
+                  return re.sub(pattern, r'***@\2', string)
+
+              def lambda_handler(event, context):
+                  single_event = event['Records'][0]['Sns']['Message']
+                  single_event = replace_email(single_event)
+
+                  print(single_event)
+                  return single_event
+
+  # SES and SMS Dashboard Cloudwatch      
+  SesSmsDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: "SES-SNS-Dashboard"
+      DashboardBody: |
+        {
+            "widgets": [
+                {
+                    "height": 6,
+                    "width": 12,
+                    "y": 0,
+                    "x": 0,
+                    "type": "metric",
+                    "properties": {
+                        "metrics": [
+                            [ "AWS/SES", "Reputation.BounceRate", { "region": "eu-south-1", "visible": false } ],
+                            [ ".", "Reputation.ComplaintRate", { "region": "eu-south-1", "visible": false } ],
+                            [ ".", "Send", { "region": "eu-south-1" } ],
+                            [ ".", "Delivery", { "region": "eu-south-1" } ],
+                            [ ".", "Bounce", { "region": "eu-south-1" } ]
+                        ],
+                        "view": "timeSeries",
+                        "stacked": false,
+                        "region": "eu-south-1",
+                        "period": 300,
+                        "title": "mails_SES",
+                        "stat": "SampleCount",
+                        "yAxis": {
+                            "left": {
+                                "min": 0
+                            }
+                        }
+                    }
+                },
+                {
+                    "height": 6,
+                    "width": 12,
+                    "y": 0,
+                    "x": 12,
+                    "type": "metric",
+                    "properties": {
+                        "metrics": [
+                            [ "AWS/SNS", "NumberOfNotificationsDelivered", "PhoneNumber", "PhoneNumberDirect", { "region": "eu-south-1" } ]
+                        ],
+                        "view": "bar",
+                        "stacked": true,
+                        "region": "eu-south-1",
+                        "title": "SMS",
+                        "yAxis": {
+                            "left": {
+                                "min": 0,
+                                "max": 50000
+                            }
+                        },
+                        "period": 300,
+                        "stat": "SampleCount"
+                    }
+                },
+                {
+                    "height": 5,
+                    "width": 12,
+                    "y": 6,
+                    "x": 0,
+                    "type": "log",
+                    "properties": {
+                        "query": "SOURCE '/aws/events/ses' | fields @timestamp, @message, @logStream, @log\n| sort @timestamp desc\n| limit 20",
+                        "region": "eu-south-1",
+                        "stacked": false,
+                        "view": "table"
+                    }
+                },
+                {
+                    "height": 5,
+                    "width": 12,
+                    "y": 6,
+                    "x": 12,
+                    "type": "metric",
+                    "properties": {
+                        "view": "gauge",
+                        "stacked": false,
+                        "metrics": [
+                            [ "AWS/SNS", "SMSMonthToDateSpentUSD" ]
+                        ],
+                        "region": "eu-south-1",
+                        "yAxis": {
+                            "left": {
+                                "min": 0,
+                                "max": 10000
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+
+
+  # Define the SNS topic for SES log
+  SesSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+        TopicName: pn-sessns-topic
+ 
+    
+  # Policy allow SES to publish event to SNS topic for SES log
+  SesTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Sid: "Allow SES publish to SNS"
+            Effect: Allow
+            Principal:
+              Service: ses.amazonaws.com
+            Action: 'SNS:Publish'
+            Resource: !Ref  SesSnsTopic
+            Condition:
+              StringLike:
+                'AWS:SourceArn': 'arn:aws:ses:*'
+      Topics:
+        - !Ref SesSnsTopic
+
 Outputs:
 
   AlarmSNSTopicArn:
@@ -582,3 +776,6 @@ Outputs:
 
   EventBusDeadLetterQueueName:
     Value: !GetAtt EventBusDeadLetterQueue.QueueName
+
+  SesLambdaFunctionName:
+    Value: !Ref SesLambdaFunction

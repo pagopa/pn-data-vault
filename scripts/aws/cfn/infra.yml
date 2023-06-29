@@ -779,3 +779,6 @@ Outputs:
 
   SesLambdaFunctionName:
     Value: !Ref SesLambdaFunction
+
+  PnCoreAwsAccountId:
+    Value: !Ref PnCoreAwsAccountId

@@ -518,7 +518,7 @@ Resources:
     Type: AWS::CloudWatch::Dashboard
     Properties:
       DashboardName: "SES-SNS-Dashboard"
-      DashboardBody: |
+      DashboardBody: !Sub  |
         {
             "widgets": [
                 {
@@ -579,7 +579,7 @@ Resources:
                     "x": 0,
                     "type": "log",
                     "properties": {
-                        "query": "SOURCE '/aws/events/ses' | fields @timestamp, @message, @logStream, @log\n| sort @timestamp desc\n| limit 20",
+                        "query": "SOURCE '${SesLambdaFunctionLogGroup}' | fields @timestamp, @message, @logStream, @log\n| filter @message like /eventType/\n| sort @timestamp desc\n| limit 20",
                         "region": "eu-south-1",
                         "stacked": false,
                         "view": "table"

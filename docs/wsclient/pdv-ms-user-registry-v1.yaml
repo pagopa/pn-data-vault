@@ -278,6 +278,7 @@ components:
         value:
           type: string
           description: Field value
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     MutableUserFieldsDto:
       title: MutableUserFieldsDto
       type: object
@@ -317,6 +318,7 @@ components:
         fiscalCode:
           type: string
           description: User fiscal code
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         name:
           description: User name
           $ref: '#/components/schemas/CertifiableFieldResourceOfstring'
@@ -353,6 +355,7 @@ components:
         fiscalCode:
           type: string
           description: User fiscal code
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         id:
           type: string
           description: User internal id
@@ -374,6 +377,7 @@ components:
         fiscalCode:
           type: string
           description: User fiscal code
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     WorkContactResource:
       title: WorkContactResource
       type: object

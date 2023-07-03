@@ -25,8 +25,12 @@ public abstract class TestUtils {
         return me;
     }
 
-    public static NotificationEntity newNotification(){
-        NotificationEntity ne = new NotificationEntity("425e4567-e89b-12d3-a456-426655449631", "000");
+    public static NotificationEntity newNotification() {
+        return newNotification(false);
+    }
+
+    public static NotificationEntity newNotification(Boolean normalized){
+        NotificationEntity ne = new NotificationEntity("425e4567-e89b-12d3-a456-426655449631", "000", normalized);
         ne.setDigitalAddress("mario.rossi@test.it");
         PhysicalAddress pa = new PhysicalAddress();
         pa.setAddress("via casa sua");
@@ -42,6 +46,8 @@ public abstract class TestUtils {
 
     public static NotificationTimelineEntity newNotificationTimeline(){
         NotificationTimelineEntity ne = new NotificationTimelineEntity("425e4567-e89b-12d3-a456-426655449631", "mario rossi");
+        ne.setTaxId("MRDSME90R225451F");
+        ne.setDenomination("Mario Rossi");
         ne.setDigitalAddress("mario.rossi@test.it");
         PhysicalAddress pa = new PhysicalAddress();
         pa.setAddress("via casa sua");

@@ -2,10 +2,11 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.PiiResourceDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.tokenizer.v1.dto.TokenResourceDto;
-import it.pagopa.pn.datavault.mandate.microservice.msclient.generated.userregistry.v1.dto.UserResourceDto;
+import it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.dto.PiiResourceDto;
+import it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.dto.TokenResourceDto;
+import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.dto.UserResourceDto;
+import it.pagopa.pn.datavault.svc.entities.InternalId;
+import it.pagopa.pn.datavault.utils.RecipientUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,38 +79,7 @@ class PersonalDataVaultTokenizerClientTest {
                         .withStatusCode(200));
 
         //When
-        String result = client.ensureRecipientByExternalId(RecipientType.PF, cf).block(d);
-
-        //Then
-        assertNotNull(result);
-        assertEquals(expectediuid, result);
-    }
-
-    @Test
-    void ensureRecipientByExternalIdPG() throws JsonProcessingException {
-        //Given
-        String cf = "123456789";
-        String iuid = "425e4567-e89b-12d3-a456-426655449631";
-        String expectediuid = "PG-"+iuid;
-        TokenResourceDto response = new TokenResourceDto();
-        response.setToken(UUID.fromString(iuid));
-        response.setRootToken(UUID.fromString(iuid));
-        ObjectMapper mapper = new ObjectMapper();
-        String respjson = mapper.writeValueAsString(response);
-
-
-        new MockServerClient("localhost", 9999)
-                .when(request()
-                        .withMethod("PUT")
-                        .withHeader("x-api-key", "pg")
-                        .withPath("/tokens"))
-                .respond(response()
-                        .withBody(respjson)
-                        .withContentType(MediaType.APPLICATION_JSON)
-                        .withStatusCode(200));
-
-        //When
-        String result = client.ensureRecipientByExternalId(RecipientType.PG, cf).block(d);
+        String result = client.ensureRecipientByExternalId(cf).block(d);
 
         //Then
         assertNotNull(result);
@@ -120,6 +91,7 @@ class PersonalDataVaultTokenizerClientTest {
 
         String internalId_noPF = "425e4567-e89b-12d3-a456-426655449631";
         String internalId = "PF-" + internalId_noPF;
+        InternalId internalId1 = RecipientUtils.mapToInternalId(List.of(internalId)).get(0);
         String pii = "PII";
 
 
@@ -140,7 +112,7 @@ class PersonalDataVaultTokenizerClientTest {
                         .withContentType(MediaType.APPLICATION_JSON)
                         .withStatusCode(200));
 
-        UserResourceDto result = client.findPii(internalId).block(d);
+        UserResourceDto result = client.findPii(internalId1).block(d);
         assertNotNull(result);
         assertEquals(result.getFiscalCode(), pii);
 

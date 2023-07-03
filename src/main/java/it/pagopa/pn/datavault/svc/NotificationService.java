@@ -9,6 +9,8 @@ import it.pagopa.pn.datavault.middleware.db.NotificationDao;
 import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
+import it.pagopa.pn.datavault.utils.ValidationUtils;
+import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
@@ -22,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
 @Service
+@CustomLog
 public class NotificationService {
 
     private final NotificationDao notificationDao;
@@ -45,12 +48,21 @@ public class NotificationService {
         return notificationDao.deleteNotificationByIun(iun);
     }
 
-    public Flux<NotificationRecipientAddressesDto> getNotificationAddressesByIun(String iun) {
-        return notificationDao.listNotificationRecipientAddressesDtoById(iun)
+    public Flux<NotificationRecipientAddressesDto> getNotificationAddressesByIun(String iun, Boolean normalized) {
+        if(normalized == null) {
+            /*
+            Se il parametro non viene passato allora il metodo dovrà prima comportarsi come se il parametro fosse presente
+            e valorizzato true. Se gli indirizzi normalizzati non sono presenti allora deve comportarsi come se il paramtro fosse presente e valorizzato false
+             */
+            return notificationDao.listNotificationRecipientAddressesDtoById(iun, Boolean.TRUE)
+                    .switchIfEmpty(notificationDao.listNotificationRecipientAddressesDtoById(iun, Boolean.FALSE))
+                    .map(mappingsDao::toDto);
+        }
+        return notificationDao.listNotificationRecipientAddressesDtoById(iun, normalized)
                 .map(mappingsDao::toDto);
     }
 
-    public Mono<Object> updateNotificationAddressesByIun(String iun, NotificationRecipientAddressesDto[] dtoArray) {
+    public Mono<Object> updateNotificationAddressesByIun(String iun, NotificationRecipientAddressesDto[] dtoArray, Boolean normalized) {
 
         List<NotificationEntity> nelist = new ArrayList<>();
 
@@ -60,6 +72,8 @@ public class NotificationService {
             validate(dto);
 
             NotificationEntity ne = mappingsDao.toEntity(dto);
+            //il setNormalized deve essere richiamato prima del setInternalId per generare nel modo corretto il prefisso della pk
+            ne.setNormalizedAddress(normalized);
             ne.setRecipientIndex( String.format("%03d", recipientIndex.getAndIncrement() ) );
             ne.setInternalId(iun);  // il mapping non può mappare l'internalid, non è presente nel dto
             nelist.add(ne);
@@ -86,9 +100,10 @@ public class NotificationService {
     }
 
     private void validate(NotificationRecipientAddressesDto dto) {
-        if (!StringUtils.hasText(dto.getDenomination()))
+        if (!ValidationUtils.checkDenomination(dto.getDenomination()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "denomination");
-        if (dto.getDigitalAddress() != null && !StringUtils.hasText(dto.getDigitalAddress().getValue()))
+
+        if (! ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "digitalAddress.value");
     }
 }

@@ -15,20 +15,21 @@ Parameters:
     Type: String
     Description: VpcId of the VPC where to install PN-CORE
 
-  VpcCidr:
-    Type: String
-    Description: Cidr of the VPC where to install PN-CORE
-    
   VpcSubnets:
     Type: String
     Description: subnets where to install PN-CORE
 
-  VpcSubnetsRoutingTables:
+  VpcEgressSubnetsIds:
     Type: String
-    Description: routing table for subnets where to install PN-CORE
-  PrivateHostedZone:
+    Description: subnets where to install PN-CONFIDENTIAL-INFO
+
+  ECSClusterName:
     Type: String
-    Description: private hosted zone where register the application load balancer
+    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
+
+  ApplicationLoadBalancerListenerArn:
+    Type: String
+    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
   
   ContainerImageUri:
     Type: String
@@ -73,7 +74,23 @@ Parameters:
   PDVUserRegistryRateLimiterTimeoutMillis:
     Type: Number
     Description: 'Periodo di timeout in millisecondi nel rate limiter per le API di user-registry'
-  
+
+  SelfcarePgBasePath:
+    Type: String
+    Description: 'Path base di invocazione al servizio di SelfcarePg'
+
+  SelfcarePgRateLimiterMillis:
+    Type: Number
+    Description: 'Periodo di aggiornamento in millisecondi del rate limiter per le API di SelfcarePg'
+
+  SelfcarePgRateLimiterNRequests:
+    Type: Number
+    Description: 'Numero richieste impostate nel rate limiter per le API di SelfcarePg'
+
+  SelfcarePgRateLimiterTimeoutMillis:
+    Type: Number
+    Description: 'Periodo di timeout in millisecondi nel rate limiter per le API di SelfcarePg'
+
   Version:
     Type: String
     Description: 'keep track of used projects commitIds'
@@ -110,126 +127,155 @@ Parameters:
     Type: String
     Description: 'Cdc delivery stream alarm ARN'
 
+  PCKmsEncDecDynamoDataKeyARN:
+    Type: String
+    Description: 'Name of KMS Key for Dynamo encode/decode data'
+
+  # Heath Check parameters
+  HealthCheckInterval:
+    Description: Seconds between two health check
+    Type: Number
+    Default: 60
+
+  HealthCheckTimeout:
+    Description: health check timeout seconds
+    Type: Number
+    Default: 5
+  
+  HealthyThresholdCount:
+    Description: |
+      The number of consecutive health checks successes required before considering 
+      an unhealthy target healthy. 
+    Type: Number
+    Default: 5
+  
+  UnhealthyThresholdCount:
+    Description: |
+      The number of consecutive health check failures required before considering a target unhealthy. 
+    Type: Number
+    Default: 2
+
+  # Instance parameters
+  # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
+  # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
+  # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
+  # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
+  # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
+  CpuValue:
+    Type: Number
+    Default: 1024
+    Description: Fargate virtual CPU quantity 1024 equals one vCPU
+
+  # 0.5GB, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
+  # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
+  # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
+  # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
+  # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
+  MemoryAmount:
+    Type: String
+    Default: 2GB
+    Description: memory amount reserved to the task pod.
+    AllowedValues: [ 2GB, 4GB, 6GB, 8GB ]
+
+  # Autoscaling parameters
+  AutoscalingCheckPeriod:
+    Default: 60
+    Type: Number
+    Description: minimum autoscaling number of tasks\
+
+  AutoscalingDataPointN:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingDataPointM:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingThreshold:
+    Default: 70
+    Type: String
+  
+  MinTasksNumber:
+    Default: 1
+    Type: Number
+    Description: minimum autoscaling number of tasks
+
+  MaxTasksNumber:
+    Default: 6
+    Type: Number
+    Description: maximum autoscaling number of tasks
+
+  CloudWatchMetricCron:
+    Type: String
+    Description: Cron for which you send the custom metric for PDV to CloudWatch
+
+  # Log group parameters
+  EcsLogGroup:
+    Type: String
+    Description: 'Ecs log group name'
+
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
 Resources:
 
-  # Private connection from subnets to AWS services
-  VPCEndpoints:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/vpc-endpoints.yaml"
-      Parameters:
-        VpcName: !Ref ProjectName
-        VpcCidr: !Ref VpcCidr
-        Subnets: !Ref VpcSubnets
-        RouteTableIds: !Ref VpcSubnetsRoutingTables
-        VpcId: !Ref VpcId
-
-  ###                       APPLICATION LOAD BALANCER                       ###
-  #############################################################################
-  # Application load balancer
-  ApplicationLoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Type: application
-      Scheme: internal
-      IpAddressType: ipv4
-      Subnets: !Split [ ',', !Ref VpcSubnets ]
-      SecurityGroups:
-        - !Ref WebappSecurityGroup
-
-  # Application load balancer listener
-  ApplicationLoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref ApplicationLoadBalancer
-      Protocol: HTTP
-      Port: 8080
-      DefaultActions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: 404
-            ContentType: "application/json"
-            MessageBody: "{ \"error\": \"404\", \"message\": \"Load balancer rule not configured\" }"
-          Order: 1
-
-  # Application security groups
-  WebappSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${ProjectName}-webapp-security-group
-      GroupDescription: "ingres tcp 8080, egress all"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
-          CidrIp: "0.0.0.0/0"
-      VpcId: !Ref VpcId
-
-
-  # Load balancer private fixed DNS
-  Route53RecordSetGroup:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub 'alb.confidential.${ProjectName}.internal'
-      Type: A
-      HostedZoneId: !Ref PrivateHostedZone  
-      AliasTarget:
-        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
-        EvaluateTargetHealth: false
-        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
-
-  ###                             ECS CLUSTER                             ###
-  ###########################################################################
-
-  # The cluster
-  ECSCluster:
-    DependsOn: ApplicationLoadBalancerListener
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
-      Parameters:
-        MacroServiceName: !Sub '${ProjectName}-confidential'
-  
-  # PN-Delivery microservice
+  # PN-DataVault microservice
   DataVaultMicroservice:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
         MicroServiceUniqueName: !Sub '${ProjectName}-data-vault-sep'
-        CpuValue: 1024
-        MemoryAmount: 2GB
+        CpuValue: !Ref CpuValue
+        MemoryAmount: !Ref MemoryAmount
+        HealthCheckTimeout: !Ref HealthCheckTimeout
+        HealthCheckInterval: !Ref HealthCheckInterval
+        HealthyThresholdCount: !Ref HealthyThresholdCount
+        UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+        AutoscalingStrategy: REST-API
+        AutoscalingThreshold: !Ref AutoscalingThreshold
+        AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
+        MinTasksNumber: !Ref MinTasksNumber
+        MaxTasksNumber: !Ref MaxTasksNumber
+        AutoscalingDataPointN: !Ref AutoscalingDataPointN
+        AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'PN_DATA_VAULT_DYNAMODB_TABLE_NAME=${ConfidentialObjectsDynamoTableName}'
         ContainerEnvEntry3: !Sub 'PN_DATA_VAULT_CLIENT_TOKENIZER_BASEPATH=${PDVTokenizerBasePath}'
         ContainerEnvEntry4: !Sub 'PN_DATA_VAULT_CLIENT_USERREGISTRY_BASEPATH=${PDVUserRegistryBasePath}'
-        ContainerEnvEntry5: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:TokenizerApiKeyForPF}}'
-        ContainerEnvEntry6: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PG={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:TokenizerApiKeyForPG}}'
-        ContainerEnvEntry7: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:UserRegistryApiKeyForPF}}'
-        ContainerEnvEntry8: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PG={{resolve:secretsmanager:${ProjectName}-PersonalDataVault-Apikey:SecretString:UserRegistryApiKeyForPG}}'
-        ContainerEnvEntry9: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
-        ContainerEnvEntry10: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
-        ContainerEnvEntry11: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_MILLIS=${PDVUserRegistryRateLimiterMillis}'
-        ContainerEnvEntry12: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_NREQUESTS=${PDVUserRegistryRateLimiterNRequests}'
-        ContainerEnvEntry13: !Sub 'PN_DATA_VAULT_USERREGISTRY_RATE_LIMITER_TIMEOUT_MILLIS=${PDVUserRegistryRateLimiterTimeoutMillis}'
+        ContainerEnvEntry5: !Sub 'PN_DATA_VAULT_CLIENT_SELFCAREPG_BASEPATH=${SelfcarePgBasePath}'
+        ContainerEnvEntry6: !Sub 'PN_DATA_VAULT_CACHE_EXPIRE_AFTER_MINUTES=${CacheExpireMinutes}'
+        ContainerEnvEntry7: !Sub 'PN_DATA_VAULT_CACHE_MAX_SIZE=${CacheMaxSize}'
+        ContainerEnvEntry8: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_REFRESH_PERIOD=${PDVUserRegistryRateLimiterMillis}'
+        ContainerEnvEntry9: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_LIMIT_FOR_PERIOD=${PDVUserRegistryRateLimiterNRequests}'
+        ContainerEnvEntry10: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_PDV_RATE_LIMITER_TIMEOUT_DURATION=${PDVUserRegistryRateLimiterTimeoutMillis}'
+        ContainerEnvEntry11: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_LIMIT_REFRESH_PERIOD=${SelfcarePgRateLimiterMillis}'
+        ContainerEnvEntry12: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_LIMIT_FOR_PERIOD=${SelfcarePgRateLimiterNRequests}'
+        ContainerEnvEntry13: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_TIMEOUT_DURATION=${SelfcarePgRateLimiterTimeoutMillis}'
+        ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
+        ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPF:AWSCURRENT:'
+        ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPF:AWSCURRENT:'
+        ContainerSecret4: !Sub 'PN_DATA_VAULT_SELFCAREPG_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:SelfcareApiKeyForPG:AWSCURRENT:'                
+        MicroServiceSecretPrefix: pn-PersonalDataVault-Secrets
         MappedPaths: '/datavault/*,/datavault-private/*'
-        ECSClusterName: !GetAtt ECSCluster.Outputs.ClusterName
-        Subnets: !Ref VpcSubnets
+        ECSClusterName: !Ref ECSClusterName
+        Subnets: !Ref VpcEgressSubnetsIds
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
-        LoadBalancerListenerArn: !GetAtt ApplicationLoadBalancerListener.ListenerArn
+        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
-        CloudwatchLogKinesisStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
+        TaskRoleManagedPolicyArn: !Ref DataVaultyMicroserviceTaskManagedPolicy
+        EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
   # Grant operational rights to PN-Delivery microservice
-  DeliveryMicroserviceTaskPolicy:
-    Type: AWS::IAM::Policy
+  DataVaultyMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: !Sub '${ProjectName}-datavault-sep-CustomTaskPolicy'
-      Roles:
-        - !GetAtt DataVaultMicroservice.Outputs.TaskRoleName
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -247,6 +293,20 @@ Resources:
               - dynamodb:DeleteItem
             Resource:
               - !Ref ConfidentialObjectsDynamoTableArn
+          - Effect: Allow
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+            Resource:
+              - !Ref PCKmsEncDecDynamoDataKeyARN              
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - cloudwatch:GetMetricStream
+              - cloudwatch:GetMetricData
+            Resource:
+              - "*"
 
   ## Dashboard
   DataVaultMicroserviceCloudWatchDashboard:
@@ -260,9 +320,11 @@ Resources:
           - - !Ref ConfidentialObjectsDynamoTableName
         AlarmArns: !Join
           - ','
-          - - !GetAtt DataVaultMicroservice.Outputs.AutoScalingAlarmArn
-            - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn
-
+          - - !GetAtt DataVaultMicroservice.Outputs.FatalLogsMetricAlarmArn
+        LogGroupsNames: !Join
+          - ','
+          - - !Sub '/aws/ecs/${ProjectName}-data-vault-sep'
+          
   InfraMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
     Properties:

@@ -1,15 +1,21 @@
 {
   "Parameters" : {
-    "VpcCidr": "10.65.0.0/16",
-    "VpcSubnetsRoutingTables": "rtb-060e6d8b9c3e9b831,rtb-081180a0c917d410c,rtb-059a740c724452a79",
-    "PrivateHostedZone": "Z0232891JUZMO2YDH9M8",
-    "EcsDefaultSecurityGroup": "",
     "PDVTokenizerBasePath" : "https://api.uat.tokenizer.pdv.pagopa.it/tokenizer/v1",
     "PDVUserRegistryBasePath" : "https://api.uat.pdv.pagopa.it/user-registry/v1",
     "PDVUserRegistryRateLimiterMillis": "1000",
-    "PDVUserRegistryRateLimiterNRequests": "20",
+    "PDVUserRegistryRateLimiterNRequests": "80",
     "PDVUserRegistryRateLimiterTimeoutMillis": "10000",
+    "SelfcarePgBasePath" : "https://api.uat.selfcare.pagopa.it/external/data-vault/v1",
+    "SelfcarePgRateLimiterMillis": "1000",
+    "SelfcarePgRateLimiterNRequests": "20",
+    "SelfcarePgRateLimiterTimeoutMillis": "10000",
     "CacheExpireMinutes": "600",
-    "CacheMaxSize": "100000"
+    "CacheMaxSize": "100000",
+    "MinTasksNumber": "2",
+    "MaxTasksNumber": "3",
+    "AutoscalingThreshold": "51650",
+    "CloudWatchMetricCron": "*/10 * * * * *",
+    "CpuValue": "2048",
+    "MemoryAmount": "4GB"
   }
 }

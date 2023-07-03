@@ -1,0 +1,10 @@
+{
+    "Parameters" : {
+      "BucketSuffix": "001",
+      "SafeStorageAccountId": "",
+      "LogsStreamRetentionHours": "72",
+      "CdcStreamRetentionHours": "72",
+      "PnCoreAwsAccountId" : "748275689270"  
+    }
+  }
+  

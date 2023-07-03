@@ -6,8 +6,9 @@ import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.mapper.MandateEntityMandateDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.MandateDao;
 import it.pagopa.pn.datavault.middleware.db.entities.MandateEntity;
+import it.pagopa.pn.datavault.utils.ValidationUtils;
+import lombok.CustomLog;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
 @Service
+@CustomLog
 public class MandateService {
 
     private final MandateDao objDao;
@@ -33,19 +35,11 @@ public class MandateService {
 
 
     public Mono<String> updateMandateByInternalId(String mandateId, DenominationDto addressDto) {
-        if (!StringUtils.hasText(mandateId))
+        if (! ValidationUtils.checkMandateId(mandateId))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "mandateId");
-        if (addressDto == null
-                || (!StringUtils.hasText(addressDto.getDestName())
-                    && !StringUtils.hasText(addressDto.getDestSurname())
-                    && !StringUtils.hasText(addressDto.getDestBusinessName()))
-                || (!StringUtils.hasText(addressDto.getDestName())
-                    && StringUtils.hasText(addressDto.getDestName()))
-                || (StringUtils.hasText(addressDto.getDestName())
-                    && !StringUtils.hasText(addressDto.getDestName()))
-                )
-            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "destName");
 
+        if (! ValidationUtils.checkDenominationDto(addressDto))
+            throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "destName");
 
         MandateEntity me = new MandateEntity(mandateId);
         me.setName(addressDto.getDestName());
@@ -56,7 +50,7 @@ public class MandateService {
     }
 
     public Mono<String> deleteMandateByInternalId(String mandateId ) {
-        if (!StringUtils.hasText(mandateId))
+        if (! ValidationUtils.checkMandateId(mandateId))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "mandateId");
 
         return objDao.deleteMandateId(mandateId).map(r -> "OK");

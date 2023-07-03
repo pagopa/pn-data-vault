@@ -2,6 +2,7 @@ package it.pagopa.pn.datavault.middleware.db.entities;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 /**
@@ -37,5 +38,5 @@ public class AddressEntity {
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;
     @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String addressId;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_VALUE)})) private String value;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_VALUE)})) private String value;
 }

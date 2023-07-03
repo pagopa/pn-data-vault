@@ -2,6 +2,7 @@ package it.pagopa.pn.datavault.middleware.db.entities;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 /**
@@ -15,6 +16,8 @@ public class NotificationTimelineEntity {
 
     public static final String COL_PK = "hashKey";
     public static final String COL_SK = "sortKey";
+    public static final String COL_TAXID = "taxId";
+    public static final String COL_DENOMINATION = "denomination";
     public static final String COL_DIGITAL_ADDRESS = "digitalAddress";
     public static final String COL_PHYSICAL_ADDRESS = "physicalAddress";
     public static final String COL_NEW_PHYSICAL_ADDRESS = "newPhysicalAddress";
@@ -39,8 +42,10 @@ public class NotificationTimelineEntity {
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;
     @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String timelineElementId;
 
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_ADDRESS)})) private String digitalAddress;
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHYSICAL_ADDRESS)})) private PhysicalAddress physicalAddress;
-    @Getter(onMethod=@__({@DynamoDbAttribute(COL_NEW_PHYSICAL_ADDRESS)})) private PhysicalAddress newPhysicalAddress;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_TAXID)})) private String taxId;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_DENOMINATION)})) private String denomination;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_ADDRESS)})) private String digitalAddress;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHYSICAL_ADDRESS)})) private PhysicalAddress physicalAddress;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_NEW_PHYSICAL_ADDRESS)})) private PhysicalAddress newPhysicalAddress;
 
 }

@@ -426,13 +426,13 @@ Resources:
               Dimensions:
                 - Name: EventBusName
                   Value: !Sub '${ProjectName}-ConfinfoEventBus'
-              MetricName: Events
+              MetricName: MatchedEvents
               Namespace: AWS/Events
             Period: 60
             Stat: Sum
           ReturnData: False
         - Id: e1
-          Expression: !Sub IF(m1>0 AND m1/m2>${OncallDlqRatio}, 1, 0)
+          Expression: !Sub IF(m2>0 AND m1/m2>${OncallDlqRatio}, 1, 0)
           Label: !Sub "${ProjectName}-ConfinfoEventBus-HasDLQMessage-OnCall-Metric"        
       AlarmActions:
         - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'

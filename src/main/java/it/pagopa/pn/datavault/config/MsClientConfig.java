@@ -1,16 +1,17 @@
 package it.pagopa.pn.datavault.config;
 
+import it.pagopa.pn.commons.pnclients.CommonBaseClient;
 import it.pagopa.pn.datavault.generated.openapi.msclient.selfcarepg.v1.ApiClient;
 import it.pagopa.pn.datavault.generated.openapi.msclient.selfcarepg.v1.api.InstitutionsApi;
 import it.pagopa.pn.datavault.generated.openapi.msclient.selfcarepg.v1.api.InstitutionsPnpgApi;
 import it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.api.TokenApi;
 import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.api.UserApi;
-import it.pagopa.pn.datavault.middleware.wsclient.common.BaseClient;
 import it.pagopa.pn.datavault.middleware.wsclient.common.OcpBaseClient;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MsClientConfig {
@@ -34,7 +35,7 @@ public class MsClientConfig {
     }
 
     @Configuration
-    static class BaseClients extends BaseClient {
+    static class BaseClients extends CommonBaseClient {
 
         @Bean
         UserApi userClientPF(PnDatavaultConfig pnDatavaultConfig) {
@@ -48,6 +49,15 @@ public class MsClientConfig {
             var apiClient = new it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.ApiClient(initWebClient(it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getTokenizerApiKeyPf()));
             apiClient.setBasePath(pnDatavaultConfig.getClientTokenizerBasepath());
             return new TokenApi(apiClient);
+        }
+
+        private static final String HEADER_API_KEY = "x-api-key";
+
+        protected WebClient initWebClient(WebClient.Builder builder, String apiKey){
+
+            return super.enrichWithDefaultProps( builder )
+                    .defaultHeader(HEADER_API_KEY, apiKey)
+                    .build();
         }
 
     }

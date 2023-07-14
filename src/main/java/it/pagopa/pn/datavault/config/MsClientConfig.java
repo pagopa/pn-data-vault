@@ -72,8 +72,8 @@ public class MsClientConfig {
         protected HttpClient buildHttpClient() {
             HttpClient httpClient = super.buildHttpClient();
             if( dataVaultConfiguration.isWiretapEnabled() ) {
-                httpClient = httpClient.wiretap( true );
-                httpClient.wiretap("reactor.netty.http.client.HttpClient", LogLevel.TRACE, AdvancedByteBufFormat.TEXTUAL);
+//                httpClient = httpClient.wiretap( true );
+                httpClient = httpClient.wiretap("reactor.netty.http.client.HttpClient", LogLevel.TRACE, AdvancedByteBufFormat.TEXTUAL);
             }
             return httpClient;
         }

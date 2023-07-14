@@ -1,5 +1,6 @@
 package it.pagopa.pn.datavault.config;
 
+import io.netty.handler.logging.LogLevel;
 import it.pagopa.pn.commons.pnclients.CommonBaseClient;
 import it.pagopa.pn.datavault.generated.openapi.msclient.selfcarepg.v1.ApiClient;
 import it.pagopa.pn.datavault.generated.openapi.msclient.selfcarepg.v1.api.InstitutionsApi;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.transport.logging.AdvancedByteBufFormat;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MsClientConfig {
@@ -71,6 +73,7 @@ public class MsClientConfig {
             HttpClient httpClient = super.buildHttpClient();
             if( dataVaultConfiguration.isWiretapEnabled() ) {
                 httpClient = httpClient.wiretap( true );
+                httpClient.wiretap("reactor.netty.http.client.HttpClient", LogLevel.TRACE, AdvancedByteBufFormat.TEXTUAL);
             }
             return httpClient;
         }

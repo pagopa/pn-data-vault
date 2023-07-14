@@ -9,7 +9,7 @@
     "SelfcarePgRateLimiterMillis": "1000",
     "SelfcarePgRateLimiterNRequests": "20",
     "SelfcarePgRateLimiterTimeoutMillis": "10000",
-    "CacheExpireMinutes": "600",
+    "CacheExpireMinutes": "0",
     "CacheMaxSize": "100000",
     "MinTasksNumber": "2",
     "MaxTasksNumber": "3",

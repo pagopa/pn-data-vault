@@ -16,6 +16,8 @@
     "AutoscalingThreshold": "51650",
     "CloudWatchMetricCron": "*/10 * * * * *",
     "CpuValue": "2048",
-    "MemoryAmount": "4GB"
+    "MemoryAmount": "4GB",
+    "HttpWireLogging": "TRACE",
+    "HttpWiretapEnabled": "true"
   }
 }

@@ -9,9 +9,11 @@ import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.api.Use
 import it.pagopa.pn.datavault.middleware.wsclient.common.OcpBaseClient;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MsClientConfig {
@@ -37,6 +39,9 @@ public class MsClientConfig {
     @Configuration
     static class BaseClients extends CommonBaseClient {
 
+        @Autowired
+        private PnDatavaultConfig dataVaultConfiguration;
+
         @Bean
         UserApi userClientPF(PnDatavaultConfig pnDatavaultConfig) {
             var apiClient = new it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.ApiClient(initWebClient(it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getUserregistryApiKeyPf()));
@@ -56,9 +61,18 @@ public class MsClientConfig {
         protected WebClient initWebClient(WebClient.Builder builder, String apiKey){
 
             return super.enrichWithDefaultProps( builder )
+            //return super.enrichBuilder(builder)
                     .defaultHeader(HEADER_API_KEY, apiKey)
                     .build();
         }
 
+        @Override
+        protected HttpClient buildHttpClient() {
+            HttpClient httpClient = super.buildHttpClient();
+            if( dataVaultConfiguration.isWiretapEnabled() ) {
+                httpClient = httpClient.wiretap( true );
+            }
+            return httpClient;
+        }
     }
 }

@@ -373,6 +373,77 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
+
+  '/datavault-private/v1/notifications/{iun}/paymentmetadata/{recipientIndex}/{attachmentIndex}':
+    get:
+      operationId: getNotificationPaymentMetadataByIun
+      summary: leggi i metadati di un attachment
+      description: >-
+        Leggi i metadati di un attachment
+        La risposta è costituita da un oggetto che rappresenta i metadati utili alla generazione di un F24
+      tags:
+        - Notifications
+      parameters:
+        - name: iun
+          description: Identificativo Unico Notifica
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Iun'
+        - name: recipientIndex
+          description: Identificativo recipientIndex
+          in: path
+          required: true
+          schema:
+            $ref: './schemas-datavault-f24.yaml#/components/schemas/RecipientIndex'
+        - name: attachmentIndex
+          description: Identificativo metadato pagamento
+          in: path
+          required: true
+          schema:
+            $ref: './schemas-datavault-f24.yaml#/components/schemas/AttachmentIndex'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './schemas-datavault-f24.yaml#/components/schemas/F24Metadata'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+
+  '/datavault-private/v1/notifications/{iun}/paymentmetadata':
+    put:
+      operationId: updateNotificationPaymentsMetadataByIun
+      summary: Inserisci o aggiorna elenco di metadati F24 specificati in fase di invio di una notifica.
+      tags:
+        - Notifications
+      parameters:
+        - name: iun
+          description: Identificativo Unico Notifica
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Iun'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: './schemas-datavault-f24.yaml#/components/schemas/F24MetadataArray'
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+
   
   '/datavault-private/v1/notifications/{iun}/timeline':
     parameters:
@@ -601,7 +672,7 @@ components:
       type: string
       pattern: '[A-Z0-9-]*'
       example: 'ABCD-XYWK-ASDF-LKJH-202209-1-X'
-    
+
     NotificationAddressesDto:
       type: array
       items:

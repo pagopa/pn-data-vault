@@ -41,6 +41,8 @@ components:
         $ref: "#/components/schemas/F24Item"
     IncludeNotificationCost:
       type: object
+      required:
+        - include
       properties:
         include:
           type: boolean

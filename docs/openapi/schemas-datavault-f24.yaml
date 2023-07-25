@@ -5,9 +5,6 @@ components:
     AttachmentIndex:
       type: integer
     F24Metadata:
-      required:
-        - recipientIndex
-        - attachmentIndex
       type: object
       properties:
         recipientIndex:
@@ -26,10 +23,17 @@ components:
         f24Elid:
           $ref: "#/components/schemas/F24Elid"
           nullable: true
-    F24MetadataArray:
+    F24Item:
+      allOf:
+        - $ref: "#/components/schemas/F24Metadata"
+      required:
+        - recipientIndex
+        - attachmentIndex
+      type: object
+    F24ItemArray:
       type: array
       items:
-        $ref: "#/components/schemas/F24Metadata"
+        $ref: "#/components/schemas/F24Item"
     IncludeNotificationCost:
       type: object
       properties:

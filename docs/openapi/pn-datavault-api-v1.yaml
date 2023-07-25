@@ -408,7 +408,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './schemas-datavault-f24.yaml#/components/schemas/F24Metadata'
+                $ref: './schemas-datavault-f24.yaml#/components/schemas/F24Item'
         '400':
           description: Invalid input
           content:
@@ -437,7 +437,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './schemas-datavault-f24.yaml#/components/schemas/F24MetadataArray'
+                $ref: './schemas-datavault-f24.yaml#/components/schemas/F24ItemArray'
         '400':
           description: Invalid input
           content:
@@ -453,7 +453,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './schemas-datavault-f24.yaml#/components/schemas/F24MetadataArray'
+              $ref: './schemas-datavault-f24.yaml#/components/schemas/F24ItemArray'
       responses:
         '204':
           description: OK

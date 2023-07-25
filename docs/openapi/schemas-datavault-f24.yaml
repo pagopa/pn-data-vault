@@ -7,22 +7,22 @@ components:
     F24Metadata:
       type: object
       properties:
-        recipientIndex:
-          $ref: "#/components/schemas/RecipientIndex"
-        attachmentIndex:
-          $ref: "#/components/schemas/AttachmentIndex"
         f24Standard:
-          $ref: "#/components/schemas/F24Standard"
           nullable: true
+          allOf:
+            - $ref: "#/components/schemas/F24Standard"
         f24Simplified:
-          $ref: "#/components/schemas/F24Simplified"
           nullable: true
+          allOf:
+            - $ref: "#/components/schemas/F24Simplified"
         f24Excise:
-          $ref: "#/components/schemas/F24Excise"
           nullable: true
+          allOf:
+            - $ref: "#/components/schemas/F24Excise"
         f24Elid:
-          $ref: "#/components/schemas/F24Elid"
           nullable: true
+          allOf:
+            - $ref: "#/components/schemas/F24Elid"
     F24Item:
       allOf:
         - $ref: "#/components/schemas/F24Metadata"
@@ -30,6 +30,11 @@ components:
         - recipientIndex
         - attachmentIndex
       type: object
+      properties:
+        recipientIndex:
+          $ref: "#/components/schemas/RecipientIndex"
+        attachmentIndex:
+          $ref: "#/components/schemas/AttachmentIndex"
     F24ItemArray:
       type: array
       items:

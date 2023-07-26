@@ -165,6 +165,9 @@ components:
       allOf:
         - $ref: "#/components/schemas/IncludeNotificationCost"
       type: object
+      required:
+        - municipality
+        - taxType
       properties:
         municipality:
           pattern: ^[0-9A-Z]{4}$

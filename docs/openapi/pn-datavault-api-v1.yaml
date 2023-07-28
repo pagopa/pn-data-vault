@@ -432,7 +432,7 @@ paths:
       tags:
         - Notifications
       parameters:
-        - name: iun
+        - name: recipientIndex
           description: Identificativo recipientIndex
           in: query
           required: false

@@ -427,10 +427,17 @@ paths:
     get:
       operationId: getNotificationPaymentsMetadataByIun
       summary: >-
-         Leggi i metadati di tutti i pagamenti per un certo IUN
+         Leggi i metadati di tutti i pagamenti per un certo IUN (opzionalmente filtrati per recipientIndex)
          La risposta è costituita da un array di oggetti che rappresenta i metadati utili alla generazione di un F24
       tags:
         - Notifications
+      parameters:
+        - name: iun
+          description: Identificativo recipientIndex
+          in: query
+          required: false
+          schema:
+            $ref: './schemas-datavault-f24.yaml#/components/schemas/RecipientIndex'
       responses:
         '200':
           description: OK

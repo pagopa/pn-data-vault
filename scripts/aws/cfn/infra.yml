@@ -379,18 +379,6 @@ Resources:
           FromPort: 2049
           ToPort: 2049
 
-  EfsFargateAccessPoint:
-    Type: AWS::EFS::AccessPoint
-    Properties:
-      FileSystemId: !Ref FargateEFSFileSystem
-      RootDirectory:
-        CreationInfo:
-          OwnerGid: "1000"
-          OwnerUid: "1000"
-          Permissions: "0755"
-        Path: /containersap  
-
-
   ###                          PN-CONFINFO EVENT BUS                       ###
   ###########################################################################
   PnConfinfoEventBus:

@@ -327,8 +327,57 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
       Parameters:
         MacroServiceName: !Sub '${ProjectName}-confidential'
-  
 
+ ###                             ELASTIC FILE SYSTEM                     ###
+  ###########################################################################
+
+  FargateEFSFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+        PerformanceMode: generalPurpose
+        Encrypted: true
+        ThroughputMode: bursting
+        FileSystemTags: 
+          - 
+            Key: Name
+            Value: Fargate-EFS
+
+  # create each mountpoint for internal subnet:
+  MountFargateEfsTarget1:
+      Type: AWS::EFS::MountTarget
+      Properties: 
+          FileSystemId: !Ref FargateEFSFileSystem
+          SecurityGroups: 
+            - !Ref EFSSecurityGroup
+          SubnetId: !Select [0, !Split [",", !Ref VpcSubnets]] 
+
+  MountFargateEfsTarget2:
+      Type: AWS::EFS::MountTarget
+      Properties: 
+          FileSystemId: !Ref FargateEFSFileSystem
+          SecurityGroups: 
+            - !Ref EFSSecurityGroup
+          SubnetId: !Select [1, !Split [",", !Ref VpcSubnets]] 
+
+  MountFargateEfsTarget3:
+      Type: AWS::EFS::MountTarget
+      Properties: 
+          FileSystemId: !Ref FargateEFSFileSystem
+          SecurityGroups: 
+            - !Ref EFSSecurityGroup
+          SubnetId: !Select [2, !Split [",", !Ref VpcSubnets]] 
+
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: EFS Security Group
+      SecurityGroupIngress:
+        # All Subnet can mount EFS:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
 
   ###                          PN-CONFINFO EVENT BUS                       ###
   ###########################################################################
@@ -712,6 +761,10 @@ Outputs:
   ECSClusterName:
     Value: !GetAtt ECSCluster.Outputs.ClusterName
     Description: ECS cluster name
+  
+  # EFS Filesystem:
+  FargateEFSFileSystemID:
+    Value: !Ref FargateEFSFileSystem
 
   LogsBucketKmsKeyArn:
     Value: !Ref LogsBucketKmsKeyArn

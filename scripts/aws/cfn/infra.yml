@@ -571,7 +571,7 @@ Resources:
         {
             "widgets": [
                 {
-                    "height": 6,
+                    "height": 3,
                     "width": 12,
                     "y": 0,
                     "x": 0,
@@ -584,12 +584,12 @@ Resources:
                             [ ".", "Delivery", { "region": "eu-south-1" } ],
                             [ ".", "Bounce", { "region": "eu-south-1" } ]
                         ],
-                        "view": "timeSeries",
+                        "view": "singleValue",
                         "stacked": false,
                         "region": "eu-south-1",
-                        "period": 300,
-                        "title": "mails_SES",
-                        "stat": "SampleCount",
+                        "period": 86400,
+                        "title": "SES_mails_sent_last24hours",
+                        "stat": "Sum",
                         "yAxis": {
                             "left": {
                                 "min": 0
@@ -598,33 +598,33 @@ Resources:
                     }
                 },
                 {
-                    "height": 6,
-                    "width": 12,
+                    "height": 3,
+                    "width": 11,
                     "y": 0,
                     "x": 12,
                     "type": "metric",
                     "properties": {
                         "metrics": [
-                            [ "AWS/SNS", "NumberOfNotificationsDelivered", "PhoneNumber", "PhoneNumberDirect", { "region": "eu-south-1" } ]
+                            [ "AWS/SNS", "SMSSuccessRate", "SMSType", "Transactional", "Country", "IT" ]
                         ],
-                        "view": "bar",
+                        "view": "singleValue",
                         "stacked": true,
                         "region": "eu-south-1",
-                        "title": "SMS",
+                        "title": "SMS_sent_last24hours",
                         "yAxis": {
                             "left": {
                                 "min": 0,
                                 "max": 50000
                             }
                         },
-                        "period": 300,
-                        "stat": "SampleCount"
+                        "period": 86400,
+                        "stat": "Sum"
                     }
                 },
                 {
-                    "height": 5,
+                    "height": 4,
                     "width": 12,
-                    "y": 6,
+                    "y": 3,
                     "x": 0,
                     "type": "log",
                     "properties": {
@@ -635,28 +635,77 @@ Resources:
                     }
                 },
                 {
-                    "height": 5,
-                    "width": 12,
-                    "y": 6,
+                    "height": 4,
+                    "width": 11,
+                    "y": 3,
                     "x": 12,
                     "type": "metric",
                     "properties": {
-                        "view": "gauge",
-                        "stacked": false,
                         "metrics": [
-                            [ "AWS/SNS", "SMSMonthToDateSpentUSD" ]
+                            [ "AWS/SNS", "SMSMonthToDateSpentUSD", { "region": "eu-south-1" } ]
                         ],
+                        "view": "singleValue",
+                        "stacked": false,
                         "region": "eu-south-1",
                         "yAxis": {
                             "left": {
                                 "min": 0,
                                 "max": 10000
                             }
-                        }
+                        },
+                        "period": 300,
+                        "stat": "SampleCount",
+                        "title": "SMS_MonthBilling_USD"
                     }
                 }
             ]
         }
+
+  SMSUsdMonthlyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub '${ProjectName}-Confinfo-SMS-MonthToDateSpentUSD'
+        AlarmDescription: CloudWatch alarm for the monthly SMS threshold 80%
+        ActionsEnabled: true
+        MetricName: SMSMonthToDateSpentUSD
+        Namespace: AWS/SNS
+        Statistic: Average
+        Dimensions: []
+        Period: 300
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 24000
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        TreatMissingData: missing
+        AlarmActions:
+          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+        InsufficientDataActions:
+          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+        OKActions:
+          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+
+  SESSentDailyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+        AlarmName: !Sub '${ProjectName}-Confinfo-SES-MailDailySends'
+        AlarmDescription: CloudWatch alarm for the daily Mail Sends threshold 80%
+        ActionsEnabled: true
+        MetricName: Send
+        Namespace: AWS/SES
+        Statistic: Average
+        Dimensions: []
+        Period: 300
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 800000
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        TreatMissingData: missing
+        AlarmActions:
+          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+        InsufficientDataActions:
+          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
+        OKActions:
+          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
 
 
   # Define the SNS topic for SES log

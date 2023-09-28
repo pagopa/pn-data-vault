@@ -540,6 +540,7 @@ Resources:
         - ""
         - -  "/aws/lambda/"
           - !Ref SesLambdaFunction
+
   SesLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -562,6 +563,106 @@ Resources:
                   print(single_event)
                   return single_event
 
+# SES Lambda for Monitoring Emails Quota
+  SesQuotaMonitoringLambdaScheduledRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: "ScheduledRule"
+      ScheduleExpression: "rate(30 minutes)"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt SesQuotaMonitoringLambdaFunction.Arn
+          Id: "TargetSesQuotaMonitoringLambdaFunction"
+
+  SesQuotaMonitoringLambdaInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+          Action: lambda:InvokeFunction
+          Principal: events.amazonaws.com
+          SourceArn:  !GetAtt SesQuotaMonitoringLambdaScheduledRule.Arn
+          FunctionName: !Ref SesQuotaMonitoringLambdaFunction
+
+  SesQuotaMonitoringLambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: SesQuotaMonitoringLambdaFunctionPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - cloudwatch:PutMetricData
+              - ses:GetSendStatistics
+              - ses:GetSendQuota
+            Resource: '*'
+            
+  SesQuotaMonitoringLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+      LogGroupName: !Join
+        - ""
+        - -  "/aws/lambda/"
+          - !Ref SesQuotaMonitoringLambdaFunction
+
+  SesQuotaMonitoringLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.10
+      Timeout: 7
+      Handler: index.lambda_handler
+      Role: !GetAtt SesQuotaMonitoringLambdaFunctionRole.Arn
+      Code:
+        ZipFile: |
+              import json
+              import boto3
+
+              def lambda_handler(event, context):
+                  # Ottieni la quota di invio globale
+                  client = boto3.client('ses')
+                  quota = client.get_send_quota()
+
+                  # Crea un oggetto metrica
+                  quota_metric = {
+                      'MetricName': 'MailSentLast24Hours',
+                      'Dimensions': [
+                          {
+                              'Name': 'Region',
+                              'Value': 'eu-south-1'
+                          }
+                      ],
+                      'Value': quota['SentLast24Hours']
+                  }
+
+                  # Invia la metrica a CloudWatch
+                  cloudwatch_client = boto3.client('cloudwatch')
+                  cloudwatch_client.put_metric_data(
+                      Namespace='AWS/SES',
+                      MetricData=[quota_metric]
+                  )
+
+                  return {
+                      'statusCode': 200,
+                      'body': json.dumps({
+                          'Mailsent_last_24_hours': quota['SentLast24Hours']
+                      })
+                  }
+
+  
   # SES and SMS Dashboard Cloudwatch      
   SesSmsDashboard:
     Type: AWS::CloudWatch::Dashboard
@@ -654,7 +755,7 @@ Resources:
                             }
                         },
                         "period": 300,
-                        "stat": "SampleCount",
+                        "stat": "Maximum",
                         "title": "SMS_MonthBilling_USD"
                     }
                 }
@@ -665,11 +766,11 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
         AlarmName: !Sub '${ProjectName}-Confinfo-SMS-MonthToDateSpentUSD'
-        AlarmDescription: CloudWatch alarm for the monthly SMS threshold 80%
+        AlarmDescription: CloudWatch alarm for the monthly SMS SpentUSD threshold is 80%
         ActionsEnabled: true
         MetricName: SMSMonthToDateSpentUSD
         Namespace: AWS/SNS
-        Statistic: Average
+        Statistic: Maximum
         Dimensions: []
         Period: 300
         EvaluationPeriods: 1
@@ -688,11 +789,11 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
         AlarmName: !Sub '${ProjectName}-Confinfo-SES-MailDailySends'
-        AlarmDescription: CloudWatch alarm for the daily Mail Sends threshold 80%
+        AlarmDescription: CloudWatch alarm for the daily Mail Sent threshold is 80%
         ActionsEnabled: true
-        MetricName: Send
+        MetricName: Mailsent_last_24_hours
         Namespace: AWS/SES
-        Statistic: Average
+        Statistic: Maximum
         Dimensions: []
         Period: 300
         EvaluationPeriods: 1

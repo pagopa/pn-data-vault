@@ -51,6 +51,14 @@ Parameters:
   AlarmSNSTopicName:
     Type: String
     Description: Alarm SNS Topic Name
+  
+  SMSUsdMonthlyAlarmThreshold:
+    Type: Double
+    Description: Monthly Budget for send SMS in USD
+
+  SESSentDailyAlarmThreshold:
+    Type: Double
+    Description: Daily Max Number for Email Sent from SES Service 
 
   ApplicationLoadBalancerArn: 
     Type: String
@@ -775,12 +783,10 @@ Resources:
         Period: 300
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
-        Threshold: 24000
+        Threshold: !Ref SMSUsdMonthlyAlarmThreshold
         ComparisonOperator: GreaterThanOrEqualToThreshold
         TreatMissingData: missing
         AlarmActions:
-          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
-        InsufficientDataActions:
           - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
         OKActions:
           - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
@@ -798,12 +804,10 @@ Resources:
         Period: 300
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
-        Threshold: 800000
+        Threshold: !Ref SESSentDailyAlarmThreshold
         ComparisonOperator: GreaterThanOrEqualToThreshold
         TreatMissingData: missing
         AlarmActions:
-          - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
-        InsufficientDataActions:
           - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
         OKActions:
           - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'

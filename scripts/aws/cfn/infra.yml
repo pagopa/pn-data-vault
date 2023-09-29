@@ -53,12 +53,17 @@ Parameters:
     Description: Alarm SNS Topic Name
   
   SMSUsdMonthlyAlarmThreshold:
-    Type: Double
+    Type: Number
     Description: Monthly Budget for send SMS in USD
 
-  SESSentDailyAlarmThreshold:
-    Type: Double
-    Description: Daily Max Number for Email Sent from SES Service 
+  SESSentDailyAlarmThresholdPercentage:
+    Type: Number
+    Description: Daily Max Number for Email Sent from SES Service
+  
+  SesQuotaLambdaLogGroupRetentionInDays:
+    Type: Number
+    Default: 5
+    Description: Retention LogGroup Lambda Quota Ses Monitoring
 
   ApplicationLoadBalancerArn: 
     Type: String
@@ -621,7 +626,7 @@ Resources:
   SesQuotaMonitoringLambdaFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 7
+      RetentionInDays: !Ref SesQuotaLambdaLogGroupRetentionInDays
       LogGroupName: !Join
         - ""
         - -  "/aws/lambda/"
@@ -631,44 +636,64 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: python3.10
-      Timeout: 7
+      Timeout: 30
       Handler: index.lambda_handler
       Role: !GetAtt SesQuotaMonitoringLambdaFunctionRole.Arn
       Code:
         ZipFile: |
-              import json
-              import boto3
+            import json
+            import boto3
 
-              def lambda_handler(event, context):
-                  # Ottieni la quota di invio globale
-                  client = boto3.client('ses')
-                  quota = client.get_send_quota()
+            def lambda_handler(event, context):
+                # Ottieni la quota di invio globale
+                client = boto3.client('ses')
+                quota = client.get_send_quota()
 
-                  # Crea un oggetto metrica
-                  quota_metric = {
-                      'MetricName': 'MailSentLast24Hours',
-                      'Dimensions': [
-                          {
-                              'Name': 'Region',
-                              'Value': 'eu-south-1'
-                          }
-                      ],
-                      'Value': quota['SentLast24Hours']
-                  }
+                # Crea un oggetto metrica
+                ses_send_quota_metric = {
+                    'MetricName': 'MailSentLast24Hours',
+                    'Dimensions': [
+                        {
+                            'Name': 'Region',
+                            'Value': 'eu-south-1'
+                        }
+                    ],
+                    'Value': quota['SentLast24Hours']
+                }
+            
+                quota_percentage = quota['SentLast24Hours'] * 100 / quota['Max24HourSend']
+                
+                ses_quota_usage = {
+                    'MetricName': 'MailUsageLast24HoursPercentage',
+                    'Dimensions': [
+                        {
+                            'Name': 'Region',
+                            'Value': 'eu-south-1'
+                        }
+                    ],
+                    'Value': int(quota_percentage)
+                }
+                
+                
 
-                  # Invia la metrica a CloudWatch
-                  cloudwatch_client = boto3.client('cloudwatch')
-                  cloudwatch_client.put_metric_data(
-                      Namespace='AWS/SES',
-                      MetricData=[quota_metric]
-                  )
+                # Invia la metrica a CloudWatch
+                cloudwatch_client = boto3.client('cloudwatch')
+                cloudwatch_client.put_metric_data(
+                    Namespace='AWS/SES',
+                    MetricData=[ses_quota_usage]
+                )
+                
+                # Invia la metrica a CloudWatch
+                cloudwatch_client.put_metric_data(
+                    Namespace='AWS/SES',
+                    MetricData=[ses_send_quota_metric]
+                )
 
-                  return {
-                      'statusCode': 200,
-                      'body': json.dumps({
-                          'Mailsent_last_24_hours': quota['SentLast24Hours']
-                      })
-                  }
+                return {
+                    'ses_quota_usage': ses_quota_usage,
+                    'ses_send_quota_metric': ses_send_quota_metric
+                }
+                
 
   
   # SES and SMS Dashboard Cloudwatch      
@@ -797,14 +822,14 @@ Resources:
         AlarmName: !Sub '${ProjectName}-Confinfo-SES-MailDailySends'
         AlarmDescription: CloudWatch alarm for the daily Mail Sent threshold is 80%
         ActionsEnabled: true
-        MetricName: Mailsent_last_24_hours
-        Namespace: AWS/SES
+        MetricName: MailUsageLast24HoursPercentage
+        Namespace: PN/SES
         Statistic: Maximum
         Dimensions: []
         Period: 300
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
-        Threshold: !Ref SESSentDailyAlarmThreshold
+        Threshold: !Ref SESSentDailyAlarmThresholdPercentage
         ComparisonOperator: GreaterThanOrEqualToThreshold
         TreatMissingData: missing
         AlarmActions:

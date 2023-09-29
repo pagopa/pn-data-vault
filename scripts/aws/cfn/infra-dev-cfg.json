@@ -13,7 +13,7 @@
       "EnvType": "dev",
       "BackupCronExpression": "cron(0 4 * * ? 2099)",
       "SMSUsdMonthlyAlarmThreshold": "300",
-      "SESSentDailyAlarmThreshold": "200"
+      "SESSentDailyAlarmThresholdPercentage": "80"
     }
 }
   

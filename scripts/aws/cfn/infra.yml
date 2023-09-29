@@ -791,7 +791,24 @@ Resources:
                         "stat": "Maximum",
                         "title": "SMS_MonthBilling_USD"
                     }
-                }
+                },
+                {
+                    "type": "metric",
+                    "x": 0,
+                    "y": 7,
+                    "width": 12,
+                    "height": 4,
+                    "properties": {
+                        "metrics": [
+                            [ "AWS/SES", "MailUsageLast24HoursPercentage", "Region", "eu-south-1", { "id": "m1", "region": "eu-south-1" } ]
+                        ],
+                        "sparkline": true,
+                        "view": "singleValue",
+                        "region": "eu-south-1",
+                        "stat": "Maximum",
+                        "period": 300,
+                        "stacked": true
+                    }
             ]
         }
 

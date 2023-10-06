@@ -4,6 +4,7 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
+import it.pagopa.pn.commons.pnclients.CommonBaseClient;
 import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.exceptions.PnDatavaultRecipientNotFoundException;
 import it.pagopa.pn.datavault.generated.openapi.msclient.selfcarepg.v1.api.InstitutionsApi;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.SELC_RATE_LIMITER;
+import static it.pagopa.pn.commons.log.PnLogger.EXTERNAL_SERVICES.*;
 
 /**
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff
@@ -34,7 +36,7 @@ public class SelfcarePGClient {
     private final InstitutionsApi institutionsApi;
     private final RateLimiter rateLimiter;
 
-    public SelfcarePGClient(RateLimiterRegistry rateLimiterRegistry, InstitutionsPnpgApi institutionsPnpgApi, InstitutionsApi institutionsApi){
+    public SelfcarePGClient(RateLimiterRegistry rateLimiterRegistry, InstitutionsPnpgApi institutionsPnpgApi, InstitutionsApi institutionsApi) {
         this.institutionsPnpgApi = institutionsPnpgApi;
         this.institutionsApi = institutionsApi;
         this.rateLimiter = rateLimiterRegistry.rateLimiter(SELC_RATE_LIMITER);
@@ -47,47 +49,49 @@ public class SelfcarePGClient {
      * @param taxId id dell'utente in chiaro
      * @return id opaco
      */
-    public Mono<String> addInstitutionUsingPOST(String taxId)
-    {
-        log.logInvokingExternalService("Selfcare PG", "addInstitutionUsingPOST");
+    public Mono<String> addInstitutionUsingPOST(String taxId) {
+        log.logInvokingExternalService(SELFCARE_PG, "addInstitutionUsingPOST", true);
         log.info("[enter] addInstitutionUsingPOST taxid={}", LogUtils.maskTaxId(taxId));
 
         CreatePnPgInstitutionDtoDto pii = new CreatePnPgInstitutionDtoDto();
         pii.setExternalId(taxId);
         return this.institutionsPnpgApi.addInstitutionUsingPOST(pii)
-                    .map(r -> {
-                        if (r == null)
-                        {
-                            log.error("Invalid empty response from addInstitutionUsingPOST");
-                            throw new PnDatavaultRecipientNotFoundException();
-                        }
+                .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e)))
+                .map(r -> {
+                    if (r == null) {
+                        log.error("Invalid empty response from addInstitutionUsingPOST");
+                        throw new PnDatavaultRecipientNotFoundException();
+                    }
 
-                        String res = RecipientUtils.encapsulateRecipientType(RecipientType.PG, r.getId().toString());
-                        log.debug("[exit] addInstitutionUsingPOST token={}", res);
-                        return  res;
-                    });
+                    String res = RecipientUtils.encapsulateRecipientType(RecipientType.PG, r.getId().toString());
+                    log.debug("[exit] addInstitutionUsingPOST token={}", res);
+                    return res;
+                });
     }
 
 
     /**
      * Recupera TaxId e denominazione a partire da InternalId
+     *
      * @param internalIds id degli utenti
      * @return taxid e denominazione
      */
-    public Flux<BaseRecipientDto> retrieveInstitutionByIdUsingGET(List<InternalId> internalIds)
-    {
+    public Flux<BaseRecipientDto> retrieveInstitutionByIdUsingGET(List<InternalId> internalIds) {
 
-        log.logInvokingExternalService("Selfcare PG", "retrieveInstitutionByIdUsingGET");
+        log.logInvokingExternalService(SELFCARE_PG, "retrieveInstitutionByIdUsingGET", true);
         log.debug("[enter] retrieveInstitutionByIdUsingGET internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(internalId -> this.institutionsApi.getInstitution(internalId.internalId())
-                .transformDeferred(RateLimiterOperator.of(rateLimiter))
-                .map(r ->  { BaseRecipientDto brd = new BaseRecipientDto();
+                        .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e)))
+
+                        .transformDeferred(RateLimiterOperator.of(rateLimiter))
+                        .map(r -> {
+                            BaseRecipientDto brd = new BaseRecipientDto();
                             brd.setInternalId(internalId.internalIdWithRecipientType());
                             brd.setDenomination(r.getDescription());
                             brd.setTaxId(r.getExternalId());
                             return brd;
-                }));
+                        }));
     }
 
 }

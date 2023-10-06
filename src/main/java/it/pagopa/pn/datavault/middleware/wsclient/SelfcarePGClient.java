@@ -50,7 +50,7 @@ public class SelfcarePGClient {
      * @return id opaco
      */
     public Mono<String> addInstitutionUsingPOST(String taxId) {
-        log.logInvokingExternalService(SELFCARE_PG, "addInstitutionUsingPOST", true);
+        log.logInvokingExternalDownstreamService(SELFCARE_PG, "addInstitutionUsingPOST");
         log.info("[enter] addInstitutionUsingPOST taxid={}", LogUtils.maskTaxId(taxId));
 
         CreatePnPgInstitutionDtoDto pii = new CreatePnPgInstitutionDtoDto();
@@ -78,7 +78,7 @@ public class SelfcarePGClient {
      */
     public Flux<BaseRecipientDto> retrieveInstitutionByIdUsingGET(List<InternalId> internalIds) {
 
-        log.logInvokingExternalService(SELFCARE_PG, "retrieveInstitutionByIdUsingGET", true);
+        log.logInvokingExternalDownstreamService(SELFCARE_PG, "retrieveInstitutionByIdUsingGET");
         log.debug("[enter] retrieveInstitutionByIdUsingGET internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(internalId -> this.institutionsApi.getInstitution(internalId.internalId())

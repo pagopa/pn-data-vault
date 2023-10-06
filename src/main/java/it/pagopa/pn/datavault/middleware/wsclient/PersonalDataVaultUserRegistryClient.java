@@ -46,7 +46,7 @@ public class PersonalDataVaultUserRegistryClient {
 
 
     public Flux<BaseRecipientDto> getRecipientDenominationByInternalId(List<InternalId> internalIds) {
-        log.logInvokingExternalService(PDV_USER_REGISTRY, "getRecipientDenominationByInternalId", true);
+        log.logInvokingExternalDownstreamService(PDV_USER_REGISTRY, "getRecipientDenominationByInternalId");
         log.debug("[enter] getRecipientDenominationByInternalId internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.userClientPF.findByIdUsingGET(uid.internalId(), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))

@@ -44,7 +44,7 @@ public class PersonalDataVaultTokenizerClient {
      * @return id opaco
      */
     public Mono<String> ensureRecipientByExternalId(String taxId) {
-        log.logInvokingExternalService(PDV_TOKENIZER, "ensureRecipientByExternalId", true);
+        log.logInvokingExternalDownstreamService(PDV_TOKENIZER, "ensureRecipientByExternalId");
         log.info("[enter] ensureRecipientByExternalId taxid={}", LogUtils.maskTaxId(taxId));
 
         PiiResourceDto pii = new PiiResourceDto();

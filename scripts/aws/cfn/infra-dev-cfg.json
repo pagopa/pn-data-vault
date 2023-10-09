@@ -11,7 +11,9 @@
       "PnCoreTargetEventBus": "arn:aws:events:eu-south-1:558518206506:event-bus/pn-CoreEventBus",
       "SafeStorageBucketName": "-",
       "EnvType": "dev",
-      "BackupCronExpression": "cron(0 4 * * ? 2099)"
+      "BackupCronExpression": "cron(0 4 * * ? 2099)",
+      "SMSUsdMonthlyAlarmThreshold": "300",
+      "SESSentDailyAlarmThresholdPercentage": "80"
     }
 }
   

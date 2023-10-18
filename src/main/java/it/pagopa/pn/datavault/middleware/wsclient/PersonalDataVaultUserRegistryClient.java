@@ -36,7 +36,7 @@ public class PersonalDataVaultUserRegistryClient {
     private final PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
     private final RateLimiter rateLimiter;
 
-    private final String PDV_USER_REGISTRY = PDV + "_UserRegistry";
+    private static final String PDV_USER_REGISTRY = PDV + "_UserRegistry";
 
     public PersonalDataVaultUserRegistryClient(UserApi userClientPF, PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient, RateLimiterRegistry rateLimiterRegistry) {
         this.userClientPF = userClientPF;

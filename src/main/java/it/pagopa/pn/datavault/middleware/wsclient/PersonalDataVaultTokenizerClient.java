@@ -30,7 +30,7 @@ public class PersonalDataVaultTokenizerClient {
     private final TokenApi tokenApiPF;
     private final RateLimiter rateLimiter;
 
-    private final String PDV_TOKENIZER = PDV + "_Tokenizer";
+    public static final String PDV_TOKENIZER = PDV + "_Tokenizer";
 
     public PersonalDataVaultTokenizerClient(TokenApi tokenApiPF, RateLimiterRegistry rateLimiterRegistry) {
         this.tokenApiPF = tokenApiPF;

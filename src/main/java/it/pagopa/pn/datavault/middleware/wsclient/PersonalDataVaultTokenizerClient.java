@@ -65,7 +65,7 @@ public class PersonalDataVaultTokenizerClient {
     }
 
     public Mono<UserResourceDto> findPii(InternalId internalId) {
-        log.logInvokingExternalService(PDV_TOKENIZER, "findPii", true);
+        log.logInvokingExternalDownstreamService(PDV_TOKENIZER, "findPii");
         log.info("[enter] findPii token={}", internalId);
         return this.tokenApiPF.findPiiUsingGET(internalId.internalId())
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))

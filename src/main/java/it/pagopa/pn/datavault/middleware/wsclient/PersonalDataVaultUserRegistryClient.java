@@ -51,10 +51,7 @@ public class PersonalDataVaultUserRegistryClient {
         return Flux.fromIterable(internalIds)
                 .flatMap(uid -> this.userClientPF.findByIdUsingGET(uid.internalId(), Arrays.asList(FILTER_FAMILY_NAME, FILTER_NAME, FILTER_FISCAL_CODE))
                         .transformDeferred(RateLimiterOperator.of(rateLimiter))
-                        .onErrorResume(WebClientResponseException.class, ex -> {
-                            log.logInvokationResultDownstreamFailed(PDV_USER_REGISTRY, CommonBaseClient.elabExceptionMessage(ex));
-                            return ex.getRawStatusCode() == 404 ? this.personalDataVaultTokenizerClient.findPii(uid) : Mono.error(ex);
-                        })
+                        .onErrorResume(WebClientResponseException.class, ex -> this.handleNotFoundError(ex, uid))
                         .map(r -> {
                             BaseRecipientDto brd = new BaseRecipientDto();
                             brd.setInternalId(uid.internalIdWithRecipientType());
@@ -76,6 +73,16 @@ public class PersonalDataVaultUserRegistryClient {
             return name;
         else
             return "";
+    }
+
+    private Mono<UserResourceDto> handleNotFoundError(WebClientResponseException ex, InternalId uid){
+        if (ex.getRawStatusCode() == 404) {
+            return this.personalDataVaultTokenizerClient.findPii(uid);
+        }
+        else {
+            log.logInvokationResultDownstreamFailed(PDV_USER_REGISTRY, CommonBaseClient.elabExceptionMessage(ex));
+            return Mono.error(ex);
+        }
     }
 
 }

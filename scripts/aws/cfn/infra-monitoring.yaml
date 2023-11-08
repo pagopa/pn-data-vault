@@ -34,6 +34,15 @@ Parameters:
     Type: Number
     Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords'
 
+  LogsKinesisMaxAgeInMillisecondsOncall:
+    Type: Number
+    Description: 'MaxAgeInMilliseconds for Kinesis Logs GetRecords (oncall)'
+
+  CdcKinesisMaxAgeInMillisecondsOncall:
+    Type: Number
+    Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords (oncall)'
+
+
 Conditions:
   SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
 
@@ -207,6 +216,26 @@ Resources:
       Statistic: Maximum
       Threshold: !Ref LogsKinesisMaxAgeInMilliseconds
 
+  OncallLogsKinesisGetRecordsIteratorAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "oncall-${ProjectName}-LogsKinesis-IteratorAge-Alarm"
+      AlarmDescription: "CloudWatch alarm for when Kinesis Logs GetRecords.IteratorAgeMilliseconds is too high."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref LogsKinesisSourceStreamName
+          Name: StreamName        
+      DatapointsToAlarm: 10            
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Period: 60
+      Namespace: AWS/Kinesis   
+      MetricName: GetRecords.IteratorAgeMilliseconds
+      Statistic: Maximum
+      Threshold: !Ref LogsKinesisMaxAgeInMillisecondsOncall
+
   # Cdc Kinesis GetRecords.IteratorAgeMilliseconds alarm
   CdcKinesisGetRecordsIteratorAgeAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -227,6 +256,26 @@ Resources:
       MetricName: GetRecords.IteratorAgeMilliseconds
       Statistic: Maximum
       Threshold: !Ref CdcKinesisMaxAgeInMilliseconds
+
+  OncallCdcKinesisGetRecordsIteratorAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "oncall-${ProjectName}-CdcKinesis-IteratorAge-Alarm"
+      AlarmDescription: "CloudWatch alarm for when Kinesis Logs GetRecords.IteratorAgeMilliseconds is too high."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref CdcKinesisSourceStreamName
+          Name: StreamName
+      DatapointsToAlarm: 10           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Period: 60
+      Namespace: AWS/Kinesis   
+      MetricName: GetRecords.IteratorAgeMilliseconds
+      Statistic: Maximum
+      Threshold: !Ref CdcKinesisMaxAgeInMillisecondsOncall
 
 Outputs:
   OOMAlarmArn:

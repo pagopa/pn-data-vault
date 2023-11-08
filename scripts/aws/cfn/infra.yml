@@ -163,13 +163,23 @@ Parameters:
 
   LogsKinesisMaxAgeInMilliseconds:
     Type: Number
-    Default: 129600000 # 36 hours
+    Default: 36000000 # 10 hours
+    Description: 'MaxAgeInMilliseconds for Kinesis Logs GetRecords'
+
+  LogsKinesisMaxAgeInMillisecondsOncall:
+    Type: Number
+    Default: 216000000 # 60 hours
     Description: 'MaxAgeInMilliseconds for Kinesis Logs GetRecords'
 
   CdcKinesisMaxAgeInMilliseconds:
     Type: Number
-    Default: 129600000 # 36 hours
-    Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords'    
+    Default: 3600000 # 1 hour
+    Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords'
+
+  CdcKinesisMaxAgeInMillisecondsOncall:
+    Type: Number
+    Default: 43200000 # 12 hours
+    Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords'   
 
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
@@ -981,6 +991,8 @@ Outputs:
     Value: !Ref CdcKinesisStreamName
   CdcKinesisMaxAgeInMilliseconds:
     Value: !Ref CdcKinesisMaxAgeInMilliseconds    
+  CdcKinesisMaxAgeInMillisecondsOncall:
+    Value: !Ref CdcKinesisMaxAgeInMillisecondsOncall    
   CdcKinesisStreamArn:
     Value: !Ref CdcKinesisStreamArn
   CdcKinesisStreamKeyArn:
@@ -989,6 +1001,8 @@ Outputs:
     Value: !Ref LogsKinesisStreamName
   LogsKinesisMaxAgeInMilliseconds:
     Value: !Ref LogsKinesisMaxAgeInMilliseconds
+  LogsKinesisMaxAgeInMillisecondsOncall:
+    Value: !Ref LogsKinesisMaxAgeInMillisecondsOncall
   LogsKinesisStreamArn:
     Value: !Ref LogsKinesisStreamArn
   LogsKinesisStreamKeyArn:

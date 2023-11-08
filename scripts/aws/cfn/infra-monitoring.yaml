@@ -16,6 +16,26 @@ Parameters:
     Type: String
     Description: where to send logs
 
+  LogsKinesisSourceStreamName:
+    Type: String
+    Default: ''
+    Description: 'Kinesis stream name to send logs to'
+
+  CdcKinesisSourceStreamName:
+    Type: String
+    Default: ''
+    Description: 'Kinesis stream name to send CDC logs to'
+
+  LogsKinesisMaxAgeInMilliseconds:
+    Type: Number
+    Default: 129600000 # 36 hours
+    Description: 'MaxAgeInMilliseconds for Kinesis Logs GetRecords'
+
+  CdcKinesisMaxAgeInMilliseconds:
+    Type: Number
+    Default: 129600000 # 36 hours
+    Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords'
+
 Conditions:
   SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
 
@@ -168,7 +188,55 @@ Resources:
       FilterPattern: ' '
       DestinationArn: !Ref LogsKinesisSourceStreamArn
   
+  # Logs Kinesis GetRecords.IteratorAgeMilliseconds alarm
+  LogsKinesisGetRecordsIteratorAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-LogsKinesis-IteratorAge-Alarm"
+      AlarmDescription: "CloudWatch alarm for when Kinesis Logs GetRecords.IteratorAgeMilliseconds is too high."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref LogsKinesisSourceStreamName
+          Name: StreamName        
+      DatapointsToAlarm: 10            
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Period: 60
+      Namespace: AWS/Kinesis   
+      MetricName: GetRecords.IteratorAgeMilliseconds
+      Statistic: Maximum
+      Threshold: !Ref LogsKinesisMaxAgeInMilliseconds
+
+  # Cdc Kinesis GetRecords.IteratorAgeMilliseconds alarm
+  CdcKinesisGetRecordsIteratorAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-CdcKinesis-IteratorAge-Alarm"
+      AlarmDescription: "CloudWatch alarm for when Kinesis Logs GetRecords.IteratorAgeMilliseconds is too high."
+      TreatMissingData: notBreaching        
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      Dimensions:
+        - Value: !Ref CdcKinesisSourceStreamName
+          Name: StreamName
+      DatapointsToAlarm: 10           
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 60
+      Period: 60
+      Namespace: AWS/Kinesis   
+      MetricName: GetRecords.IteratorAgeMilliseconds
+      Statistic: Maximum
+      Threshold: !Ref CdcKinesisMaxAgeInMilliseconds
+
 Outputs:
   OOMAlarmArn:
     Value: !GetAtt CloudWatchAlarmOOM.Arn
     Description: 'ARN of cloudwatch out of memory alarm'
+
+  LogsKinesisGetRecordsIteratorAgeAlarmArn:
+    Value: !GetAtt LogsKinesisGetRecordsIteratorAgeAlarm.Arn
+
+  CdcKinesisGetRecordsIteratorAgeAlarmArn:
+    Value: !GetAtt CdcKinesisGetRecordsIteratorAgeAlarm.Arn    

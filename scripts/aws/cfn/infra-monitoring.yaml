@@ -241,7 +241,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${ProjectName}-CdcKinesis-IteratorAge-Alarm"
-      AlarmDescription: "CloudWatch alarm for when Kinesis Logs GetRecords.IteratorAgeMilliseconds is too high."
+      AlarmDescription: "CloudWatch alarm for when Kinesis Cdc GetRecords.IteratorAgeMilliseconds is too high."
       TreatMissingData: notBreaching        
       AlarmActions:
         - !Ref AlarmSNSTopicArn
@@ -261,7 +261,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "oncall-${ProjectName}-CdcKinesis-IteratorAge-Alarm"
-      AlarmDescription: "CloudWatch alarm for when Kinesis Logs GetRecords.IteratorAgeMilliseconds is too high."
+      AlarmDescription: "CloudWatch alarm for when Kinesis Cdc GetRecords.IteratorAgeMilliseconds is too high."
       TreatMissingData: notBreaching        
       AlarmActions:
         - !Ref AlarmSNSTopicArn

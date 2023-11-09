@@ -16,12 +16,12 @@ Parameters:
     Type: String
     Description: where to send logs
 
-  LogsKinesisSourceStreamName:
+  LogsKinesisStreamName:
     Type: String
     Default: ''
     Description: 'Kinesis stream name to send logs to'
 
-  CdcKinesisSourceStreamName:
+  CdcKinesisStreamName:
     Type: String
     Default: ''
     Description: 'Kinesis stream name to send CDC logs to'
@@ -205,7 +205,7 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopicArn
       Dimensions:
-        - Value: !Ref LogsKinesisSourceStreamName
+        - Value: !Ref LogsKinesisStreamName
           Name: StreamName        
       DatapointsToAlarm: 10            
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -225,7 +225,7 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopicArn
       Dimensions:
-        - Value: !Ref LogsKinesisSourceStreamName
+        - Value: !Ref LogsKinesisStreamName
           Name: StreamName        
       DatapointsToAlarm: 10            
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -246,7 +246,7 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopicArn
       Dimensions:
-        - Value: !Ref CdcKinesisSourceStreamName
+        - Value: !Ref CdcKinesisStreamName
           Name: StreamName
       DatapointsToAlarm: 10           
       ComparisonOperator: GreaterThanOrEqualToThreshold
@@ -266,7 +266,7 @@ Resources:
       AlarmActions:
         - !Ref AlarmSNSTopicArn
       Dimensions:
-        - Value: !Ref CdcKinesisSourceStreamName
+        - Value: !Ref CdcKinesisStreamName
           Name: StreamName
       DatapointsToAlarm: 10           
       ComparisonOperator: GreaterThanOrEqualToThreshold

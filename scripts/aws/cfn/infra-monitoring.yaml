@@ -277,6 +277,44 @@ Resources:
       Statistic: Maximum
       Threshold: !Ref CdcKinesisMaxAgeInMillisecondsOncall
 
+  ClockErrorBoundAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "pn-Clock-Error-Bound-Alarm"
+      AlarmDescription: "CloudWatch Alarm for Clock Error Bound limit over threshold"
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: q1
+          Expression: "SELECT MAX(ClockErrorBound) FROM SCHEMA(\"ECS/ContainerInsights\", ClusterName,Family,TaskID) WHERE ClusterName = 'pn-confidential-ecs-cluster' GROUP BY ClusterName"
+          Period: 600
+          ReturnData: False
+        - Id: e2
+          Expression: "IF(MAX(q1) < 100, 0 ,1)"
+          Period: 600
+      DatapointsToAlarm: 2
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 2
+      Threshold: 1
+
+  SyncronizationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: "pn-Synchronization-Alarm"
+      AlarmDescription: "CloudWatch Alarm for Synchronization value different by Synchronized"
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: q1
+          Expression: "SELECT MAX(Synchronization) FROM SCHEMA(\"ECS/ContainerInsights\", ClusterName,Family,TaskID) WHERE ClusterName = 'pn-confidential-ecs-cluster' GROUP BY ClusterName"
+          Period: 600
+          ReturnData: False
+        - Id: e2
+          Expression: "IF(MAX(q1) <= 1, 0 ,1)"
+          Period: 600
+      DatapointsToAlarm: 2
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 2
+      Threshold: 1
+
 Outputs:
   OOMAlarmArn:
     Value: !GetAtt CloudWatchAlarmOOM.Arn

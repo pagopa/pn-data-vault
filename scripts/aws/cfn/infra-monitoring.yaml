@@ -308,7 +308,7 @@ Resources:
           Period: 600
           ReturnData: False
         - Id: e2
-          Expression: "IF(MAX(q1) <= 1, 0 ,1)"
+          Expression: "IF(MAX(q1) < 1, 0 ,1)"
           Period: 600
       DatapointsToAlarm: 2
       ComparisonOperator: GreaterThanOrEqualToThreshold

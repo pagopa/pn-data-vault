@@ -405,6 +405,32 @@ paths:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
+  '/datavault-private/v1/timelines':
+    get:
+      operationId: getNotificationTimelineByIunAndTimelineElementId
+      summary: leggi un elemento di timeline
+      description: >-
+        Leggi informazioni confidenziali relative a una lista di elementi di timeline. Ritorna solo quelle conosciute.
+      tags:
+        - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfidentialTimelineIds'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOfConfidentialTimelineIds'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
   '/datavault-private/v1/notifications/{iun}/timeline/{timelineElementId}':
     parameters:
       - name: iun
@@ -658,7 +684,15 @@ components:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'it'     
 
+    ConfidentialTimelineIds:
+        type: array
+        items:
+          type: string
 
+    ListOfConfidentialTimelineIds:
+        type: array
+        items:
+          $ref: '#/components/schemas/ConfidentialTimelineElementDto'
 
     ConfidentialTimelineElementDto:
         type: object
@@ -677,4 +711,3 @@ components:
             $ref: '#/components/schemas/AnalogDomicile'
           newPhysicalAddress:
             $ref: '#/components/schemas/AnalogDomicile'
-

@@ -417,14 +417,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConfidentialTimelineIds'
+              $ref: '#/components/schemas/ListOfConfidentialTimelineElementId'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListOfConfidentialTimelineIds'
+                $ref: '#/components/schemas/ListOfConfidentialTimelineElementDto'
         '400':
           description: Invalid input
           content:
@@ -684,12 +684,20 @@ components:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'it'     
 
-    ConfidentialTimelineIds:
+    ListOfConfidentialTimelineElementId:
         type: array
         items:
+          $ref: '#/components/schemas/ConfidentialTimelineElementId'
+
+    ConfidentialTimelineElementId:
+      type: object
+      properties:
+        timelineElementId:
+          type: string
+        iun:
           type: string
 
-    ListOfConfidentialTimelineIds:
+    ListOfConfidentialTimelineElementDto:
         type: array
         items:
           $ref: '#/components/schemas/ConfidentialTimelineElementDto'

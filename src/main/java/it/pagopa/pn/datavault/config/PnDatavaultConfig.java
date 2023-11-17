@@ -28,6 +28,9 @@ public class PnDatavaultConfig {
     private String userregistryApiKeyPf;
     private String selfcarepgApiKeyPg;
 
+
+    private boolean wiretapEnabled;
+
     private int cacheExpireAfterMinutes;
     private int cacheMaxSize;
 

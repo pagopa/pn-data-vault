@@ -211,6 +211,16 @@ Parameters:
     Type: String
     Description: Cron for which you send the custom metric for PDV to CloudWatch
 
+  HttpWireLogging:
+    Type: String
+    Default: 'ERROR'
+    Description: netty logging level
+
+  HttpWiretapEnabled:
+    Type: String
+    Default: 'false'
+    Description: netty wiretap enabled
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -257,6 +267,8 @@ Resources:
         ContainerEnvEntry12: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_LIMIT_FOR_PERIOD=${SelfcarePgRateLimiterNRequests}'
         ContainerEnvEntry13: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_TIMEOUT_DURATION=${SelfcarePgRateLimiterTimeoutMillis}'
         ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
+        ContainerEnvEntry15: !Sub 'LOGGING_LEVEL_REACTOR_NETTY_HTTP_CLIENT=${HttpWireLogging}'
+        ContainerEnvEntry16: !Sub 'PN_DATA_VAULT_WIRETAP_ENABLED=${HttpWiretapEnabled}'
         ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPF:AWSCURRENT:'
         ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPF:AWSCURRENT:'
         ContainerSecret4: !Sub 'PN_DATA_VAULT_SELFCAREPG_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:SelfcareApiKeyForPG:AWSCURRENT:'                

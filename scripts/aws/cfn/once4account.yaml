@@ -136,7 +136,7 @@ Resources:
                 Subject: record.Sns.Subject
               };
               console.log(params)
-              // Send Messsage to SNS service
+              // Send Message to SNS service
               await client.send(new PublishCommand(params));
             }
           
@@ -148,7 +148,7 @@ Resources:
           };
 
       Handler: index.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       Environment:
         Variables:
           AlarmArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${PnCoreAwsAccountId}:pn-AllAlarmSnsTopic

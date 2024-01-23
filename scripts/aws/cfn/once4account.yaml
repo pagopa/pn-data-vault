@@ -122,7 +122,7 @@ Resources:
         ZipFile: |
           const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
   
-          const client = new SNSClient({region: process.env.Region});
+          const client = new SNSClient();
   
           exports.handler = async(event) => {
             console.log(JSON.stringify(event))

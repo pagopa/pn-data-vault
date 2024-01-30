@@ -181,6 +181,10 @@ Parameters:
     Default: 43200000 # 12 hours
     Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords'   
 
+  DynamoDBExportBucketName:
+    Type: String
+    Description: 'DynamoDB Export Bucket Name'
+    
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -231,6 +235,24 @@ Resources:
                   },
                   "Action": "s3:GetObject",
                   "Resource": "arn:${AWS::Partition}:s3:::${LogsBucketName}/safeStorageObjectPutAndGetTracing/*"
+                },
+                {
+                  "Sid": "pnCoreExportListing",
+                  "Effect": "Allow",
+                  "principal": {
+                      "AWS": "arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root"
+                  },
+                  "Action": "s3:ListBucket",
+                  "Resource": "arn:${AWS::Partition}:s3:::${DynamoDBExportBucketName}"
+                },
+                {
+                  "Sid": "pnCoreExportGet",
+                  "Effect": "Allow",
+                  "principal": {
+                      "AWS": "arn:${AWS::Partition}:iam::${PnCoreAwsAccountId}:root"
+                  },
+                  "Action": "s3:GetObject",
+                  "Resource": "arn:${AWS::Partition}:s3:::${DynamoDBExportBucketName}/pn-EcRichiesteMetadati/*"
                 }
             - "" 
   

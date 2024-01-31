@@ -120,40 +120,35 @@ Resources:
       FunctionName: pn-LambdaAllAlarmSnsPublisher
       Code:
         ZipFile: |
-          const AWS = require('aws-sdk')
-
-          // Set region
-          AWS.config.update({region: process.env.Region});
-
+          const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
+  
+          const client = new SNSClient();
+  
           exports.handler = async(event) => {
             console.log(JSON.stringify(event))
 
             for(let i=0; i<event.Records.length; i++){
               const record = event.Records[i]
-              
               // Create publish parameters
               const params = {
                 Message: record.Sns.Message,
                 TopicArn: process.env.AlarmArn,
                 Subject: record.Sns.Subject
               };
-            
-              // Create promise and SNS service object
-              var publishTextPromise = new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
-            
-              // Handle promise's fulfilled/rejected states
-              await publishTextPromise
+              console.log(params)
+              // Send Message to SNS service
+              await client.send(new PublishCommand(params));
             }
-
+          
             const response = {
-                statusCode: 200,
-                body: JSON.stringify('OK'),
+            statusCode: 200,
+            body: JSON.stringify('OK'),
             };
             return response;
           };
 
       Handler: index.handler
-      Runtime: nodejs16.x
+      Runtime: nodejs20.x
       Environment:
         Variables:
           AlarmArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${PnCoreAwsAccountId}:pn-AllAlarmSnsTopic

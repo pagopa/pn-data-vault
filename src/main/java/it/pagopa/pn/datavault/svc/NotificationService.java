@@ -2,11 +2,13 @@ package it.pagopa.pn.datavault.svc;
 
 import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.NotificationDao;
 import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
+import it.pagopa.pn.datavault.middleware.db.NotificationTimelinesDao;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import it.pagopa.pn.datavault.utils.ValidationUtils;
@@ -29,14 +31,16 @@ public class NotificationService {
 
     private final NotificationDao notificationDao;
     private final NotificationTimelineDao notificationTimelineDao;
+    private final NotificationTimelinesDao notificationTimelinesDao;
     private final NotificationEntityNotificationRecipientAddressesDtoMapper mappingsDao;
     private final NotificationTimelineEntityConfidentialTimelineElementDtoMapper timelineMapper;
 
     public NotificationService(NotificationDao objDao, NotificationTimelineDao notificationTimelineDao,
-                               NotificationEntityNotificationRecipientAddressesDtoMapper mappingsDao,
+                               NotificationTimelinesDao notificationTimelinesDao, NotificationEntityNotificationRecipientAddressesDtoMapper mappingsDao,
                                NotificationTimelineEntityConfidentialTimelineElementDtoMapper timelineMapper) {
         this.notificationDao = objDao;
         this.notificationTimelineDao = notificationTimelineDao;
+        this.notificationTimelinesDao = notificationTimelinesDao;
         this.mappingsDao = mappingsDao;
         this.timelineMapper = timelineMapper;
     }
@@ -105,5 +109,10 @@ public class NotificationService {
 
         if (! ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "digitalAddress.value");
+    }
+
+    public Flux<ConfidentialTimelineElementDto> getNotificationTimelines(Flux<ConfidentialTimelineElementId> confidentialTimelineElementId) {
+        return notificationTimelinesDao.getNotificationTimelines(confidentialTimelineElementId)
+                .map(timelineMapper::toDto);
     }
 }

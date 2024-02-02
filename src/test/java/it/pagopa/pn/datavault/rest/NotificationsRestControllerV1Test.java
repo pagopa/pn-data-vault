@@ -2,6 +2,7 @@ package it.pagopa.pn.datavault.rest;
 
 import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
@@ -260,5 +261,28 @@ class NotificationsRestControllerV1Test {
                 .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    void getNotificationTimelines(){
+        //Given
+        String url = "/datavault-private/v1/timelines";
+        ConfidentialTimelineElementId confidentialTimelineElementId = TestUtils.newConfidentialTimelineElementId();
+        List<ConfidentialTimelineElementId> list = new ArrayList<>();
+        list.add(confidentialTimelineElementId);
+        ConfidentialTimelineElementDto dto = mappertimeline.toDto(TestUtils.newNotificationTimeline());
+
+        //When
+        Mockito.when(privateService.getNotificationTimelines(Mockito.any())).thenReturn(Flux.just(dto));
+
+        //Then
+        webTestClient.post()
+                .uri(url)
+                .bodyValue(list)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(ConfidentialTimelineElementDto.class);
     }
 }

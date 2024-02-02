@@ -7,7 +7,6 @@ import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddr
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.NotificationDao;
 import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
-import it.pagopa.pn.datavault.middleware.db.NotificationTimelinesDao;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.PhysicalAddress;
@@ -43,9 +42,6 @@ class NotificationServiceTest {
 
     @Mock
     NotificationTimelineDao objtimelineDao;
-
-    @Mock
-    NotificationTimelinesDao objTimelinesDao;
 
     @Spy
     NotificationEntityNotificationRecipientAddressesDtoMapper mapper;
@@ -323,7 +319,7 @@ class NotificationServiceTest {
         confidentialTimelineElementIds.add(confidentialTimelineElementId);
         confidentialTimelineElementIds.add(confidentialTimelineElementId1);
 
-        when(objTimelinesDao.getNotificationTimelines(Mockito.any())).thenReturn(Flux.fromIterable(notificationTimelineEntities));
+        when(objtimelineDao.getNotificationTimelines(Mockito.any())).thenReturn(Flux.fromIterable(notificationTimelineEntities));
         when(mappertimeline.toDto(Mockito.any())).thenReturn(new ConfidentialTimelineElementDto());
 
         //When

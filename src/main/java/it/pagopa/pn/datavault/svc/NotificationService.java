@@ -8,7 +8,6 @@ import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddr
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.NotificationDao;
 import it.pagopa.pn.datavault.middleware.db.NotificationTimelineDao;
-import it.pagopa.pn.datavault.middleware.db.NotificationTimelinesDao;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationEntity;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import it.pagopa.pn.datavault.utils.ValidationUtils;
@@ -31,16 +30,14 @@ public class NotificationService {
 
     private final NotificationDao notificationDao;
     private final NotificationTimelineDao notificationTimelineDao;
-    private final NotificationTimelinesDao notificationTimelinesDao;
     private final NotificationEntityNotificationRecipientAddressesDtoMapper mappingsDao;
     private final NotificationTimelineEntityConfidentialTimelineElementDtoMapper timelineMapper;
 
     public NotificationService(NotificationDao objDao, NotificationTimelineDao notificationTimelineDao,
-                               NotificationTimelinesDao notificationTimelinesDao, NotificationEntityNotificationRecipientAddressesDtoMapper mappingsDao,
+                               NotificationEntityNotificationRecipientAddressesDtoMapper mappingsDao,
                                NotificationTimelineEntityConfidentialTimelineElementDtoMapper timelineMapper) {
         this.notificationDao = objDao;
         this.notificationTimelineDao = notificationTimelineDao;
-        this.notificationTimelinesDao = notificationTimelinesDao;
         this.mappingsDao = mappingsDao;
         this.timelineMapper = timelineMapper;
     }
@@ -112,7 +109,7 @@ public class NotificationService {
     }
 
     public Flux<ConfidentialTimelineElementDto> getNotificationTimelines(Flux<ConfidentialTimelineElementId> confidentialTimelineElementId) {
-        return notificationTimelinesDao.getNotificationTimelines(confidentialTimelineElementId)
+        return notificationTimelineDao.getNotificationTimelines(confidentialTimelineElementId)
                 .map(timelineMapper::toDto);
     }
 }

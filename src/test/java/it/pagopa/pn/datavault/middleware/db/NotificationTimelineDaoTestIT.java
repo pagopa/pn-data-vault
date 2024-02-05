@@ -28,14 +28,13 @@ class NotificationTimelineDaoTestIT {
     @Test
     void updateNotification() {
         //Given
-        NotificationTimelineEntity addresToInsert = TestUtils.newNotificationTimeline();
-
+        NotificationTimelineEntity addresToInsert = new NotificationTimelineEntity("IUN2", "el1");
         //When
         notificationDao.updateNotification(addresToInsert).block(Duration.ofMillis(3000));
 
         //Then
         try {
-            NotificationTimelineEntity elementFromDb = notificationDao.getNotificationTimelineByIunAndTimelineElementId(addresToInsert.getPk(), addresToInsert.getTimelineElementId()).block();
+            NotificationTimelineEntity elementFromDb = notificationDao.getNotificationTimelineByIunAndTimelineElementId(addresToInsert.getInternalId(), addresToInsert.getTimelineElementId()).block();
 
             Assertions.assertNotNull( elementFromDb);
             Assertions.assertEquals(addresToInsert, elementFromDb);

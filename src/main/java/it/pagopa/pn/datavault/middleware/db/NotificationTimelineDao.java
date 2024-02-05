@@ -5,6 +5,7 @@ import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,21 +36,20 @@ public class NotificationTimelineDao extends BaseDAO<NotificationTimelineEntity>
     public Mono<Object> updateNotification(NotificationTimelineEntity entity)
     {
         log.debug("updateNotification timeline internalid:{} timelineelementid:{}",entity.getInternalId(), entity.getTimelineElementId());
-
         return Mono.fromFuture(update(entity));
     }
 
     public Mono<NotificationTimelineEntity> getNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId)
     {
         log.debug("getNotificationTimelineByIunAndTimelineElementId timeline internalid:{} timelineelementid:{}", iun, timelineElementId);
-
-        return Mono.fromFuture(get(getIunWhitPrefix(iun), timelineElementId));
+        NotificationTimelineEntity entity = new NotificationTimelineEntity(iun, timelineElementId);
+        return Mono.fromFuture(get(entity.getPk(), entity.getTimelineElementId()));
     }
 
     public Flux<NotificationTimelineEntity> getNotificationTimelineByIun(String iun) {
         log.debug("getNotificationTimelineByIun timelines list-by-id internalid:{}", iun);
-
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuild(getIunWhitPrefix(iun), null));
+        NotificationTimelineEntity entity = new NotificationTimelineEntity(iun, null);
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuild(entity.getPk(), entity.getTimelineElementId()));
 
         // viene volutamente ignorata la gestione della paginazione, che per ora non serve.
         // si suppone infatti che la lista degli indirizzi non sia troppo lunga e quindi non vada a sforare il limite di 1MB di paginazione
@@ -66,7 +66,7 @@ public class NotificationTimelineDao extends BaseDAO<NotificationTimelineEntity>
                 .flatMapMany(this::batchGetItem);
     }
 
-    private String getIunWhitPrefix (String iun){
-        return ADDRESS_PREFIX + iun;
+    private String getIunWhitPrefix(String iun){
+        return StringUtils.contains(ADDRESS_PREFIX, iun) ? iun : ADDRESS_PREFIX + iun;
     }
 }

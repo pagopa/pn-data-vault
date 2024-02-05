@@ -16,7 +16,7 @@ TABLE_NAME="ConfidentialObjects"
 data=(
     '{"hashKey": {"S": "TIMELINE#IUN1"}, "sortKey": {"S": "el1"}, "taxId": {"S": "Descrizione 1"}, "denomination": {"S": "Nome"}}'
     '{"hashKey": {"S": "TIMELINE#IUN1"}, "sortKey": {"S": "el2"}, "taxId": {"S": "Descrizione 1"}, "denomination": {"S": "Nome"}}'
-    '{"hashKey": {"S": "TIMELINE#IUN1"}, "sortKey": {"S": "el2"}, "taxId": {"S": "Descrizione 1"}, "denomination": {"S": "Nome"}}'
+    '{"hashKey": {"S": "TIMELINE#IUN1"}, "sortKey": {"S": "el3"}, "taxId": {"S": "Descrizione 1"}, "denomination": {"S": "Nome"}}'
     )
 
 # Loop for put item into DynamoDB

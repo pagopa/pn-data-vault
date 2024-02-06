@@ -93,7 +93,7 @@ public class NotificationService {
                 .map(timelineMapper::toDto);
     }
 
-    public Mono<Object> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, ConfidentialTimelineElementDto dto) {
+    public Mono<NotificationTimelineEntity> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, ConfidentialTimelineElementDto dto) {
         NotificationTimelineEntity nte = timelineMapper.toEntity(dto);
         nte.setInternalId(iun); // il mapper non lo può conoscere, non è presente nel dto
         nte.setTimelineElementId(timelineElementId);    // è presente pure nel dto, ma per sicurezza usiamo quello passato nel metodo

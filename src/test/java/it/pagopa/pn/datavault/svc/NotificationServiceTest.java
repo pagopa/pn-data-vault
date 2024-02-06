@@ -293,7 +293,9 @@ class NotificationServiceTest {
         dto.setDigitalAddress(new AddressDto());
         dto.setPhysicalAddress(new AnalogDomicile());
 
-        when(objtimelineDao.updateNotification(Mockito.any())).thenReturn(Mono.just("OK"));
+        NotificationTimelineEntity notificationTimelineEntity = new NotificationTimelineEntity();
+
+        when(objtimelineDao.updateNotification(Mockito.any())).thenReturn(Mono.just(notificationTimelineEntity));
         when(mappertimeline.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When

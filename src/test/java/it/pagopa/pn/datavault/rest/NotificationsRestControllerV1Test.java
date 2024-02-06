@@ -7,6 +7,7 @@ import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
+import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import it.pagopa.pn.datavault.svc.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -249,10 +250,11 @@ class NotificationsRestControllerV1Test {
                 .replace("{timelineElementId}", "mario rossi");
         ConfidentialTimelineElementDto dto = mappertimeline.toDto(TestUtils.newNotificationTimeline());
 
+        NotificationTimelineEntity notificationTimelineEntity = new NotificationTimelineEntity();
 
         //When
         Mockito.when( privateService.updateNotificationTimelineByIunAndTimelineElementId( Mockito.anyString(), Mockito.anyString(), Mockito.any() ))
-                .thenReturn(Mono.just("OK"));
+                .thenReturn(Mono.just(notificationTimelineEntity));
 
         //Then
         webTestClient.put()

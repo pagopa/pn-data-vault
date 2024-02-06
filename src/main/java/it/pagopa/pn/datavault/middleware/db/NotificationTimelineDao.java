@@ -29,21 +29,22 @@ public class NotificationTimelineDao extends BaseDAO<NotificationTimelineEntity>
 
     /**
      * Aggiorna o crea una un indirizzo nella timeline
+     *
      * @param entity oggetto da creare/aggiornare
      * @return ritorna l'oggetto creato
      */
-    public Mono<Object> updateNotification(NotificationTimelineEntity entity)
+    public Mono<NotificationTimelineEntity> updateNotification(NotificationTimelineEntity entity)
     {
         log.debug("updateNotification timeline internalid:{} timelineelementid:{}",entity.getInternalId(), entity.getTimelineElementId());
 
-        return Mono.fromFuture(update(entity));
+        return update(entity);
     }
 
     public Mono<NotificationTimelineEntity> getNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId)
     {
         log.debug("getNotificationTimelineByIunAndTimelineElementId timeline internalid:{} timelineelementid:{}", iun, timelineElementId);
 
-        return Mono.fromFuture(get(getIunWhitPrefix(iun), timelineElementId));
+        return get(getIunWhitPrefix(iun), timelineElementId);
     }
 
     public Flux<NotificationTimelineEntity> getNotificationTimelineByIun(String iun) {

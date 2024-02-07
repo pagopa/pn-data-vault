@@ -36,7 +36,6 @@ public class NotificationTimelineDao extends BaseDAO<NotificationTimelineEntity>
     public Mono<NotificationTimelineEntity> updateNotification(NotificationTimelineEntity entity)
     {
         log.debug("updateNotification timeline internalid:{} timelineelementid:{}",entity.getInternalId(), entity.getTimelineElementId());
-
         return update(entity);
     }
 

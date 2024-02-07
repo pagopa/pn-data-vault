@@ -1098,3 +1098,6 @@ Outputs:
     Value: !Ref DataMonitoringCodebuildComputeType
   DataMonitoringIndexCronExpression:
     Value: !Ref DataMonitoringIndexCronExpression
+  # required for core compatibility
+  EnvironmentType:
+    Value: !Ref EnvType

@@ -181,6 +181,32 @@ Parameters:
     Default: 43200000 # 12 hours
     Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords'   
 
+  # Data Monitoring pass-through params
+  DynamoDbExportTableNames:
+    Type: String
+    Description: 'Comma separated list of DynamoDB tables to export'
+    Default: ''
+
+  DynamoDbExportPrefix:
+    Type: String
+    Description: 'Prefix for the DynamoDB export'
+    Default: 'incremental2024'
+
+  ParquetBucketPath:
+    Type: String
+    Description: parquet files s3 bucket path
+    Default: 'parquet'
+
+  DataMonitoringCodebuildComputeType:
+    Type: String
+    Description: Codebuild compute type (https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html)
+    Default: BUILD_GENERAL1_LARGE
+
+  DataMonitoringIndexCronExpression:
+    Type: String
+    Description: Cron expression for the scheduled rule, e.g. cron(0 9 * * ? *)
+    Default: '' # example: 'cron(0 9 * * ? *)'
+
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -1060,3 +1086,15 @@ Outputs:
 
   PnCoreAwsAccountId:
     Value: !Ref PnCoreAwsAccountId
+
+  # Data Monitoring pass-through params
+  DynamoDbExportTableNames:
+    Value: !Ref DynamoDbExportTableNames
+  DynamoDbExportPrefix:
+    Value: !Ref DynamoDbExportPrefix
+  ParquetBucketPath:
+    Value: !Ref ParquetBucketPath
+  DataMonitoringCodebuildComputeType:
+    Value: !Ref DataMonitoringCodebuildComputeType
+  DataMonitoringIndexCronExpression:
+    Value: !Ref DataMonitoringIndexCronExpression

@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.commons.log.PnLogger.EXTERNAL_SERVICES.*;
-import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.PDV_RATE_LIMITER;
+import static it.pagopa.pn.datavault.springbootcfg.SpringAnalyzerActivation.PDV_RATE_LIMITER;
 
 /**
  * Classe wrapper di personal-data-vault TOKENIZER, con gestione del backoff

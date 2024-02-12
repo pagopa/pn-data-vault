@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.List;
 
-import static it.pagopa.pn.datavault.job.CloudWatchMetricJob.PDV_RATE_LIMITER;
+import static it.pagopa.pn.datavault.springbootcfg.SpringAnalyzerActivation.PDV_RATE_LIMITER;
 import static it.pagopa.pn.commons.log.PnLogger.EXTERNAL_SERVICES.*;
 
 /**

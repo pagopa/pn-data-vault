@@ -1,5 +1,6 @@
 package it.pagopa.pn.datavault;
 
+import it.pagopa.pn.commons.configs.listeners.TaskIdApplicationListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +18,9 @@ public class PnDataVaultApplication {
 		// impostazione cache ttl
 		java.security.Security.setProperty("networkaddress.cache.ttl" , "1");
 		java.security.Security.setProperty("networkaddress.cache.negative.ttl", "1");
-		SpringApplication.run(PnDataVaultApplication.class, args);
+		SpringApplication app = new SpringApplication(PnDataVaultApplication.class);
+		app.addListeners(new TaskIdApplicationListener());
+		app.run(args);
 		log.debug("set network cache");
 	}
 

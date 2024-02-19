@@ -16,6 +16,9 @@
     "AutoscalingThreshold": "51650",
     "CloudWatchMetricCron": "*/10 * * * * *",
     "CpuValue": "2048",
-    "MemoryAmount": "4GB"
+    "MemoryAmount": "4GB",
+    "MountEfs": "false",
+    "PnCronAnalyzer": "* */1 * * * *",
+    "WireTapLogActivation": "false"
   }
 }

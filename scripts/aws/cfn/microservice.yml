@@ -211,6 +211,32 @@ Parameters:
     Type: String
     Description: Cron for which you send the custom metric for PDV to CloudWatch
 
+  # EFS parameters
+  FargateEFSFileSystemID:
+    Type: String
+    Description: "EFS Filesystem"
+
+  MountEfs:
+    Type: String
+    Default: false
+    AllowedValues:
+      - "true"
+      - "false"
+
+  # Logging parameters
+  WireTapLogActivation:
+    Type: String
+    Default: false
+    Description: Activation of wire logs
+    AllowedValues:
+      - true
+      - false
+
+  PnCronAnalyzer:
+    Type: String
+    Default: '-'
+    Description: Cron for which you send the metric to CloudWatch
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -241,6 +267,8 @@ Resources:
         MaxTasksNumber: !Ref MaxTasksNumber
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
+        EfsFilesystem: !Ref FargateEFSFileSystemID
+        MountEfs: !Ref MountEfs
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
@@ -257,6 +285,8 @@ Resources:
         ContainerEnvEntry12: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_LIMIT_FOR_PERIOD=${SelfcarePgRateLimiterNRequests}'
         ContainerEnvEntry13: !Sub 'RESILIENCE4J_RATELIMITER_INSTANCES_SELC_RATE_LIMITER_TIMEOUT_DURATION=${SelfcarePgRateLimiterTimeoutMillis}'
         ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
+        ContainerEnvEntry15: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry16: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:TokenizerApiKeyForPF:AWSCURRENT:'
         ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:UserRegistryApiKeyForPF:AWSCURRENT:'
         ContainerSecret4: !Sub 'PN_DATA_VAULT_SELFCAREPG_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets:SelfcareApiKeyForPG:AWSCURRENT:'                

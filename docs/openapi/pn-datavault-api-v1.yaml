@@ -3,12 +3,12 @@ info:
   title: Anonimizzazione dati in Piattaforma Notifiche
   version: v1
   description: |
-      # Elenco entità logiche che contengono informazioni confidenziali
-        - Identificativi dei destinatari; possono essere persone fisiche o persone giuridiche
-        - Domicili e recapiti inseriti dai destinatari
-        - Informazioni di contatto inserite nelle deleghe
-        - Informazioni di contatto inserite nelle notifiche
-      
+    # Elenco entità logiche che contengono informazioni confidenziali
+      - Identificativi dei destinatari; possono essere persone fisiche o persone giuridiche
+      - Domicili e recapiti inseriti dai destinatari
+      - Informazioni di contatto inserite nelle deleghe
+      - Informazioni di contatto inserite nelle notifiche
+
   license:
     name: PagoPA PN license
     url: http://pippo.pappo.it
@@ -305,7 +305,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-    
+
   '/datavault-private/v1/notifications/{iun}/addresses':
     parameters:
       - name: iun
@@ -325,7 +325,7 @@ paths:
         - Notifications
       parameters:
         - name: normalized
-          description: >- 
+          description: >-
             Se valorizzato con true, indica che si dovranno leggere gli indirizzi normalizzati della notifica. <br/>
             Se valorizzato con false, indica che si dovranno leggere gli indirizzi non normalizzati. <br/>
             Se non valorizzato, si tenterà di leggere gli indirizzi normalizzati. Se non trovati, si tenta di leggere
@@ -405,6 +405,33 @@ paths:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
   
+  '/datavault-private/v1/timelines':
+    post:
+      operationId: getNotificationTimelines
+      summary: Leggi informazioni confidenziali relative a una lista di elementi di timeline
+      description: >-
+        Leggi informazioni confidenziali relative a una lista di elementi di timeline. Ritorna solo quelle conosciute.
+      tags:
+        - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListOfConfidentialTimelineElementId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOfConfidentialTimelineElementDto'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+
   '/datavault-private/v1/notifications/{iun}/timeline/{timelineElementId}':
     parameters:
       - name: iun
@@ -458,13 +485,13 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-   
+
 components:
   schemas:
 
-  ###############################################################################################
-  ###                                     DTO DESTINATARI                                     ###
-  ###############################################################################################
+    ###############################################################################################
+    ###                                     DTO DESTINATARI                                     ###
+    ###############################################################################################
     RecipientType:
       title: 'Tipo del destinatario: PF / PG'
       description: >-
@@ -475,14 +502,14 @@ components:
       enum:
         - PF
         - PG
-    
+
     TaxId:
       title: Codice Fiscale
       description: Codice Fiscale del destinatario, del delagao o dlegante
       type: string
       x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       example: CGNNMO01T10A944Q
-    
+
     InternalId:
       title: Identificativo anonimizzato
       description: Identificativo Opaco di una persona Fisica o Giuridica
@@ -491,7 +518,7 @@ components:
       minLength: 1
       maxLength: 100
       example: 123e4567-e89b-12d3-a456-426655440000
-    
+
     BaseRecipientDto:
       title: Decodicfica Identificativo Anonimo
       description: >-
@@ -510,17 +537,17 @@ components:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: PagoP.A. S.p.A.
 
-  
-  ###############################################################################################
-  ###                                      DTO INDIRIZZI                                      ###
-  ###############################################################################################
-  
+
+    ###############################################################################################
+    ###                                      DTO INDIRIZZI                                      ###
+    ###############################################################################################
+
     AddressId:
       title: Identificativo del recapito o domicilio digitale
       type: string
       pattern: '[A-Za-z0-9-_:#]*'
       example: LEGAL#default#PEC
-    
+
     RecipientAddressesDto:
       title: Request for new object creation
       type: object
@@ -547,18 +574,18 @@ components:
         value:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
-    
-  
-  ###############################################################################################
-  ###                                       DTO DELEGHE                                       ###
-  ###############################################################################################
-    
+
+
+    ###############################################################################################
+    ###                                       DTO DELEGHE                                       ###
+    ###############################################################################################
+
     MandateId:
       title: Identificativo della delega
       type: string
       pattern: '[A-Za-z0-9-_:]*'
       example: 423e4567-e89b-12d3-a456-426655449632
-    
+
     MandateDto:
       type: object
       required:
@@ -569,19 +596,19 @@ components:
           $ref: '#/components/schemas/MandateId'
         info:
           $ref: '#/components/schemas/DenominationDto'
-    
+
     DenominationDto:
       type: object
-      properties:            
-        destName: 
+      properties:
+        destName:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Nome
-        destSurname: 
+        destSurname:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Cognome
-        destBusinessName: 
+        destBusinessName:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Ragione sociale
@@ -590,23 +617,23 @@ components:
         destSurname: Cognome
         destBusinessName: Ragione sociale
 
-  
 
 
-  ###############################################################################################
-  ###                                      DTO NOTIFICHE                                      ###
-  ###############################################################################################
-  
+
+    ###############################################################################################
+    ###                                      DTO NOTIFICHE                                      ###
+    ###############################################################################################
+
     Iun:
       type: string
       pattern: '[A-Z0-9-]*'
       example: 'ABCD-XYWK-ASDF-LKJH-202209-1-X'
-    
+
     NotificationAddressesDto:
       type: array
       items:
         $ref: '#/components/schemas/NotificationRecipientAddressesDto'
-    
+
     NotificationRecipientAddressesDto:
       type: object
       required:
@@ -620,7 +647,7 @@ components:
           $ref: '#/components/schemas/AddressDto'
         physicalAddress:
           $ref: '#/components/schemas/AnalogDomicile'
-    
+
     AnalogDomicile:
       title: dettagli di un domicilio analogico; ovvero un indirizzo fisico
       type: object
@@ -629,7 +656,7 @@ components:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'presso famiglia Rossi'
-        address: 
+        address:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'Via senza Nome 15'
@@ -656,25 +683,40 @@ components:
         state:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
-          example: 'it'     
+          example: 'it'
 
+    ListOfConfidentialTimelineElementId:
+      type: array
+      items:
+        $ref: '#/components/schemas/ConfidentialTimelineElementId'
 
+    ConfidentialTimelineElementId:
+      type: object
+      properties:
+        timelineElementId:
+          type: string
+        iun:
+          type: string
+
+    ListOfConfidentialTimelineElementDto:
+      type: array
+      items:
+        $ref: '#/components/schemas/ConfidentialTimelineElementDto'
 
     ConfidentialTimelineElementDto:
-        type: object
-        properties:
-          timelineElementId:
-            type: string
-          taxId:
-            type: string
-            x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
-          denomination:
-            type: string
-            x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
-          digitalAddress:
-            $ref: '#/components/schemas/AddressDto'
-          physicalAddress:
-            $ref: '#/components/schemas/AnalogDomicile'
-          newPhysicalAddress:
-            $ref: '#/components/schemas/AnalogDomicile'
-
+      type: object
+      properties:
+        timelineElementId:
+          type: string
+        taxId:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+        denomination:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+        digitalAddress:
+          $ref: '#/components/schemas/AddressDto'
+        physicalAddress:
+          $ref: '#/components/schemas/AnalogDomicile'
+        newPhysicalAddress:
+          $ref: '#/components/schemas/AnalogDomicile'

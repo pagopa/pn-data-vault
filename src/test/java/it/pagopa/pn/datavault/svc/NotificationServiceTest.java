@@ -2,10 +2,7 @@ package it.pagopa.pn.datavault.svc;
 
 import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AddressDto;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.AnalogDomicile;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.NotificationDao;
@@ -296,7 +293,9 @@ class NotificationServiceTest {
         dto.setDigitalAddress(new AddressDto());
         dto.setPhysicalAddress(new AnalogDomicile());
 
-        when(objtimelineDao.updateNotification(Mockito.any())).thenReturn(Mono.just("OK"));
+        NotificationTimelineEntity notificationTimelineEntity = new NotificationTimelineEntity();
+
+        when(objtimelineDao.updateNotification(Mockito.any())).thenReturn(Mono.just(notificationTimelineEntity));
         when(mappertimeline.toEntity(Mockito.any())).thenReturn(notificationEntity);
 
         //When
@@ -306,5 +305,30 @@ class NotificationServiceTest {
 
         //Then
         // nothing
+    }
+
+    @Test
+    void getNotificationTimelines() {
+        //Given
+        NotificationTimelineEntity notificationTimelineEntity = TestUtils.newNotificationTimeline();
+        NotificationTimelineEntity notificationTimelineEntity1 = TestUtils.newNotificationTimeline();
+        List<NotificationTimelineEntity> notificationTimelineEntities = new ArrayList<>();
+        notificationTimelineEntities.add(notificationTimelineEntity);
+        notificationTimelineEntities.add(notificationTimelineEntity1);
+        ConfidentialTimelineElementId confidentialTimelineElementId = new ConfidentialTimelineElementId();
+        ConfidentialTimelineElementId confidentialTimelineElementId1 = new ConfidentialTimelineElementId();
+        List<ConfidentialTimelineElementId> confidentialTimelineElementIds = new ArrayList<>();
+        confidentialTimelineElementIds.add(confidentialTimelineElementId);
+        confidentialTimelineElementIds.add(confidentialTimelineElementId1);
+
+        when(objtimelineDao.getNotificationTimelines(Mockito.any())).thenReturn(Flux.fromIterable(notificationTimelineEntities));
+        when(mappertimeline.toDto(Mockito.any())).thenReturn(new ConfidentialTimelineElementDto());
+
+        //When
+        List<ConfidentialTimelineElementDto> result = privateService.getNotificationTimelines(Flux.fromIterable(confidentialTimelineElementIds)).collectList().block(d);
+
+        //Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
     }
 }

@@ -3,6 +3,7 @@ package it.pagopa.pn.datavault.rest;
 import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.api.NotificationsApi;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.svc.NotificationService;
 import lombok.extern.slf4j.Slf4j;
@@ -101,5 +102,14 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
                 }));
     }
 
-
+    @Override
+    public Mono<ResponseEntity<Flux<ConfidentialTimelineElementDto>>> getNotificationTimelines(Flux<ConfidentialTimelineElementId> confidentialTimelineElementId, ServerWebExchange exchange) {
+        log.info("[enter] getNotificationTimelines");
+        return MDCUtils.addMDCToContextAndExecute(this.svc.getNotificationTimelines(confidentialTimelineElementId)
+                .collectList()
+                .map(confidentialTimelineElementDtos -> {
+                    log.debug("[exit] getNotificationTimelines");
+                    return ResponseEntity.ok(Flux.fromIterable(confidentialTimelineElementDtos));
+                }));
+    }
 }

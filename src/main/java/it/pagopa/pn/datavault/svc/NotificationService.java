@@ -2,6 +2,7 @@ package it.pagopa.pn.datavault.svc;
 
 import it.pagopa.pn.datavault.exceptions.PnInvalidInputException;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
@@ -92,7 +93,7 @@ public class NotificationService {
                 .map(timelineMapper::toDto);
     }
 
-    public Mono<Object> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, ConfidentialTimelineElementDto dto) {
+    public Mono<NotificationTimelineEntity> updateNotificationTimelineByIunAndTimelineElementId(String iun, String timelineElementId, ConfidentialTimelineElementDto dto) {
         NotificationTimelineEntity nte = timelineMapper.toEntity(dto);
         nte.setInternalId(iun); // il mapper non lo può conoscere, non è presente nel dto
         nte.setTimelineElementId(timelineElementId);    // è presente pure nel dto, ma per sicurezza usiamo quello passato nel metodo
@@ -105,5 +106,10 @@ public class NotificationService {
 
         if (! ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "digitalAddress.value");
+    }
+
+    public Flux<ConfidentialTimelineElementDto> getNotificationTimelines(Flux<ConfidentialTimelineElementId> confidentialTimelineElementId) {
+        return notificationTimelineDao.getNotificationTimelines(confidentialTimelineElementId)
+                .map(timelineMapper::toDto);
     }
 }

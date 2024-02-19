@@ -1,5 +1,6 @@
 package it.pagopa.pn.datavault;
 
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.middleware.db.entities.*;
 
 public abstract class TestUtils {
@@ -60,5 +61,12 @@ public abstract class TestUtils {
         pa.setState("Italia");
         ne.setPhysicalAddress(pa);
         return ne;
+    }
+
+    public static ConfidentialTimelineElementId newConfidentialTimelineElementId(){
+        ConfidentialTimelineElementId confidentialTimelineElementId = new ConfidentialTimelineElementId();
+        confidentialTimelineElementId.setIun("TIMELINE#F7K1AP1N5C");
+        confidentialTimelineElementId.setTimelineElementId("1");
+        return confidentialTimelineElementId;
     }
 }

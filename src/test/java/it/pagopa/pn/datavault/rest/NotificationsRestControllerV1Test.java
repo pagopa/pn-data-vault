@@ -2,10 +2,12 @@ package it.pagopa.pn.datavault.rest;
 
 import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementDto;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MandateDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.NotificationRecipientAddressesDto;
 import it.pagopa.pn.datavault.mapper.NotificationEntityNotificationRecipientAddressesDtoMapper;
 import it.pagopa.pn.datavault.mapper.NotificationTimelineEntityConfidentialTimelineElementDtoMapper;
+import it.pagopa.pn.datavault.middleware.db.entities.NotificationTimelineEntity;
 import it.pagopa.pn.datavault.svc.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -248,10 +250,11 @@ class NotificationsRestControllerV1Test {
                 .replace("{timelineElementId}", "mario rossi");
         ConfidentialTimelineElementDto dto = mappertimeline.toDto(TestUtils.newNotificationTimeline());
 
+        NotificationTimelineEntity notificationTimelineEntity = new NotificationTimelineEntity();
 
         //When
         Mockito.when( privateService.updateNotificationTimelineByIunAndTimelineElementId( Mockito.anyString(), Mockito.anyString(), Mockito.any() ))
-                .thenReturn(Mono.just("OK"));
+                .thenReturn(Mono.just(notificationTimelineEntity));
 
         //Then
         webTestClient.put()
@@ -260,5 +263,28 @@ class NotificationsRestControllerV1Test {
                 .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    void getNotificationTimelines(){
+        //Given
+        String url = "/datavault-private/v1/timelines";
+        ConfidentialTimelineElementId confidentialTimelineElementId = TestUtils.newConfidentialTimelineElementId();
+        List<ConfidentialTimelineElementId> list = new ArrayList<>();
+        list.add(confidentialTimelineElementId);
+        ConfidentialTimelineElementDto dto = mappertimeline.toDto(TestUtils.newNotificationTimeline());
+
+        //When
+        Mockito.when(privateService.getNotificationTimelines(Mockito.any())).thenReturn(Flux.just(dto));
+
+        //Then
+        webTestClient.post()
+                .uri(url)
+                .bodyValue(list)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(ConfidentialTimelineElementDto.class);
     }
 }

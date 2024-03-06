@@ -207,6 +207,11 @@ Parameters:
     Description: Cron expression for the scheduled rule, e.g. cron(0 9 * * ? *)
     Default: '' # example: 'cron(0 9 * * ? *)'
 
+  DataMonitoringScriptVersion:
+    Type: String
+    Description: 'The version of the BI or not BI EC metadata'
+    Default: ec_metadata_extract_v0_1
+    
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -1098,6 +1103,9 @@ Outputs:
     Value: !Ref DataMonitoringCodebuildComputeType
   DataMonitoringIndexCronExpression:
     Value: !Ref DataMonitoringIndexCronExpression
+  DataMonitoringScriptVersion:
+    Value: !Ref DataMonitoringScriptVersion
+    
   # required for core compatibility
   EnvironmentType:
     Value: !Ref EnvType

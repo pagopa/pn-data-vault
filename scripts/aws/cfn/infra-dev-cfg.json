@@ -14,7 +14,9 @@
       "BackupCronExpression": "cron(0 4 * * ? 2099)",
       "SMSUsdMonthlyAlarmThreshold": "300",
       "SESSentDailyAlarmThresholdPercentage": "80",
-      "DynamoDbExportTableNames": "pn-EcRichiesteMetadati,pn-SsDocumenti"
+      "DynamoDbExportTableNames": "pn-EcRichiesteMetadati,pn-SsDocumenti",
+      "DataLakeAccountId": "688071769384"
+
     }
 }
   

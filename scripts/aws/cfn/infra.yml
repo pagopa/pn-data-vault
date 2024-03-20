@@ -211,6 +211,11 @@ Parameters:
     Type: String
     Description: 'The version of the BI or not BI EC metadata'
     Default: ec_metadata_extract_v0_1
+
+  DataLakeAccountId:
+    Type: String
+    Description: 'Datalake AWS Account ID'
+    Default: ''
     
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
@@ -1105,6 +1110,8 @@ Outputs:
     Value: !Ref DataMonitoringIndexCronExpression
   DataMonitoringScriptVersion:
     Value: !Ref DataMonitoringScriptVersion
+  DataLakeAccountId:
+    Value: !Ref DataLakeAccountId
     
   # required for core compatibility
   EnvironmentType:

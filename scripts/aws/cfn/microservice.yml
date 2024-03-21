@@ -334,11 +334,12 @@ Resources:
             Action:
               - kms:Decrypt
               - kms:DescribeKey
+              - kms:GenerateDataKey
             Resource:
               - '*'
-#            Condition:
-#              StringLike:
-#                "kms:RequestAlias": "alias/pn-pdv-secrets-key"
+            Condition:
+             StringEquals:
+               "kms:EncryptionContext:SecretARN": !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Ms-Secrets
           - Effect: Allow
             Action:
               - cloudwatch:PutMetricData

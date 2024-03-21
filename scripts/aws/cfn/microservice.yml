@@ -336,9 +336,9 @@ Resources:
               - kms:DescribeKey
             Resource:
               - '*'
-            Condition:
-              StringLike:
-                "kms:RequestAlias": "alias/pn-pdv-secrets-key"
+#            Condition:
+#              StringLike:
+#                "kms:RequestAlias": "alias/pn-pdv-secrets-key"
           - Effect: Allow
             Action:
               - cloudwatch:PutMetricData

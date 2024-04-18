@@ -42,7 +42,10 @@ Parameters:
     Type: Number
     Description: 'MaxAgeInMilliseconds for Kinesis Cdc GetRecords (oncall)'
 
-
+  LogsBucketName:
+    Type: String
+    Description: 'Name of the bucket where logs are stored'
+    
 Conditions:
   SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
 
@@ -314,6 +317,30 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       EvaluationPeriods: 2
       Threshold: 1
+
+  # Trail for diagnostic lambda functions
+  DiagnosticLambdaCloudTrail:
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      TrailName: pn-DiagnosticLambdaCloudTrail
+      IsMultiRegionTrail: false
+      IsOrganizationTrail: false
+      EnableLogFileValidation: false
+      AdvancedEventSelectors:
+        - Name: diagnostic-lambda-selector
+          FieldSelectors:
+            - Field: "eventCategory"
+              Equals: 
+                - "Data"
+            - Field: "resources.type"
+              Equals: 
+                - "AWS::Lambda::Function"                
+            - Field: "resources.ARN"
+              StartsWith: 
+                - !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:diagnostic"
+      S3BucketName: !Ref LogsBucketName
+      S3KeyPrefix: "diagnosticTrail"
+      IsLogging: true
 
 Outputs:
   OOMAlarmArn:

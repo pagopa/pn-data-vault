@@ -217,6 +217,17 @@ Parameters:
     Description: 'Datalake AWS Account ID'
     Default: ''
     
+  # Lambda deploy parameters
+  CdBucketName:
+    Type: String
+    Description: 'The bucket name where to deploy CD artifacts'
+    Default: ''
+  
+  BucketBasePath:
+    Type: String
+    Description: 'The base path of the bucket where to deploy the lambdas'
+    Default: ''
+
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -1132,3 +1143,13 @@ Outputs:
   # required for core compatibility
   EnvironmentType:
     Value: !Ref EnvType
+  LambdasBucketName:
+    Value: !Ref CdBucketName
+
+  # Lambdas pass-through parameters
+  CdBucketName:
+    Value: !Ref CdBucketName
+  
+  BucketBasePath:
+    Value: !Ref BucketBasePath
+    

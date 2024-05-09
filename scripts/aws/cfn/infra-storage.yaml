@@ -69,6 +69,11 @@ Parameters:
   AlarmSNSTopicName:
     Type: String
 
+  LogRetention:
+    Type: Number
+    Default: 14
+    Description: 'Log retention in days'
+
 Conditions:
   MakeBucketCondition: !Not [ !Equals [ !Ref BucketSuffix, '' ]]
   
@@ -117,6 +122,13 @@ Resources:
                   - Name: prefix
                     Value: !Ref SafeStorageFileAccessLogsBucketPathPrefix
             Queue: !GetAtt NewSafeStorageCloudTrailFileQueue.Outputs.QueueARN
+          - Event: 's3:ObjectCreated:*'
+            Filter: 
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: 'diagnosticTrail'
+            Queue: !GetAtt DiagnosticCloudTrailFileQueue.Outputs.QueueARN
       
   # - Log storage cryptography key 
   LogsBucketKmsKey:
@@ -332,6 +344,67 @@ Resources:
       StreamModeDetails:
         StreamMode: !Ref LogsStreamMode   
         
+  # Diagnostic trail resources
+  DiagnosticLambdaLoggerName:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain    
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub '${ProjectName}-diagnostic-logger'
+        LogGroupPrefix: '/aws/lambda'
+        LogGroupRetention: !Ref LogRetention
+        LogsKinesisSourceStreamArn: !GetAtt LogsKinesisStream.Arn
+
+  DiagnosticCloudTrailFileQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain      
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-diagnostic-cloudtrail-file'
+        DelaySeconds: 1
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName    
+
+  # Export new safestorage cloudtrail file events
+  DiagnosticCloudTrailFileQueueResourcePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties: 
+      Queues: 
+        - !GetAtt DiagnosticCloudTrailFileQueue.Outputs.QueueURL
+      PolicyDocument:
+        Statement: 
+          - Sid: pnConfinfoAccountGet
+            Effect: "Allow"
+            Principal:  
+              AWS:
+                - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+            Action: 
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !GetAtt DiagnosticCloudTrailFileQueue.Outputs.QueueARN
+          - Sid: s3ServicePut
+            Effect: "Allow"
+            Principal:  
+              Service: 
+                - "s3.amazonaws.com"
+            Action: 
+              - "sqs:SendMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueUrl"
+            Resource: !GetAtt DiagnosticCloudTrailFileQueue.Outputs.QueueARN
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:${AWS::Partition}:s3:*:*:${ProjectName}-logs-bucket-${AWS::Region}-${AWS::AccountId}-${BucketSuffix}"
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+
 Outputs:
   LogsBucketKmsKeyArn:
     Value: 
@@ -417,3 +490,6 @@ Outputs:
 
   Version:
     Value: !Ref Version
+
+  LogRetention:
+    Value: !Ref LogRetention

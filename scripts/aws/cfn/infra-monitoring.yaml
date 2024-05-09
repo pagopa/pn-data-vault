@@ -46,6 +46,37 @@ Parameters:
     Type: String
     Description: 'Name of the bucket where logs are stored'
     
+  LogsBucketKmsKeyArn:
+    Type: String
+    Description: 'ARN of the KMS key used to encrypt the logs bucket'
+
+  DiagnosticLambdaLoggerName:
+    Type: String
+    Description: 'Name of the diagnostic lambda logger'
+    Default: 'pn-diagnostic-logger'
+
+  DiagnosticLoggerMemory:
+    Type: Number
+    Default: 128
+    Description: 'Memory size for the diagnostic logger lambda'
+
+  DiagnosticBatchSize:
+    Type: Number
+    Default: 1
+    Description: 'Batch size for the diagnostic logger lambda'
+
+  LambdasBucketName:
+    Type: String
+    Description: 'Name of the bucket where lambdas are stored'
+
+  BucketBasePath:
+    Type: String
+    Description: 'Base path for the bucket'
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'Base URL for the bucket'
+    
 Conditions:
   SendLogToKinesis: !Not [ !Equals [ !Ref LogsKinesisSourceStreamArn, '' ] ]
 
@@ -341,6 +372,96 @@ Resources:
       S3BucketName: !Ref LogsBucketName
       S3KeyPrefix: "diagnosticTrail"
       IsLogging: true
+
+  DiagnosticLoggerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${DiagnosticLambdaLoggerName}-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyName: !Sub '${DiagnosticLambdaLoggerName}-role-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: allS3
+                Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListObjects'
+                Resource: 
+                  - !Sub "arn:${AWS::Partition}:s3:::${LogsBucketName}/diagnosticTrail/*"
+              - Sid: kmsDecrypt
+                Effect: Allow
+                Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:ReEncrypt*
+                  - kms:GenerateDataKey*
+                  - kms:DescribeKey
+                Resource: !Ref LogsBucketKmsKeyArn
+              - Sid: receiveSqs
+                Effect: Allow
+                Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                  - "sqs:ChangeMessageVisibility"
+                  - "sqs:GetQueueUrl"
+                Resource: 
+                  - !Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${ProjectName}-diagnostic-cloudtrail-file'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        # - 'arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy'
+
+  DiagnosticLoggerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref DiagnosticLambdaLoggerName
+      Runtime: nodejs18.x
+      Role: !GetAtt DiagnosticLoggerLambdaRole.Arn
+      Handler: index.handler
+      MemorySize: !Ref DiagnosticLoggerMemory
+      Timeout: 30
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"      
+      Code:
+        S3Bucket: !Ref LambdasBucketName
+        S3Key: !Sub ${BucketBasePath}/diagnostic-logger.zip
+
+  DiagnosticLoggerLambdaQueuePermission:
+   Type: AWS::Lambda::Permission
+   Properties:
+     Action: 'lambda:InvokeFunction'
+     FunctionName: !GetAtt DiagnosticLoggerLambda.Arn
+     Principal: 'sqs.amazonaws.com'
+     SourceAccount: !Ref AWS::AccountId
+     SourceArn: !Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${ProjectName}-diagnostic-cloudtrail-file'
+
+  DiagnosticLoggerLambdaQueueSourceMapping:
+    DependsOn:
+      - DiagnosticLoggerLambdaQueuePermission
+    Type: AWS::Lambda::EventSourceMapping
+    Properties: 
+      BatchSize: !Ref DiagnosticBatchSize
+      Enabled: True
+      EventSourceArn: !Sub 'arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:${ProjectName}-diagnostic-cloudtrail-file'
+      FunctionName: !Ref DiagnosticLoggerLambda
+      MaximumBatchingWindowInSeconds: 0 #default value
+
+  DiagnosticLoggerLambdaAlarms:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
+      Parameters:
+        FunctionName: !Ref DiagnosticLoggerLambda
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
 Outputs:
   OOMAlarmArn:

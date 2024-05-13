@@ -20,6 +20,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -186,5 +187,78 @@ class RecipientServiceTest {
         //Then
         assertNotNull(result);
         assertEquals(1, result.size());
+    }
+
+
+    @Test
+    void getRecipientDenominationByInternalIdWithCacheDenominationNull() {
+        //Given
+        String uid = "425e4567-e89b-12d3-a456-426655449631";
+        String expecteduid = RecipientType.PF.getValue()+"-" + uid;
+        String taxid = "4567896543";
+        List<String> ids = List.of(expecteduid);
+        BaseRecipientDto brd = new BaseRecipientDto();
+        brd.setDenomination(null);
+        brd.setInternalId(expecteduid);
+        brd.setTaxId(taxid);
+        List<BaseRecipientDto> res = Arrays.asList(brd);
+
+        when(pnDatavaultConfig.getCacheExpireAfterMinutes()).thenReturn(5);
+        when(pnDatavaultConfig.getCacheMaxSize()).thenReturn(5);
+        when(userClient.getRecipientDenominationByInternalId(Mockito.any())).thenReturn(Flux.fromIterable(res));
+        privateService = new RecipientService(client, userClient, selfcarePGClient, pnDatavaultConfig);
+
+        //When
+        List<BaseRecipientDto> result = privateService.getRecipientDenominationByInternalId(ids).collectList().block(d);
+        List<BaseRecipientDto> result1 = privateService.getRecipientDenominationByInternalId(ids).collectList().block(d);
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(expecteduid, result.get(0).getInternalId());
+        assertEquals(taxid, result.get(0).getTaxId());
+
+        assertNotNull(result1);
+        assertEquals(1, result1.size());
+        assertEquals(expecteduid, result1.get(0).getInternalId());
+        assertEquals(taxid, result1.get(0).getTaxId());
+
+        verify(userClient, Mockito.times(2)).getRecipientDenominationByInternalId(Mockito.any());
+    }
+
+    @Test
+    void getRecipientDenominationByInternalIdWithCacheDenominationNotNull() {
+        //Given
+        String uid = "425e4567-e89b-12d3-a456-426655449631";
+        String expecteduid = RecipientType.PF.getValue()+"-" + uid;
+        String taxid = "4567896543";
+        List<String> ids = List.of(expecteduid);
+        BaseRecipientDto brd = new BaseRecipientDto();
+        brd.setDenomination("something");
+        brd.setInternalId(expecteduid);
+        brd.setTaxId(taxid);
+        List<BaseRecipientDto> res = Arrays.asList(brd);
+
+        when(pnDatavaultConfig.getCacheExpireAfterMinutes()).thenReturn(5);
+        when(pnDatavaultConfig.getCacheMaxSize()).thenReturn(5);
+        when(userClient.getRecipientDenominationByInternalId(Mockito.any())).thenReturn(Flux.fromIterable(res));
+        privateService = new RecipientService(client, userClient, selfcarePGClient, pnDatavaultConfig);
+
+        //When
+        List<BaseRecipientDto> result = privateService.getRecipientDenominationByInternalId(ids).collectList().block(d);
+        List<BaseRecipientDto> result1 = privateService.getRecipientDenominationByInternalId(ids).collectList().block(d);
+
+        //Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(expecteduid, result.get(0).getInternalId());
+        assertEquals(taxid, result.get(0).getTaxId());
+
+        assertNotNull(result1);
+        assertEquals(1, result1.size());
+        assertEquals(expecteduid, result1.get(0).getInternalId());
+        assertEquals(taxid, result1.get(0).getTaxId());
+
+        verify(userClient, Mockito.times(1)).getRecipientDenominationByInternalId(Mockito.any());
     }
 }

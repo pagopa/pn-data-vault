@@ -6,17 +6,18 @@ import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientType;
-import it.pagopa.pn.datavault.svc.entities.InternalId;
-import it.pagopa.pn.datavault.utils.RecipientUtils;
 import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultTokenizerClient;
 import it.pagopa.pn.datavault.middleware.wsclient.PersonalDataVaultUserRegistryClient;
 import it.pagopa.pn.datavault.middleware.wsclient.SelfcarePGClient;
+import it.pagopa.pn.datavault.svc.entities.InternalId;
+import it.pagopa.pn.datavault.utils.RecipientUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -71,13 +72,25 @@ public class RecipientService {
             {
                 log.debug("request is 1 element only, using cache");
                 // caso molto comune, provo a risolverlo nella cache
-                return Mono.fromFuture(this.cacheIntToExtIds.get(internalId.get(0),
-                                (s, executor) -> this.getRecipientDenominationByInternalIdPForPG(internalId).take(1).next().toFuture()))
-                        .map(baseRecipientDto -> {
-                            log.debug(LOG_EXIT + " getRecipientDenominationByInternalId taxId={} denomination={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()), LogUtils.maskGeneric(baseRecipientDto.getDenomination()));
-                            return baseRecipientDto;
-                        })
-                        .flux();
+                // se non lo trovo, lo richiedo
+                final CompletableFuture<BaseRecipientDto> baseRecipientDtoFuture = this.cacheIntToExtIds.getIfPresent(internalId.get(0));
+
+                if (baseRecipientDtoFuture != null) {
+                    return Mono.fromFuture(baseRecipientDtoFuture)
+                            .doOnNext(baseRecipientDto -> log.debug(LOG_EXIT + " getRecipientDenominationByInternalId read from cache taxId={} denomination={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()), LogUtils.maskGeneric(baseRecipientDto.getDenomination())))
+                            .flux();
+                }else
+                    return this.getRecipientDenominationByInternalIdPForPG(internalId).take(1).next()
+                    .map(baseRecipientDto -> {
+
+                        if (baseRecipientDto.getDenomination() != null)
+                            this.cacheIntToExtIds.put(internalId.get(0), CompletableFuture.supplyAsync(() -> baseRecipientDto));
+                        else
+                            log.debug("getRecipientDenominationByInternalId skipping cache because denomination is null taxId={} denomination={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()), LogUtils.maskGeneric(baseRecipientDto.getDenomination()));
+
+                        log.debug(LOG_EXIT + " getRecipientDenominationByInternalId cache miss, retrieved taxId={} denomination={}", LogUtils.maskTaxId(baseRecipientDto.getTaxId()), LogUtils.maskGeneric(baseRecipientDto.getDenomination()));
+                        return baseRecipientDto;
+                    }).flux();
             }
             else
             {

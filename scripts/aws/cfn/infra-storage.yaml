@@ -129,7 +129,8 @@ Resources:
             Status: Enabled
             Prefix: !Ref BucketLogPrefix
             ExpirationInDays: !Ref BucketLogRetentionDays   
-            NoncurrentVersionExpirationInDays: !Ref BucketLogRetentionDays                 
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 1 # 1 day                
       NotificationConfiguration:
         QueueConfigurations:
           - Event: 's3:ObjectCreated:*'

@@ -9,7 +9,7 @@
   </parent>
   <groupId>it.pagopa.pn</groupId>
   <artifactId>pn-data-vault</artifactId>
-  <version>2.7.1-RC.1</version>
+  <version>2.7.1-SNAPSHOT</version>
   <name>pn-data-vault</name>
   <description>Handle Confidential Information</description>
 

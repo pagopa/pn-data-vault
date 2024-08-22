@@ -4,7 +4,8 @@
       "SafeStorageAccountId": "",
       "LogsStreamRetentionHours": "48",
       "CdcStreamRetentionHours": "48",
-      "PnCoreAwsAccountId" : "558518206506"
+      "PnCoreAwsAccountId" : "558518206506",
+      "BucketLogRetentionDays": "730"
     }
   }
   

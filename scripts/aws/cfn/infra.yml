@@ -489,6 +489,14 @@ Resources:
       Parameters:
         MacroServiceName: !Sub '${ProjectName}-confidential'
 
+  # The cluster for pn-pdfraster
+  PdfRasterECSCluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
+      Parameters:
+        MacroServiceName: !Sub '${ProjectName}-pdfraster'
+
  ###                             ELASTIC FILE SYSTEM                     ###
   ###########################################################################
 
@@ -1107,6 +1115,10 @@ Outputs:
     Value: !GetAtt ECSCluster.Outputs.ClusterName
     Description: ECS cluster name
   
+  PdfRasterECSClusterName:
+    Value: !GetAtt PdfRasterECSCluster.Outputs.ClusterName
+    Description: ECS cluster name for pn-pdfraster
+    
   # EFS Filesystem:
   FargateEFSFileSystemID:
     Value: !Ref FargateEFSFileSystem

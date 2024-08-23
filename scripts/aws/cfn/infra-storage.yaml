@@ -129,8 +129,11 @@ Resources:
             Status: Enabled
             Prefix: !Ref BucketLogPrefix
             ExpirationInDays: !Ref BucketLogRetentionDays   
+          - Id: DeleteNoncurrentLogs
+            Status: Enabled
+            Prefix: !Ref BucketLogPrefix
             NoncurrentVersionExpiration:
-              NoncurrentDays: 1 # 1 day                
+              NoncurrentDays: 1                             
       NotificationConfiguration:
         QueueConfigurations:
           - Event: 's3:ObjectCreated:*'

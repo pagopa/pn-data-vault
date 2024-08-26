@@ -262,7 +262,7 @@ Parameters:
   PdfRasterApplicationLoadBalancerMetricsDimensionName:
     Type: String
     Description: ECS cluster Application Load Balancer name used for metrics
-    Default ''
+    Default: ''
 
   PdfRasterApplicationLoadBalancerAwsDns:
     Type: String
@@ -288,7 +288,7 @@ Parameters:
     Type: String
     Description: WebApp security group ARN
 
-  ServiceEndpoint_ToPdfRaster:
+  ServiceEndpointToPdfRaster:
     Type: String
     Description: Service endpoint for PdfRaster connections
     Default: ''
@@ -1267,6 +1267,6 @@ Outputs:
   PdfRasterWebappSecurityGroupArn:
     Value: !Ref PdfRasterWebappSecurityGroupArn
 
-  ServiceEndpoint_ToPdfRaster:
-    Value: !Ref ServiceEndpoint_ToPdfRaster
+  ServiceEndpointToPdfRaster:
+    Value: !Ref ServiceEndpointToPdfRaster
     

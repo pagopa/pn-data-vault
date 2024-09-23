@@ -228,6 +228,71 @@ Parameters:
     Description: 'The base path of the bucket where to deploy the lambdas'
     Default: ''
 
+  # PdfRaster Output
+  PdfRasterVpcId:
+    Type: String
+    Description: Id della VPC contenete il microservizio PdfRaster
+    Default: ''
+  
+  PdfRasterVpcCidr:
+    Type: String
+    Description: CIDR della VPC contenete il microservizio PdfRaster
+    Default: ''
+  
+  PdfRasterDefaultSecurityGroup:
+    Type: String
+    Description: Default PdfRaster VPC security group
+    Default: ''
+
+  PdfRasterVpcSubnets:
+    Type: String
+    Description: Subnets della VPC contenente il microservizio PdfRaster
+    Default: ''
+
+  PdfRasterVpcSubnetsCidrs:
+    Type: String
+    Description: CIDRs delle subnets della VPC contenente il microservizio PdfRaster
+    Default: ''
+  
+  PdfRasterApplicationLoadBalancerArn:
+    Type: String
+    Description: ECS cluster Application Load Balancer ARN, attach microservice listeners here
+    Default: ''
+
+  PdfRasterApplicationLoadBalancerMetricsDimensionName:
+    Type: String
+    Description: ECS cluster Application Load Balancer name used for metrics
+    Default: ''
+
+  PdfRasterApplicationLoadBalancerAwsDns:
+    Type: String
+    Description: ECS cluster Application Load Balancer AWS released DNS, can be used to call microservices
+    Default: ''
+
+  PdfRasterApplicationLoadBalancerAwsDnsZoneId:
+    Type: String
+    Description: ECS cluster Application Load Balancer AWS hosted Zone, usefull for aliases
+    Default: ''
+
+  PdfRasterApplicationLoadBalancerListenerArn:
+    Type: String
+    Description: ECS cluster Application Load Balancer Listener ARN, attach here new microservice routing rule
+    Default: ''
+
+  PdfRasterWebappSecurityGroupId:
+    Type: String
+    Description: WebApp security group id
+    Default: ''
+
+  PdfRasterWebappSecurityGroupArn:
+    Type: String
+    Description: WebApp security group ARN
+
+  ServiceEndpointToPdfRaster:
+    Type: String
+    Description: Service endpoint for PdfRaster connections
+    Default: ''
+
 Conditions:
   IsAlbArnEmpty: !Equals [ !Ref ApplicationLoadBalancerArn, '-' ]
   IsAlbArnDnsEmpty: !Equals [ !Ref ApplicationLoadBalancerAwsDns, '-' ]
@@ -423,6 +488,14 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
       Parameters:
         MacroServiceName: !Sub '${ProjectName}-confidential'
+
+  # The cluster for pn-pdfraster
+  PdfRasterECSCluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-cluster.yaml"
+      Parameters:
+        MacroServiceName: !Sub '${ProjectName}-pdfraster'
 
  ###                             ELASTIC FILE SYSTEM                     ###
   ###########################################################################
@@ -1042,6 +1115,10 @@ Outputs:
     Value: !GetAtt ECSCluster.Outputs.ClusterName
     Description: ECS cluster name
   
+  PdfRasterECSClusterName:
+    Value: !GetAtt PdfRasterECSCluster.Outputs.ClusterName
+    Description: ECS cluster name for pn-pdfraster
+    
   # EFS Filesystem:
   FargateEFSFileSystemID:
     Value: !Ref FargateEFSFileSystem
@@ -1152,4 +1229,44 @@ Outputs:
   
   BucketBasePath:
     Value: !Ref BucketBasePath
+    
+  # pdf raster output
+  PdfRasterVpcId:
+    Value: !Ref PdfRasterVpcId
+  
+  PdfRasterVpcCidr:
+    Value: !Ref PdfRasterVpcCidr
+  
+  PdfRasterDefaultSecurityGroup:
+    Value: !Ref PdfRasterDefaultSecurityGroup
+
+  PdfRasterVpcSubnets:
+    Value: !Ref PdfRasterVpcSubnets
+
+  PdfRasterVpcSubnetsCidrs:
+    Value: !Ref PdfRasterVpcSubnetsCidrs
+  
+  PdfRasterApplicationLoadBalancerArn:
+    Value: !Ref PdfRasterApplicationLoadBalancerArn
+
+  PdfRasterApplicationLoadBalancerMetricsDimensionName:
+    Value: !Ref PdfRasterApplicationLoadBalancerMetricsDimensionName
+
+  PdfRasterApplicationLoadBalancerAwsDns:
+    Value: !Ref PdfRasterApplicationLoadBalancerAwsDns
+
+  PdfRasterApplicationLoadBalancerAwsDnsZoneId:
+    Value: !Ref PdfRasterApplicationLoadBalancerAwsDnsZoneId
+
+  PdfRasterApplicationLoadBalancerListenerArn:
+    Value: !Ref PdfRasterApplicationLoadBalancerListenerArn
+
+  PdfRasterWebappSecurityGroupId:
+    Value: !Ref PdfRasterWebappSecurityGroupId
+
+  PdfRasterWebappSecurityGroupArn:
+    Value: !Ref PdfRasterWebappSecurityGroupArn
+
+  ServiceEndpointToPdfRaster:
+    Value: !Ref ServiceEndpointToPdfRaster
     

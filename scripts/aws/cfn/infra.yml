@@ -406,7 +406,16 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-cloudwatch-dashboard-transform.yaml"
 
+  CdcViewsTransform:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-cdc-views-transform.yaml"
+      Parameters:
+        LambdasBucketName: !Ref CdBucketName
+        LambdasBasePath: !Ref BucketBasePath
   
+
+
   # Private connection from subnets to AWS services
   VPCEndpoints:
     Condition: RequiresVpcEndpoints

@@ -26,10 +26,10 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
 
     @Override
     public Mono<ResponseEntity<Void>> updateRecipientAddressByInternalId(String internalId, String addressId, BigDecimal ttl, Mono<AddressDto> addressDto, ServerWebExchange exchange) {
-        log.info("[enter] internalid:{} addressid:{}", internalId, addressId);
+        log.info("[enter] internalid:{} addressid:{} ttl:{}", internalId, addressId, ttl);
         return addressDto
                     .flatMap( addressDtoValue ->
-                            svc.updateAddressByInternalId( internalId, addressId, addressDtoValue)
+                            svc.updateAddressByInternalId( internalId, addressId, addressDtoValue, null)
                     )
                     .map( updateResult -> {
                         log.debug(EXIT_LOG);

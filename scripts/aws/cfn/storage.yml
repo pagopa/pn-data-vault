@@ -59,6 +59,9 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub '${ProjectName}-ConfidentialObjects'
+      TimeToLiveSpecification:
+        AttributeName: 'expiration'
+        Enabled: true
       AttributeDefinitions:
         - AttributeName: "hashKey"
           AttributeType: "S"

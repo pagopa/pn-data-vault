@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import java.math.BigDecimal;
 
 
 @RestController
@@ -24,7 +25,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
     }
 
     @Override
-    public Mono<ResponseEntity<Void>> updateRecipientAddressByInternalId(String internalId, String addressId, Mono<AddressDto> addressDto, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<Void>> updateRecipientAddressByInternalId(String internalId, String addressId, BigDecimal ttl, Mono<AddressDto> addressDto, ServerWebExchange exchange) {
         log.info("[enter] internalid:{} addressid:{}", internalId, addressId);
         return addressDto
                     .flatMap( addressDtoValue ->

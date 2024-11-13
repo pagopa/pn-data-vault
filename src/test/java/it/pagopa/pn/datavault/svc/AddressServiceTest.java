@@ -97,6 +97,25 @@ class AddressServiceTest {
     }
 
     @Test
+    void updateAddressByInternalIdWithTtlAtZero() {
+        //Given
+        AddressEntity addressEntity = TestUtils.newAddress();
+        AddressDto dto = new AddressDto();
+        dto.setValue("test@test.it");
+
+        ArgumentCaptor<AddressEntity> argCaptor = ArgumentCaptor.forClass(AddressEntity.class);
+        when(objDao.updateAddress(argCaptor.capture())).thenReturn(Mono.just(addressEntity));
+
+        //When
+        assertDoesNotThrow(() -> {
+            privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), dto, BigDecimal.ZERO).block(d);
+        });
+
+        //Then
+        Assertions.assertNull(argCaptor.getValue().getExpiration());
+    }
+
+    @Test
     void updateAddressByInternalIdInvalid1() {
         //Given
         AddressEntity addressEntity = TestUtils.newAddress();

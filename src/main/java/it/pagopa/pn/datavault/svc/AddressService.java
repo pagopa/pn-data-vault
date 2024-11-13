@@ -52,7 +52,7 @@ public class AddressService {
 
         AddressEntity me = new AddressEntity(internalId, addressId);
         me.setValue(addressDto.getValue());
-        if (ttl != null) me.setExpiration(BigDecimal.valueOf(Instant.now().getEpochSecond()).add(ttl));
+        if (ttl != null && ttl.compareTo(BigDecimal.ZERO) > 0) me.setExpiration(BigDecimal.valueOf(Instant.now().getEpochSecond()).add(ttl));
 
         return objDao.updateAddress(me).map(r -> "OK");
     }

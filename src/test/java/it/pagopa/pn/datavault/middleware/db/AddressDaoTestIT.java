@@ -162,7 +162,6 @@ class AddressDaoTestIT {
             } catch (Exception e) {
                 System.out.println("Nothing to remove");
             }
-            fail("Red phase");
         }
     }
 

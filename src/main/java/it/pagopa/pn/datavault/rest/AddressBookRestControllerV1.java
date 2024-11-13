@@ -29,7 +29,7 @@ public class AddressBookRestControllerV1 implements AddressBookApi {
         log.info("[enter] internalid:{} addressid:{} ttl:{}", internalId, addressId, ttl);
         return addressDto
                     .flatMap( addressDtoValue ->
-                            svc.updateAddressByInternalId( internalId, addressId, addressDtoValue, null)
+                            svc.updateAddressByInternalId( internalId, addressId, addressDtoValue, ttl)
                     )
                     .map( updateResult -> {
                         log.debug(EXIT_LOG);

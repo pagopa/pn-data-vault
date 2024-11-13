@@ -12,6 +12,7 @@ import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
@@ -51,6 +52,7 @@ public class AddressService {
 
         AddressEntity me = new AddressEntity(internalId, addressId);
         me.setValue(addressDto.getValue());
+        if (ttl != null) me.setExpiration(BigDecimal.valueOf(Instant.now().getEpochSecond()).add(ttl));
 
         return objDao.updateAddress(me).map(r -> "OK");
     }

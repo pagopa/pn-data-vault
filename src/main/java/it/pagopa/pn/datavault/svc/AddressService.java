@@ -9,10 +9,10 @@ import it.pagopa.pn.datavault.middleware.db.AddressDao;
 import it.pagopa.pn.datavault.middleware.db.entities.AddressEntity;
 import it.pagopa.pn.datavault.utils.ValidationUtils;
 import lombok.CustomLog;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
 
@@ -40,7 +40,7 @@ public class AddressService {
     }
 
 
-    public Mono<String> updateAddressByInternalId(String internalId, String addressId, AddressDto addressDto) {
+    public Mono<String> updateAddressByInternalId(String internalId, String addressId, AddressDto addressDto, BigDecimal ttl) {
         if (! ValidationUtils.checkInternalId(internalId))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "internalId");
 
@@ -52,6 +52,7 @@ public class AddressService {
 
         AddressEntity me = new AddressEntity(internalId, addressId);
         me.setValue(addressDto.getValue());
+        if (ttl != null && ttl.compareTo(BigDecimal.ZERO) > 0) me.setExpiration(BigDecimal.valueOf(Instant.now().getEpochSecond()).add(ttl));
 
         return objDao.updateAddress(me).map(r -> "OK");
     }

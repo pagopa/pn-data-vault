@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
+import java.math.BigDecimal;
+
 /**
  * Entity Address
  */
@@ -17,6 +19,7 @@ public class AddressEntity {
     public static final String COL_PK = "hashKey";
     public static final String COL_SK = "sortKey";
     public static final String COL_VALUE = "value";
+    public static final String COL_EXPIRATION = "expiration";
 
     public AddressEntity(){}
 
@@ -37,6 +40,7 @@ public class AddressEntity {
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;
     @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)}))  private String addressId;
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_EXPIRATION)}))  private BigDecimal expiration;
 
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_VALUE)})) private String value;
 }

@@ -165,6 +165,13 @@ paths:
       summary: Inserisce o modifica un domicilio o recapito
       tags:
         - AddressBook
+      parameters:
+        - name: ttl
+          description: Durata in secondi della scadenza per il recapito o domicilio digitale
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Ttl'
       requestBody:
         content:
           application/json:
@@ -547,6 +554,10 @@ components:
       type: string
       pattern: '[A-Za-z0-9-_:#]*'
       example: LEGAL#default#PEC
+
+    Ttl:
+      title: Durata in secondi della scadenza per il recapito o domicilio digitale
+      type: number
 
     RecipientAddressesDto:
       title: Request for new object creation

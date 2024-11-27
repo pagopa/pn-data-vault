@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,11 +120,83 @@ class AddressDaoTestIT {
 
             Assertions.assertNotNull( elementFromDb);
             Assertions.assertEquals( addresToInsert, elementFromDb);
+            Assertions.assertNull( elementFromDb.getExpiration() );
         } catch (Exception e) {
             fail(e);
         } finally {
             try {
                 testDao.delete(addresToInsert.getPk(), addresToInsert.getAddressId());
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    @Test
+    void updateAddressWithTtl() {
+        //Given
+        AddressEntity addressToInsert = TestUtils.newAddress();
+        addressToInsert.setExpiration(BigDecimal.TEN);
+
+        try {
+            testDao.delete(addressToInsert.getPk(), addressToInsert.getAddressId());
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        addressDao.updateAddress(addressToInsert).block(Duration.ofMillis(3000));
+
+        //Then
+        try {
+            AddressEntity elementFromDb = testDao.get(addressToInsert.getPk(), addressToInsert.getAddressId());
+
+            Assertions.assertNotNull( elementFromDb);
+            Assertions.assertEquals( addressToInsert, elementFromDb);
+            Assertions.assertNotNull( elementFromDb.getExpiration() );
+        } catch (Exception e) {
+            fail(e);
+        } finally {
+            try {
+                testDao.delete(addressToInsert.getPk(), addressToInsert.getAddressId());
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    // Caso in cui passo un'expiration, ma l'address per il recipient esiste già con ttl nullo -> il record non viene aggiornato.
+    @Test
+    void updateAddressWithTtl_AlreadyExisting() {
+        //Given
+        AddressEntity addressToInsert = TestUtils.newAddress();
+
+        try {
+            testDao.delete(addressToInsert.getPk(), addressToInsert.getAddressId());
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+        addressDao.updateAddress(addressToInsert).block();
+
+        //When
+        AddressEntity addressToUpdate = TestUtils.newAddress();
+        String newValue = "newtest@test.it";
+        addressToUpdate.setValue(newValue);
+        addressToUpdate.setExpiration(BigDecimal.TEN);
+        addressDao.updateAddress(addressToUpdate).block(Duration.ofMillis(3000));
+
+        //Then
+        try {
+            AddressEntity elementFromDb = testDao.get(addressToInsert.getPk(), addressToInsert.getAddressId());
+
+            Assertions.assertNotNull( elementFromDb);
+            Assertions.assertEquals( addressToInsert, elementFromDb);
+            Assertions.assertNull( elementFromDb.getExpiration() );
+        } catch (Exception e) {
+            fail(e);
+        } finally {
+            try {
+                testDao.delete(addressToInsert.getPk(), addressToInsert.getAddressId());
             } catch (Exception e) {
                 System.out.println("Nothing to remove");
             }

@@ -56,10 +56,17 @@ public class AddressDao extends BaseDao {
      * @param entity oggetto da creare
      * @return ritorna l'oggetto creato
      */
-    public Mono<AddressEntity> updateAddress(AddressEntity entity)
-    {
-        log.info("updating address internalid:{} addressid:{}",entity.getInternalId(), entity.getAddressId());
-        return Mono.fromFuture(addressTable.updateItem(entity));
+    public Mono<AddressEntity> updateAddress(AddressEntity entity) {
+        log.info("updating address internalid:{} addressid:{} expiration:{}", entity.getInternalId(), entity.getAddressId(), entity.getExpiration());
+        return Mono.fromFuture(addressTable.getItem(entity))
+                .flatMap(existing -> {
+                    // Se l'indirizzo per il recipient esiste già con ttl nullo, non va aggiornato. Si dà priorità a mantenere l'informazione in dynamo.
+                    if (entity.getExpiration() != null && existing.getExpiration() == null) {
+                        log.warn("Address internalid:{} addressid:{} does not have an expiration. The record will not be updated.", entity.getInternalId(), entity.getAddressId());
+                        return Mono.just(existing);
+                    } else return Mono.empty();
+                })
+                .switchIfEmpty(Mono.fromFuture(() -> addressTable.updateItem(entity)));
     }
 
     /**

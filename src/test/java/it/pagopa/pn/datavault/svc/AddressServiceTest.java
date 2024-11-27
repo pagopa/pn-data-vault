@@ -7,7 +7,9 @@ import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.RecipientAddresses
 import it.pagopa.pn.datavault.mapper.AddressEntityAddressDtoMapper;
 import it.pagopa.pn.datavault.middleware.db.AddressDao;
 import it.pagopa.pn.datavault.middleware.db.entities.AddressEntity;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,11 +70,49 @@ class AddressServiceTest {
 
         //When
         assertDoesNotThrow(() -> {
-            privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), dto).block(d);
+            privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), dto, null).block(d);
         });
 
         //Then
         // nothing
+    }
+
+    @Test
+    void updateAddressByInternalIdWithTtl() {
+        //Given
+        AddressEntity addressEntity = TestUtils.newAddress();
+        AddressDto dto = new AddressDto();
+        dto.setValue("test@test.it");
+
+        ArgumentCaptor<AddressEntity> argCaptor = ArgumentCaptor.forClass(AddressEntity.class);
+        when(objDao.updateAddress(argCaptor.capture())).thenReturn(Mono.just(addressEntity));
+
+        //When
+        assertDoesNotThrow(() -> {
+            privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), dto, BigDecimal.TEN).block(d);
+        });
+
+        //Then
+        Assertions.assertNotNull(argCaptor.getValue().getExpiration());
+    }
+
+    @Test
+    void updateAddressByInternalIdWithTtlAtZero() {
+        //Given
+        AddressEntity addressEntity = TestUtils.newAddress();
+        AddressDto dto = new AddressDto();
+        dto.setValue("test@test.it");
+
+        ArgumentCaptor<AddressEntity> argCaptor = ArgumentCaptor.forClass(AddressEntity.class);
+        when(objDao.updateAddress(argCaptor.capture())).thenReturn(Mono.just(addressEntity));
+
+        //When
+        assertDoesNotThrow(() -> {
+            privateService.updateAddressByInternalId(addressEntity.getInternalId(), addressEntity.getAddressId(), dto, BigDecimal.ZERO).block(d);
+        });
+
+        //Then
+        Assertions.assertNull(argCaptor.getValue().getExpiration());
     }
 
     @Test
@@ -84,7 +125,7 @@ class AddressServiceTest {
         //When
         String iun = addressEntity.getInternalId();
         String addr = addressEntity.getAddressId();
-        assertThrows(PnInvalidInputException.class, () ->privateService.updateAddressByInternalId(iun, addr, dto));
+        assertThrows(PnInvalidInputException.class, () ->privateService.updateAddressByInternalId(iun, addr, dto, null));
 
         //Then
         // nothing
@@ -100,7 +141,7 @@ class AddressServiceTest {
         //When
         String iun = addressEntity.getInternalId();
         String addr = addressEntity.getAddressId();
-        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, dto, null));
 
         //Then
         // nothing
@@ -114,7 +155,7 @@ class AddressServiceTest {
         //When
         String iun = addressEntity.getInternalId();
         String addr = addressEntity.getAddressId();
-        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, null));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, addr, null, null));
 
         //Then
         // nothing
@@ -129,7 +170,7 @@ class AddressServiceTest {
 
         //When
         String addr = addressEntity.getAddressId();
-        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(null, addr, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(null, addr, dto, null));
 
         //Then
         // nothing
@@ -144,7 +185,7 @@ class AddressServiceTest {
 
         //When
         String iun = addressEntity.getInternalId();
-        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, null, dto));
+        assertThrows(PnInvalidInputException.class, () -> privateService.updateAddressByInternalId(iun, null, dto, null));
 
         //Then
         // nothing

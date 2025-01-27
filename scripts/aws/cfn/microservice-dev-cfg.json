@@ -18,7 +18,7 @@
     "CpuValue": "2048",
     "MemoryAmount": "4GB",
     "MountEfs": "false",
-    "PnCronAnalyzer": "* */1 * * * *",
+    "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false"
   }
 }

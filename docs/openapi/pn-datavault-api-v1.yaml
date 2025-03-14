@@ -658,6 +658,9 @@ components:
           $ref: '#/components/schemas/AddressDto'
         physicalAddress:
           $ref: '#/components/schemas/AnalogDomicile'
+        recIndex:
+          type: integer
+          example: 0
 
     AnalogDomicile:
       title: dettagli di un domicilio analogico; ovvero un indirizzo fisico

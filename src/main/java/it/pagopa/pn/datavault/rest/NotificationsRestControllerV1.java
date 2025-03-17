@@ -44,8 +44,7 @@ public class NotificationsRestControllerV1 implements NotificationsApi {
                 .collectList()
                 .map( result -> {
                     log.debug("[exit] getNotificationAddressesByIun");
-                    return result.isEmpty() ? ResponseEntity.notFound().build() :
-                            ResponseEntity.ok(Flux.fromIterable(result));
+                    return ResponseEntity.ok(Flux.fromIterable(result));
                 }));
     }
 

@@ -165,7 +165,108 @@ class NotificationServiceTest {
         dto.setDigitalAddress(new AddressDto());
         dto.getDigitalAddress().setValue("rossi@test.it");
         dto.setPhysicalAddress(new AnalogDomicile());
+        dto.setRecIndex(0);
         listdto.add(dto);
+
+        when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
+
+        //When
+        assertDoesNotThrow(() -> {
+            privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]), false).block(d);
+        });
+
+        //Then
+        // nothing
+    }
+
+    @Test
+    void updateMultiSenderNotificationAddressesByIun() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification();
+        List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
+        NotificationRecipientAddressesDto dto1 = new NotificationRecipientAddressesDto();
+        NotificationRecipientAddressesDto dto2 = new NotificationRecipientAddressesDto();
+
+        dto1.setDenomination("sig rossi");
+        dto1.setDigitalAddress(new AddressDto());
+        dto1.getDigitalAddress().setValue("rossi@test.it");
+        dto1.setPhysicalAddress(new AnalogDomicile());
+        dto1.setRecIndex(0);
+
+        dto2.setDenomination("sig rossi2");
+        dto2.setDigitalAddress(new AddressDto());
+        dto2.getDigitalAddress().setValue("rossi2@test.it");
+        dto2.setPhysicalAddress(new AnalogDomicile());
+        dto2.setRecIndex(1);
+
+        listdto.add(dto1);
+        listdto.add(dto2);
+
+        when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
+
+        //When
+        assertDoesNotThrow(() -> {
+            privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]), false).block(d);
+        });
+
+        //Then
+        // nothing
+    }
+
+
+    @Test
+    void updateMultiSenderNotificationAddressesByIun_TestWithRecIndexJustForOneSender() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification();
+        List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
+        NotificationRecipientAddressesDto dto1 = new NotificationRecipientAddressesDto();
+        NotificationRecipientAddressesDto dto2 = new NotificationRecipientAddressesDto();
+
+        dto1.setDenomination("sig rossi");
+        dto1.setDigitalAddress(new AddressDto());
+        dto1.getDigitalAddress().setValue("rossi@test.it");
+        dto1.setPhysicalAddress(new AnalogDomicile());
+        dto1.setRecIndex(0);
+
+        dto2.setDenomination("sig rossi2");
+        dto2.setDigitalAddress(new AddressDto());
+        dto2.getDigitalAddress().setValue("rossi2@test.it");
+        dto2.setPhysicalAddress(new AnalogDomicile());
+
+        listdto.add(dto1);
+        listdto.add(dto2);
+
+        when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
+
+        //When
+        assertThrows(PnInvalidInputException.class, () -> {
+            privateService.updateNotificationAddressesByIun(notificationEntity.getInternalId(), listdto.toArray(new NotificationRecipientAddressesDto[0]), false).block(d);
+        });
+
+        //Then
+        // nothing
+    }
+
+    @Test
+    void updateMultiSenderNotificationAddressesByIun_NoRecIndex() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification();
+        List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
+        NotificationRecipientAddressesDto dto1 = new NotificationRecipientAddressesDto();
+        NotificationRecipientAddressesDto dto2 = new NotificationRecipientAddressesDto();
+
+        dto1.setDenomination("sig rossi");
+        dto1.setDigitalAddress(new AddressDto());
+        dto1.getDigitalAddress().setValue("rossi@test.it");
+        dto1.setPhysicalAddress(new AnalogDomicile());
+
+        dto2.setDenomination("sig rossi2");
+        dto2.setDigitalAddress(new AddressDto());
+        dto2.getDigitalAddress().setValue("rossi2@test.it");
+        dto2.setPhysicalAddress(new AnalogDomicile());
+
+        listdto.add(dto1);
+        listdto.add(dto2);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
 
@@ -188,6 +289,7 @@ class NotificationServiceTest {
         dto.setDenomination("sig rossi");
         dto.setDigitalAddress(null);
         dto.setPhysicalAddress(new AnalogDomicile());
+        dto.setRecIndex(0);
         listdto.add(dto);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
@@ -201,6 +303,51 @@ class NotificationServiceTest {
         // nothing
     }
 
+    @Test
+    void updateNotificationAddressesByIunValidNoPhysical() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification();
+        List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
+        NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
+        dto.setDenomination("sig rossi");
+        dto.setDigitalAddress(new AddressDto());
+        dto.getDigitalAddress().setValue("rossi@test.it");
+        dto.setPhysicalAddress(null);
+        dto.setRecIndex(0);
+        listdto.add(dto);
+
+        when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
+
+        //When
+        String iun = notificationEntity.getInternalId();
+        NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
+        assertDoesNotThrow(() -> privateService.updateNotificationAddressesByIun(iun, dtos, false));
+
+        //Then
+        // nothing
+    }
+
+    @Test
+    void updateNotificationAddressesByIunValidNoRecIndex() {
+        //Given
+        NotificationEntity notificationEntity = TestUtils.newNotification();
+        List<NotificationRecipientAddressesDto> listdto = new ArrayList<>();
+        NotificationRecipientAddressesDto dto = new NotificationRecipientAddressesDto();
+        dto.setDenomination("sig rossi");
+        dto.setDigitalAddress(new AddressDto());
+        dto.getDigitalAddress().setValue("rossi@test.it");
+        dto.setPhysicalAddress(new AnalogDomicile());
+
+        when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
+
+        //When
+        String iun = notificationEntity.getInternalId();
+        NotificationRecipientAddressesDto[] dtos = listdto.toArray(new NotificationRecipientAddressesDto[0]);
+        assertDoesNotThrow(() -> privateService.updateNotificationAddressesByIun(iun, dtos, false));
+
+        //Then
+        // nothing
+    }
 
 
     @Test
@@ -212,6 +359,7 @@ class NotificationServiceTest {
         //dto.setDenomination("sig rossi");
         dto.setDigitalAddress(new AddressDto());
         dto.setPhysicalAddress(new AnalogDomicile());
+        dto.setRecIndex(0);
         listdto.add(dto);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));
@@ -236,6 +384,7 @@ class NotificationServiceTest {
         dto.setDenomination("sig rossi");
         dto.setDigitalAddress(new AddressDto());
         dto.setPhysicalAddress(new AnalogDomicile());
+        dto.setRecIndex(0);
         listdto.add(dto);
 
         when(objDao.updateNotifications(Mockito.any())).thenReturn(Mono.just("OK"));

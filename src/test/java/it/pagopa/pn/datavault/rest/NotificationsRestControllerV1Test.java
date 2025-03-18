@@ -112,6 +112,71 @@ class NotificationsRestControllerV1Test {
     }
 
     @Test
+    void getNotificationAddressesByIunWithNormalizedFalseAndEmptyBodyList() {
+        //Given
+        String url = "/datavault-private/v1/notifications/{iun}/addresses"
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
+
+        //When
+        Mockito.when( privateService.getNotificationAddressesByIun( "MXLQ-XMWD-YMLH-202206-K-1", false))
+                .thenReturn(Flux.fromIterable(new ArrayList<>()));
+
+        //Then
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .queryParam("normalized", false)
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk().expectBodyList(NotificationRecipientAddressesDto.class);
+
+    }
+
+    @Test
+    void getNotificationAddressesByIunWithNormalizedTrueAndEmptyBodyList() {
+        //Given
+        String url = "/datavault-private/v1/notifications/{iun}/addresses"
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
+
+        //When
+        Mockito.when( privateService.getNotificationAddressesByIun( "MXLQ-XMWD-YMLH-202206-K-1", true))
+                .thenReturn(Flux.fromIterable(new ArrayList<>()));
+
+        //Then
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .queryParam("normalized", true)
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk().expectBodyList(NotificationRecipientAddressesDto.class);
+
+    }
+
+    @Test
+    void getNotificationAddressesByIunWithNotNormalizedParameterAndEmptyBodyList() {
+        //Given
+        String url = "/datavault-private/v1/notifications/{iun}/addresses"
+                .replace("{iun}", "MXLQ-XMWD-YMLH-202206-K-1");
+
+        //When
+        Mockito.when( privateService.getNotificationAddressesByIun( "MXLQ-XMWD-YMLH-202206-K-1", null))
+                .thenReturn(Flux.fromIterable(new ArrayList<>()));
+
+        //Then
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(url)
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk().expectBodyList(NotificationRecipientAddressesDto.class);
+
+    }
+
+    @Test
     void getNotificationAddressesByIunWithNotNormalizedParameter() {
         //Given
         String url = "/datavault-private/v1/notifications/{iun}/addresses"

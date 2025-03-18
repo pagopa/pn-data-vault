@@ -35,6 +35,7 @@ public class NotificationEntityNotificationRecipientAddressesDtoMapper extends P
             target.setDigitalAddress(addressDto);
         }
         target.setPhysicalAddress(toAnalogDomicile(entity.getPhysicalAddress()));
+        target.setRecIndex(Integer.valueOf(entity.getRecipientIndex()));
         return target;
     }
 }

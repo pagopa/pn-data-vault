@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static it.pagopa.pn.commons.exceptions.PnExceptionsCodes.ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED;
+import static it.pagopa.pn.datavault.exceptions.PnDatavaultExceptionCodes.ERROR_CODE_DATAVAULT_MALFORMED_INPUT;
+import static it.pagopa.pn.datavault.exceptions.PnDatavaultExceptionCodes.ERROR_MESSAGE_DATAVAULT_MALFORMED_BODY_UPDATEADDRESSES;
 
 @Service
 @CustomLog
@@ -50,7 +52,7 @@ public class NotificationService {
     }
 
     public Flux<NotificationRecipientAddressesDto> getNotificationAddressesByIun(String iun, Boolean normalized) {
-        if(normalized == null) {
+        if (normalized == null) {
             /*
             Se il parametro non viene passato allora il metodo dovrà prima comportarsi come se il parametro fosse presente
             e valorizzato true. Se gli indirizzi normalizzati non sono presenti allora deve comportarsi come se il paramtro fosse presente e valorizzato false
@@ -66,8 +68,8 @@ public class NotificationService {
     public Mono<Object> updateNotificationAddressesByIun(String iun, NotificationRecipientAddressesDto[] dtoArray, Boolean normalized) {
 
         List<NotificationEntity> nelist = new ArrayList<>();
-
-        AtomicInteger recipientIndex = new AtomicInteger( 0 );
+        boolean shouldAutoIncrement = checkRecIndexfromDtoIfNotPresent(dtoArray);
+        AtomicInteger recipientIndex = new AtomicInteger(0);
         Arrays.stream(dtoArray).forEach(dto -> {
             // valida l'oggetto
             validate(dto);
@@ -75,12 +77,38 @@ public class NotificationService {
             NotificationEntity ne = mappingsDao.toEntity(dto);
             //il setNormalized deve essere richiamato prima del setInternalId per generare nel modo corretto il prefisso della pk
             ne.setNormalizedAddress(normalized);
-            ne.setRecipientIndex( String.format("%03d", recipientIndex.getAndIncrement() ) );
+            ne.setRecipientIndex(String.format("%03d", shouldAutoIncrement ? recipientIndex.getAndIncrement() : dto.getRecIndex()));
             ne.setInternalId(iun);  // il mapping non può mappare l'internalid, non è presente nel dto
             nelist.add(ne);
         });
 
         return notificationDao.updateNotifications(nelist).map(r -> "OK");
+    }
+
+    /**
+     * Verifica dell'attributo recIndex nel NotificationRecipientAddressesDto.
+     * Se il recIndex non è presente per ogni indirizzo, il metodo restituisce true.
+     * Se il recIndex è presente per ogni indirizzo, il metodo restituisce false.
+     * Se il recIndex è presente solo per alcuni indirizzi, il metodo restituisce un'eccezione.
+     *
+     * @param dtoArray
+     * @return true se il NotificationRecipientAddressesDto non restituisce i recIndex
+     */
+    private boolean checkRecIndexfromDtoIfNotPresent(NotificationRecipientAddressesDto[] dtoArray) {
+
+        boolean recIndexNotPresent = false;
+        boolean recIndexPresent = false;
+        for (NotificationRecipientAddressesDto dto : dtoArray) {
+            if (dto.getRecIndex() != null) {
+                recIndexPresent = true;
+            } else {
+                recIndexNotPresent = true;
+            }
+        }
+        if (recIndexNotPresent && recIndexPresent) {
+            throw new PnInvalidInputException(ERROR_CODE_DATAVAULT_MALFORMED_INPUT, "body", ERROR_MESSAGE_DATAVAULT_MALFORMED_BODY_UPDATEADDRESSES);
+        }
+        return recIndexNotPresent;
     }
 
     public Flux<ConfidentialTimelineElementDto> getNotificationTimelineByIun(String iun) {
@@ -104,7 +132,7 @@ public class NotificationService {
         if (!ValidationUtils.checkDenomination(dto.getDenomination()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "denomination");
 
-        if (! ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
+        if (!ValidationUtils.checkDigitalAddress(dto.getDigitalAddress()))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "digitalAddress.value");
     }
 

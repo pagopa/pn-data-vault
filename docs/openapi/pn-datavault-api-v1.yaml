@@ -515,6 +515,7 @@ components:
       description: Codice Fiscale del destinatario, del delagao o dlegante
       type: string
       x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+      format: password # NO EXTERNAL
       example: CGNNMO01T10A944Q
 
     InternalId:
@@ -542,6 +543,7 @@ components:
           description: Nome + cognome __oppure__ ragione sociale
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: PagoP.A. S.p.A.
 
 
@@ -585,6 +587,7 @@ components:
         value:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
 
 
     ###############################################################################################
@@ -614,14 +617,17 @@ components:
         destName:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: Nome
         destSurname:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: Cognome
         destBusinessName:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: Ragione sociale
       example:
         destName: Nome
@@ -653,6 +659,7 @@ components:
         denomination:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: Nome Dott. Cognome
         digitalAddress:
           $ref: '#/components/schemas/AddressDto'
@@ -669,34 +676,42 @@ components:
         at:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: 'presso famiglia Rossi'
         address:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: 'Via senza Nome 15'
         addressDetails:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: 'scala A'
         cap:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: '40129'
         municipality:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: 'Bologna'
         municipalityDetails:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: 'borgo qualcosa'
         province:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: 'BO'
         state:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
           example: 'it'
 
     ListOfConfidentialTimelineElementId:
@@ -725,9 +740,11 @@ components:
         taxId:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
         denomination:
           type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
         digitalAddress:
           $ref: '#/components/schemas/AddressDto'
         physicalAddress:

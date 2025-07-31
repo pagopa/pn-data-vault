@@ -493,6 +493,66 @@ paths:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
 
+  ###############################################################################################
+  ###                     GESTIONE DATI CONFIDENZIALI DISCOVERED ADDRESS                      ###
+  ###############################################################################################
+
+  '/datavault-private/v1/discovered-addresses/{discoveredAddressId}':
+    parameters:
+      - name: discoveredAddressId
+        description: identificativo di una indirizzo
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/DiscoveredAddressId'
+    get:
+      operationId: getDiscoveredAddressById
+      summary: recupera un discoveredAddress
+      description: >-
+        Permette di leggere il discoveredAddress salvato.
+      tags:
+        - DiscoveredAddresses
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveredAddressDto'
+    put:
+      operationId: updateDiscoveredAddressById
+      summary: Inserisci o modifica un indirizzo
+      tags:
+        - DiscoveredAddresses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveredAddressDto'
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+    delete:
+      operationId: deleteDiscoveredAddressById
+      summary: Elimina l'indirizzo
+      tags:
+        - DiscoveredAddresses
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+
 components:
   schemas:
 
@@ -589,6 +649,55 @@ components:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
 
+    ###############################################################################################
+    ###                             DTO DISCOVERED ADDRESS                                      ###
+    ###############################################################################################
+
+    DiscoveredAddressId:
+      title: Identificativo dell'indirizzo fisico
+      type: string
+      pattern: '[A-Za-z0-9-_:#]*'
+      example: DISCOVERED_ADDR#12345
+
+    DiscoveredAddressDto:
+      type: object
+      properties:
+        name:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        nameRow2:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        address:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        addressRow2:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        cap:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        city:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        city2:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        pr:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+        country:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
 
     ###############################################################################################
     ###                                       DTO DELEGHE                                       ###

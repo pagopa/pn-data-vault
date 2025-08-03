@@ -5,20 +5,16 @@ import lombok.Getter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
-import java.math.BigDecimal;
-
 /**
- * Entity DiscoveredAddress
+ * Entity PaperAddress
  * <p>
- * Usata dal ms pn-paper-tracker per anonimizzare i discoveredAddress restituiti
- * dal consolidatore.
+ * Usata dal per anonimizzare gli indirizzi del flusso analogico.
  */
 @DynamoDbBean
 @Data
-public class DiscoveredAddressEntity {
+public class PaperAddressEntity {
 
-    public static final String DISCOVERED_ADDRESS_PREFIX = "DISCOVERED_ADDR#";
-    public static final String DISCOVERED_ADDRESS_SORTKEY = "N/A";
+    public static final String PAPER_ADDRESS_PREFIX = "PAPER_ADDR#";
 
     public static final String COL_PK = "hashKey";
     public static final String COL_SK = "sortKey";
@@ -33,21 +29,36 @@ public class DiscoveredAddressEntity {
     public static final String COL_PR = "pr";
     public static final String COL_COUNTRY = "country";
 
-    public DiscoveredAddressEntity(){}
+    public PaperAddressEntity(){}
 
-    public DiscoveredAddressEntity(String addressId){
+    public PaperAddressEntity(String paperRequestId, String addressId){
+        this.setPaperRequestId(paperRequestId);
         this.setAddressId(addressId);
-        this.setSk(DISCOVERED_ADDRESS_SORTKEY);
+    }
+
+    @DynamoDbIgnore
+    public static String buildPk(String paperRequestId){
+        return PAPER_ADDRESS_PREFIX + paperRequestId;
+    }
+
+    @DynamoDbIgnore
+    public String getPaperRequestId(){
+        return this.pk.replace(PAPER_ADDRESS_PREFIX, "");
+    }
+
+    @DynamoDbIgnore
+    public void setPaperRequestId(String id){
+        this.pk = buildPk(id);
     }
 
     @DynamoDbIgnore
     public String getAddressId(){
-        return this.pk.replace(DISCOVERED_ADDRESS_PREFIX, "");
+        return this.sk;
     }
 
     @DynamoDbIgnore
     public void setAddressId(String id){
-        this.pk = DISCOVERED_ADDRESS_PREFIX + id;
+        this.sk = id;
     }
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)}))

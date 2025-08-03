@@ -494,55 +494,84 @@ paths:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
 
   ###############################################################################################
-  ###                     GESTIONE DATI CONFIDENZIALI DISCOVERED ADDRESS                      ###
+  ###                     GESTIONE DATI CONFIDENZIALI PAPER ADDRESS                           ###
   ###############################################################################################
 
-  '/datavault-private/v1/discovered-addresses/{discoveredAddressId}':
+  '/datavault-private/v1/paper-addresses/{paperRequestId}':
     parameters:
-      - name: discoveredAddressId
-        description: identificativo di una indirizzo
+      - name: paperRequestId
+        description: identificativo spedizione analogica
         in: path
         required: true
         schema:
-          $ref: '#/components/schemas/DiscoveredAddressId'
+          $ref: '#/components/schemas/PaperRequestId'
     get:
-      operationId: getDiscoveredAddressById
-      summary: recupera un discoveredAddress
+      operationId: getPaperAddressesByPaperRequestId
+      summary: recupera tutti gli indirizzi associati alla spedizione
       description: >-
-        Permette di leggere il discoveredAddress salvato.
+        Permette di recuperare gli indirizzi analogici associati alla spedizione.
       tags:
-        - DiscoveredAddresses
+        - PaperAddresses
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscoveredAddressDto'
-    put:
-      operationId: updateDiscoveredAddressById
-      summary: Inserisci o modifica un indirizzo
+                $ref: '#/components/schemas/PaperAddresses'
+                
+  '/datavault-private/v1/paper-addresses/{paperRequestId}/{paperAddressId}':
+    parameters:
+      - name: paperRequestId
+        description: identificativo spedizione analogica
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PaperRequestId'
+      - name: paperAddressId
+        description: identificativo di una indirizzo
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PaperAddressId'
+    get:
+      operationId: getPaperAddressByIds
+      summary: recupera l'indirizzo associati alla spedizione
+      description: >-
+        Permette di recuperare l'indirizzo analogico associato alla spedizione.
       tags:
-        - DiscoveredAddresses
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DiscoveredAddressDto'
+        - PaperAddresses
       responses:
-        '204':
+        '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaperAddress'
         '400':
           description: Invalid input
           content:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
+    put:
+      operationId: updatePaperAddress
+      summary: Inserisci o modifica un indirizzo
+      tags:
+        - PaperAddresses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaperAddress'
+      responses:
+        '204':
+          description: OK
     delete:
-      operationId: deleteDiscoveredAddressById
+      operationId: deletePaperAddress
       summary: Elimina l'indirizzo
       tags:
-        - DiscoveredAddresses
+        - PaperAddresses
       responses:
         '204':
           description: OK
@@ -650,54 +679,91 @@ components:
           format: password # NO EXTERNAL
 
     ###############################################################################################
-    ###                             DTO DISCOVERED ADDRESS                                      ###
+    ###                             DTO PAPER ADDRESS                                      ###
     ###############################################################################################
-
-    DiscoveredAddressId:
-      title: Identificativo dell'indirizzo fisico
+    PaperRequestId:
+      title: Identificativo della spedizione analogica
       type: string
-      pattern: '[A-Za-z0-9-_:#]*'
-      example: DISCOVERED_ADDR#12345
 
-    DiscoveredAddressDto:
+    PaperAddressId:
+      title: Identificativo di un indirizzo
+      type: string
+
+    PaperAddresses:
       type: object
       properties:
+        addresses:
+          type: array
+          description: Lista di indirizzi
+          items:
+            $ref: '#/components/schemas/PaperAddress'
+      required:
+        - addresses
+
+    PaperAddress:
+      type: object
+      description: >-
+        Indirizzo del destinatario spedizione analogica.
+      required:
+        - name
+        - address
+        - city
+      properties:
         name:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Cognome e nome o ragione sociale del destinatario
         nameRow2:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Seconda riga sulla busta.
         address:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Indirizzo del destinatario.
         addressRow2:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Specifica dell’indirizzo di residenza del destinatario (seconda riga indirizzo sulla busta).
         cap:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Cap del destinatario; in caso di invio estero diventa facoltativo.
         city:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Comune del destinatario.
         city2:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Frazione del destinatario. Potrebbe essere utile se il chiamante non fornisce il cap.
         pr:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Provincia del destinatario; in caso di invio estero diventa facoltativo.
         country:
-          type: string
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
+          type: string
+          description: >-
+            In caso di destinatario estero, diventa obbligatoria l’indicazione della nazione di destinazione, 
+            in standard UPU o altro standard condiviso.
 
     ###############################################################################################
     ###                                       DTO DELEGHE                                       ###

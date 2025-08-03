@@ -1,20 +1,25 @@
 package it.pagopa.pn.datavault.mapper;
 
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.DiscoveredAddressDto;
-import it.pagopa.pn.datavault.middleware.db.entities.DiscoveredAddressEntity;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddress;
+import it.pagopa.pn.datavault.middleware.db.entities.PaperAddressEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DiscoveredAddressEntityDiscoveredAddressDtoMapper implements BaseMapperInterface<DiscoveredAddressDto, DiscoveredAddressEntity> {
+public class PaperAddressEntityPaperAddressMapper implements BaseMapperInterface<PaperAddress, PaperAddressEntity> {
 
 
-    private DiscoveredAddressEntityDiscoveredAddressDtoMapper(){
+    private PaperAddressEntityPaperAddressMapper(){
         super();
     }
 
     @Override
-    public DiscoveredAddressDto toDto(DiscoveredAddressEntity entity) {
-        final DiscoveredAddressDto target = new DiscoveredAddressDto();
+    public PaperAddressEntity toEntity(PaperAddress dto) {
+        return toEntity(null, null, dto);
+    }
+
+    @Override
+    public PaperAddress toDto(PaperAddressEntity entity) {
+        final PaperAddress target = new PaperAddress();
         target.setAddress(entity.getAddress());
         target.setName(entity.getName());
         target.setNameRow2(entity.getNameRow2());
@@ -27,8 +32,8 @@ public class DiscoveredAddressEntityDiscoveredAddressDtoMapper implements BaseMa
         return target;
     }
 
-    public DiscoveredAddressEntity toEntity(String addressId, DiscoveredAddressDto dto) {
-        final DiscoveredAddressEntity target = new DiscoveredAddressEntity(addressId);
+    public PaperAddressEntity toEntity(String paperRequestId, String addressId, PaperAddress dto) {
+        final PaperAddressEntity target = new PaperAddressEntity(paperRequestId, addressId);
         target.setAddress(dto.getAddress());
         target.setName(dto.getName());
         target.setNameRow2(dto.getNameRow2());
@@ -39,11 +44,6 @@ public class DiscoveredAddressEntityDiscoveredAddressDtoMapper implements BaseMa
         target.setPr(dto.getPr());
         target.setCountry(dto.getCountry());
         return target;
-    }
-
-    @Override
-    public DiscoveredAddressEntity toEntity(DiscoveredAddressDto dto) {
-        return this.toEntity(null, dto);
     }
 
 }

@@ -493,6 +493,95 @@ paths:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
 
+  ###############################################################################################
+  ###                     GESTIONE DATI CONFIDENZIALI PAPER ADDRESS                           ###
+  ###############################################################################################
+
+  '/datavault-private/v1/paper-addresses/{paperRequestId}':
+    parameters:
+      - name: paperRequestId
+        description: identificativo spedizione analogica
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PaperRequestId'
+    get:
+      operationId: getPaperAddressesByPaperRequestId
+      summary: recupera tutti gli indirizzi associati alla spedizione
+      description: >-
+        Permette di recuperare gli indirizzi analogici associati alla spedizione.
+      tags:
+        - PaperAddresses
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaperAddresses'
+                
+  '/datavault-private/v1/paper-addresses/{paperRequestId}/{paperAddressId}':
+    parameters:
+      - name: paperRequestId
+        description: identificativo spedizione analogica
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PaperRequestId'
+      - name: paperAddressId
+        description: identificativo di una indirizzo
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PaperAddressId'
+    get:
+      operationId: getPaperAddressByIds
+      summary: recupera l'indirizzo associati alla spedizione
+      description: >-
+        Permette di recuperare l'indirizzo analogico associato alla spedizione.
+      tags:
+        - PaperAddresses
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaperAddress'
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+    put:
+      operationId: updatePaperAddress
+      summary: Inserisci o modifica un indirizzo
+      tags:
+        - PaperAddresses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaperAddress'
+      responses:
+        '204':
+          description: OK
+    delete:
+      operationId: deletePaperAddress
+      summary: Elimina l'indirizzo
+      tags:
+        - PaperAddresses
+      responses:
+        '204':
+          description: OK
+        '400':
+          description: Invalid input
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+
 components:
   schemas:
 
@@ -589,6 +678,93 @@ components:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           format: password # NO EXTERNAL
 
+    ###############################################################################################
+    ###                             DTO PAPER ADDRESS                                      ###
+    ###############################################################################################
+    PaperRequestId:
+      title: Identificativo della spedizione analogica
+      type: string
+
+    PaperAddressId:
+      title: Identificativo di un indirizzo
+      type: string
+
+    PaperAddresses:
+      type: object
+      properties:
+        addresses:
+          type: array
+          description: Lista di indirizzi
+          items:
+            $ref: '#/components/schemas/PaperAddress'
+          minItems: 1
+      required:
+        - addresses
+
+    PaperAddress:
+      type: object
+      description: >-
+        Indirizzo del destinatario spedizione analogica.
+      required:
+        - name
+        - address
+        - city
+      properties:
+        name:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Cognome e nome o ragione sociale del destinatario
+        nameRow2:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Seconda riga sulla busta.
+        address:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Indirizzo del destinatario.
+        addressRow2:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Specifica dell’indirizzo di residenza del destinatario (seconda riga indirizzo sulla busta).
+        cap:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Cap del destinatario; in caso di invio estero diventa facoltativo.
+        city:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Comune del destinatario.
+        city2:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Frazione del destinatario. Potrebbe essere utile se il chiamante non fornisce il cap.
+        pr:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            Provincia del destinatario; in caso di invio estero diventa facoltativo.
+        country:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          format: password # NO EXTERNAL
+          type: string
+          description: >-
+            In caso di destinatario estero, diventa obbligatoria l’indicazione della nazione di destinazione, 
+            in standard UPU o altro standard condiviso.
 
     ###############################################################################################
     ###                                       DTO DELEGHE                                       ###

@@ -697,6 +697,7 @@ components:
           description: Lista di indirizzi
           items:
             $ref: '#/components/schemas/PaperAddress'
+          minItems: 1
       required:
         - addresses
 

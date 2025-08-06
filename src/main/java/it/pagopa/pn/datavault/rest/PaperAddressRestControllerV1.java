@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class PaperAddressRestControllerV1 implements PaperAddressesApi {
 
+    private static final String ENTER_LOG = "[enter]";
     private static final String EXIT_LOG = "[exit]";
 
     private final PaperAddressService paperAddressService;
@@ -25,11 +26,11 @@ public class PaperAddressRestControllerV1 implements PaperAddressesApi {
     @Override
     public Mono<ResponseEntity<PaperAddresses>> getPaperAddressesByPaperRequestId(String paperRequestId,
                                                                                   ServerWebExchange exchange) {
-        log.info("[enter] paperRequestId:{}", paperRequestId);
+        log.info( "{} paperRequestId:{}", ENTER_LOG, paperRequestId);
 
         return paperAddressService.getPaperAddressesByPaperRequestId(paperRequestId)
                 .map(body -> {
-                    log.debug(EXIT_LOG);
+                    log.debug("{} paperRequestId:{}", EXIT_LOG, paperRequestId);
                     return ResponseEntity.ok(body);
                 });
     }
@@ -38,11 +39,12 @@ public class PaperAddressRestControllerV1 implements PaperAddressesApi {
     public Mono<ResponseEntity<PaperAddress>> getPaperAddressByIds(String paperRequestId,
                                                                    String paperAddressId,
                                                                    ServerWebExchange exchange) {
-        log.info("[enter] paperRequestId:{} paperAddressId:{}", paperRequestId, paperAddressId);
+        log.info("{} paperRequestId:{} paperAddressId:{}", ENTER_LOG, paperRequestId, paperAddressId);
 
         return paperAddressService.getPaperAddressByIds(paperRequestId, paperAddressId)
                 .map(body -> {
-                    log.debug(EXIT_LOG);
+
+                    log.debug(EXIT_LOG + " paperRequestId:{} paperAddressId:{}", paperRequestId, paperAddressId);
                     return ResponseEntity.ok(body);
                 })
                 .switchIfEmpty(Mono.fromSupplier(() -> {
@@ -57,14 +59,14 @@ public class PaperAddressRestControllerV1 implements PaperAddressesApi {
                                                          String paperAddressId,
                                                          Mono<PaperAddress> paperAddress,
                                                          ServerWebExchange exchange) {
-        log.info("[enter] paperRequestId:{} paperAddressId:{}", paperRequestId, paperAddressId);
+        log.info("{} paperRequestId:{} paperAddressId:{}", ENTER_LOG, paperRequestId, paperAddressId);
 
         return paperAddress
                 .flatMap(addressValue ->
                         paperAddressService.updatePaperAddress(paperRequestId, paperAddressId, addressValue)
                 )
                 .then(Mono.fromSupplier(() -> {
-                    log.debug(EXIT_LOG);
+                    log.debug("{} paperRequestId:{} paperAddressId:{}", EXIT_LOG, paperRequestId, paperAddressId);
                     return ResponseEntity.noContent().build();
                 }));
     }
@@ -72,13 +74,13 @@ public class PaperAddressRestControllerV1 implements PaperAddressesApi {
     @Override
     public Mono<ResponseEntity<Void>> deletePaperAddress(String paperRequestId, String paperAddressId,
                                                          ServerWebExchange exchange) {
-        log.info("[enter] paperRequestId:{} paperAddressId:{}", paperRequestId, paperAddressId);
+        log.info("{} paperRequestId:{} paperAddressId:{}", ENTER_LOG, paperRequestId, paperAddressId);
 
         return paperAddressService.deletePaperAddress(paperRequestId, paperAddressId)
                 .hasElement()
                 .map(exists -> {
                     if (exists) {
-                        log.debug(EXIT_LOG);
+                        log.debug("{} paperRequestId:{} paperAddressId:{}", EXIT_LOG, paperRequestId, paperAddressId);
                         return ResponseEntity.noContent().build();
                     } else {
                         log.debug("Paper address not found for deletion - paperRequestId: {} and paperAddressId: {}",

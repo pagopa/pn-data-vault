@@ -60,6 +60,24 @@ class PaperAddressServiceTest {
     }
 
     @Test
+    void getPaperAddressesByPaperRequestId_emptyList() {
+        // Arrange
+        String paperRequestId = "test-paper-request-id";
+        List<PaperAddressEntity> list = new ArrayList<>();
+
+        when(paperAddressDao.getPaperAddressesByPaperRequestId(Mockito.any())).thenReturn(Flux.fromIterable(list));
+
+        // Act
+        PaperAddresses result = paperAddressService.getPaperAddressesByPaperRequestId(paperRequestId).block(d);
+
+        // Assert
+        assertNotNull(result);
+        assertNotNull(result.getAddresses());
+        assertEquals(0, result.getAddresses().size());
+        verify(paperAddressDao).getPaperAddressesByPaperRequestId(paperRequestId);
+    }
+
+    @Test
     void getPaperAddressByIds() {
         //Given
         String paperRequestId = "test-paper-request-id";

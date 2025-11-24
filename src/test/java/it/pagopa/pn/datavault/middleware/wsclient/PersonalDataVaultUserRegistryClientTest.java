@@ -17,7 +17,7 @@ import org.mockserver.matchers.Times;
 import org.mockserver.model.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -50,16 +50,16 @@ class PersonalDataVaultUserRegistryClientTest {
 
     private static ClientAndServer mockServer;
 
-    @MockBean
+    @MockitoBean
     private PersonalDataVaultTokenizerClient personalDataVaultTokenizerClient;
 
     @BeforeAll
-    public static void startMockServer() {
+    static void startMockServer() {
         mockServer = startClientAndServer(9999);
     }
 
     @AfterAll
-    public static void stopMockServer() {
+    static void stopMockServer() {
         mockServer.stop();
     }
 

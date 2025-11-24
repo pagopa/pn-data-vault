@@ -153,6 +153,7 @@ components:
       properties:
         description:
           type: string
+          format: password # NO EXTERNAL
           description: Institution's legal name
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         externalId:
@@ -259,19 +260,22 @@ components:
           example: AGENCY X
         digitalAddress:
           type: string
-          format: email
+          format: password # NO EXTERNAL
           example: email@pec.mail.org
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         address:
           type: string
+          format: password # NO EXTERNAL
           example: via del campo
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         zipCode:
           type: string
+          format: password # NO EXTERNAL
           example: '20100'
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         taxCode:
           type: string
+          format: password # NO EXTERNAL
           description: institution tax code
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         origin:

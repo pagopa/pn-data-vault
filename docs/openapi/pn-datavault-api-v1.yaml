@@ -603,6 +603,7 @@ components:
       title: Codice Fiscale
       description: Codice Fiscale del destinatario, del delagao o dlegante
       type: string
+      format: password # NO EXTERNAL
       x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
       example: CGNNMO01T10A944Q
 
@@ -630,6 +631,7 @@ components:
         denomination:
           description: Nome + cognome __oppure__ ragione sociale
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: PagoP.A. S.p.A.
 
@@ -673,6 +675,7 @@ components:
       properties:
         value:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
 
     ###############################################################################################
@@ -710,46 +713,55 @@ components:
         name:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Cognome e nome o ragione sociale del destinatario
         nameRow2:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Seconda riga sulla busta.
         address:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Indirizzo del destinatario.
         addressRow2:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Specifica dell’indirizzo di residenza del destinatario (seconda riga indirizzo sulla busta).
         cap:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Cap del destinatario; in caso di invio estero diventa facoltativo.
         city:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Comune del destinatario.
         city2:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Frazione del destinatario. Potrebbe essere utile se il chiamante non fornisce il cap.
         pr:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             Provincia del destinatario; in caso di invio estero diventa facoltativo.
         country:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
+          format: password # NO EXTERNAL
           description: >-
             In caso di destinatario estero, diventa obbligatoria l’indicazione della nazione di destinazione, 
             in standard UPU o altro standard condiviso.
@@ -780,14 +792,17 @@ components:
       properties:
         destName:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Nome
         destSurname:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Cognome
         destBusinessName:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Ragione sociale
       example:
@@ -819,6 +834,7 @@ components:
       properties:
         denomination:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: Nome Dott. Cognome
         digitalAddress:
@@ -835,34 +851,42 @@ components:
       properties:
         at:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'presso famiglia Rossi'
         address:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'Via senza Nome 15'
         addressDetails:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'scala A'
         cap:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: '40129'
         municipality:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'Bologna'
         municipalityDetails:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'borgo qualcosa'
         province:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'BO'
         state:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           example: 'it'
 
@@ -891,9 +915,11 @@ components:
           type: string
         taxId:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         denomination:
           type: string
+          format: password # NO EXTERNAL
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         digitalAddress:
           $ref: '#/components/schemas/AddressDto'

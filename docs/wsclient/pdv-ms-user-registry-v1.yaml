@@ -277,6 +277,7 @@ components:
             - SPID
         value:
           type: string
+          format: password # NO EXTERNAL
           description: Field value
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     MutableUserFieldsDto:
@@ -317,6 +318,7 @@ components:
           $ref: '#/components/schemas/CertifiableFieldResourceOfstring'
         fiscalCode:
           type: string
+          format: password # NO EXTERNAL
           description: User fiscal code
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         name:
@@ -354,6 +356,7 @@ components:
           $ref: '#/components/schemas/CertifiableFieldResourceOfstring'
         fiscalCode:
           type: string
+          format: password # NO EXTERNAL
           description: User fiscal code
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         id:
@@ -376,6 +379,7 @@ components:
       properties:
         fiscalCode:
           type: string
+          format: password # NO EXTERNAL
           description: User fiscal code
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     WorkContactResource:

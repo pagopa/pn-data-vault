@@ -142,6 +142,7 @@ components:
       properties:
         pii:
           type: string
+          format: password # NO EXTERNAL
           description: Personal Identifiable Information
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
     TokenResource:

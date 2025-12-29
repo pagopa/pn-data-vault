@@ -1,15 +1,16 @@
 package it.pagopa.pn.datavault.svc;
 
-import it.pagopa.pn.datavault.TestUtils;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddress;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddressRequest;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddresses;
 import it.pagopa.pn.datavault.mapper.PaperAddressEntityPaperAddressMapper;
 import it.pagopa.pn.datavault.middleware.db.PaperAddressDao;
 import it.pagopa.pn.datavault.middleware.db.entities.PaperAddressEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Flux;
@@ -28,14 +29,19 @@ class PaperAddressServiceTest {
 
     Duration d = Duration.ofMillis(3000);
 
-    @InjectMocks
     private PaperAddressService paperAddressService;
 
     @Mock
     PaperAddressDao paperAddressDao;
 
-    @Mock
+    @Autowired
     PaperAddressEntityPaperAddressMapper mappingsDao;
+
+    @BeforeEach
+    void setUp() {
+        Mockito.reset(paperAddressDao);
+        paperAddressService = new PaperAddressService(paperAddressDao, mappingsDao);
+    }
 
     @Test
     void getPaperAddressesByPaperRequestId() {
@@ -46,7 +52,6 @@ class PaperAddressServiceTest {
         list.add(paperAddressEntity);
 
         when(paperAddressDao.getPaperAddressesByPaperRequestId(Mockito.any())).thenReturn(Flux.fromIterable(list));
-        when(mappingsDao.toDto(Mockito.any())).thenReturn(new PaperAddress());
 
         // Act
         PaperAddresses result = paperAddressService.getPaperAddressesByPaperRequestId(paperRequestId).block(d);
@@ -56,7 +61,6 @@ class PaperAddressServiceTest {
         assertNotNull(result.getAddresses());
         assertEquals(1, result.getAddresses().size());
         verify(paperAddressDao).getPaperAddressesByPaperRequestId(paperRequestId);
-        verify(mappingsDao).toDto(paperAddressEntity);
     }
 
     @Test
@@ -86,7 +90,6 @@ class PaperAddressServiceTest {
         PaperAddress expectedDto = new PaperAddress();
 
         when(paperAddressDao.getPaperAddressByIds(Mockito.any(), Mockito.any())).thenReturn(Mono.just(paperAddressEntity));
-        when(mappingsDao.toDto(Mockito.any())).thenReturn(expectedDto);
 
         //When
         PaperAddress result = paperAddressService.getPaperAddressByIds(paperRequestId, addressId).block(d);
@@ -95,7 +98,6 @@ class PaperAddressServiceTest {
         assertNotNull(result);
         assertEquals(expectedDto, result);
         verify(paperAddressDao).getPaperAddressByIds(paperRequestId, addressId);
-        verify(mappingsDao).toDto(paperAddressEntity);
     }
 
     @Test
@@ -105,8 +107,9 @@ class PaperAddressServiceTest {
         String addressId = "test-address-id";
         PaperAddress addressDto = new PaperAddress();
         PaperAddressEntity paperAddressEntity = new PaperAddressEntity();
+        paperAddressEntity.setPaperRequestId(paperRequestId);
+        paperAddressEntity.setAddressId(addressId);
 
-        when(mappingsDao.toEntity(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(paperAddressEntity);
         when(paperAddressDao.updatePaperAddress(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(Mono.just(paperAddressEntity));
 
         //When
@@ -115,7 +118,6 @@ class PaperAddressServiceTest {
         });
 
         //Then
-        verify(mappingsDao).toEntity(paperRequestId, addressId, addressDto);
         verify(paperAddressDao).updatePaperAddress(paperRequestId, addressId, paperAddressEntity);
     }
 
@@ -128,7 +130,6 @@ class PaperAddressServiceTest {
         PaperAddress expectedDto = new PaperAddress();
 
         when(paperAddressDao.deletePaperAddress(Mockito.any(), Mockito.any())).thenReturn(Mono.just(paperAddressEntity));
-        when(mappingsDao.toDto(Mockito.any())).thenReturn(expectedDto);
 
         //When
         PaperAddress result = paperAddressService.deletePaperAddress(paperRequestId, addressId).block(d);
@@ -137,6 +138,50 @@ class PaperAddressServiceTest {
         assertNotNull(result);
         assertEquals(expectedDto, result);
         verify(paperAddressDao).deletePaperAddress(paperRequestId, addressId);
-        verify(mappingsDao).toDto(paperAddressEntity);
+    }
+
+    @Test
+    void createPaperAddress() {
+        // Arrange
+        String iun = "test-iun";
+        String addressId = "00000000-0000-0000-0000-000000000001";
+        PaperAddressRequest paperAddressRequest = new PaperAddressRequest();
+        PaperAddress paperAddressDto = new PaperAddress();
+        paperAddressDto.setAddress("Via Test 1");
+        paperAddressDto.setCity("Roma");
+        paperAddressDto.setName("Mario Rossi");
+        paperAddressRequest.setPaperAddress(paperAddressDto);
+        paperAddressRequest.setAttempt(1);
+        paperAddressRequest.setRecIndex(0);
+        paperAddressRequest.setPcRetry(0);
+        paperAddressRequest.setNormalized(true);
+        paperAddressRequest.setAddressType("RESIDENCE");
+
+        PaperAddressEntity entity = new PaperAddressEntity(iun, addressId);
+        entity.setAddress("Via Test 1");
+        entity.setCity("Roma");
+        entity.setName("Mario Rossi");
+        entity.setAttempt(1);
+        entity.setRecIndex(0);
+        entity.setPcRetry(0);
+        entity.setNormalized(true);
+        entity.setAddressType("RESIDENCE");
+
+        when(paperAddressDao.updatePaperAddress(any(), any(), any()))
+                .thenReturn(Mono.just(entity));
+
+        // Act
+        PaperAddressEntity result = paperAddressService.createPaperAddress(iun, paperAddressRequest).block(d);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Via Test 1", result.getAddress());
+        assertEquals("Roma", result.getCity());
+        assertEquals("Mario Rossi", result.getName());
+        assertEquals(1, result.getAttempt());
+        assertEquals(0, result.getRecIndex());
+        assertEquals(0, result.getPcRetry());
+        assertTrue(result.getNormalized());
+        assertEquals("RESIDENCE", result.getAddressType());
     }
 }

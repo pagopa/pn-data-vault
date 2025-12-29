@@ -28,6 +28,11 @@ public class PaperAddressEntity {
     public static final String COL_CITY2 = "city2";
     public static final String COL_PR = "pr";
     public static final String COL_COUNTRY = "country";
+    public static final String COL_ATTEMPT = "attempt";
+    public static final String COL_REC_INDEX = "recIndex";
+    public static final String COL_PC_RETRY = "pcRetry";
+    public static final String COL_NORMALIZED = "normalized";
+    public static final String COL_ADDRESS_TYPE = "addressType";
 
     public PaperAddressEntity(){}
 
@@ -84,4 +89,15 @@ public class PaperAddressEntity {
     private String pr;
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_COUNTRY)}))
     private String country;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_ATTEMPT)}))
+    private Integer attempt;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_REC_INDEX)}))
+    private Integer recIndex;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_PC_RETRY)}))
+    private Integer pcRetry;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_NORMALIZED)}))
+    private Boolean normalized;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_ADDRESS_TYPE)}))
+    private String addressType;
+
 }

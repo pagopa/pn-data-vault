@@ -270,6 +270,46 @@ class PaperAddressRestControllerV1Test {
                 .expectStatus().is5xxServerError();
     }
 
+    @Test
+    void createPaperAddress() {
+        // Arrange
+        String iun = "UYLD-ANKP-GTNE-202511-V-1";
+        String url = "/datavault-private/v1/paper-addresses/{iun}".replace("{iun}", iun);
+
+        var paperAddressRequest = new it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddressRequest();
+        paperAddressRequest.setPaperAddress(new it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddress()
+                .address("Via Test 1")
+                .city("Roma")
+                .name("Mario Rossi"));
+        paperAddressRequest.setAttempt(1);
+        paperAddressRequest.setRecIndex(0);
+        paperAddressRequest.setPcRetry(0);
+        paperAddressRequest.setNormalized(true);
+        paperAddressRequest.setAddressType("RESIDENCE");
+
+        var paperAddressEntity = new PaperAddressEntity();
+        paperAddressEntity.setAddressId("addr_789");
+        paperAddressEntity.setPaperRequestId("PAPER_ADDR#"+iun);
+
+        // Act
+        Mockito.when(paperAddressService.createPaperAddress(Mockito.eq(iun), Mockito.any()))
+                .thenReturn(Mono.just(paperAddressEntity));
+
+        // Assert
+        webTestClient.put()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(paperAddressRequest)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddressResponse.class)
+                .consumeWith(result -> {
+                    var body = result.getResponseBody();
+                    assert body != null;
+                    assert "addr_789".equals(body.getPaperAddressId());
+                });
+    }
+
     static PaperAddress buildPaperAddress() {
         return new PaperAddress()
                 .address("TEST")

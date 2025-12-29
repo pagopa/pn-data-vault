@@ -2,7 +2,10 @@ package it.pagopa.pn.datavault.rest;
 
 import it.pagopa.pn.datavault.generated.openapi.server.v1.api.PaperAddressesApi;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddress;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddressRequest;
+import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddressResponse;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddresses;
+import it.pagopa.pn.datavault.mapper.ControllerMapper;
 import it.pagopa.pn.datavault.svc.PaperAddressService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -87,6 +90,22 @@ public class PaperAddressRestControllerV1 implements PaperAddressesApi {
                                 paperRequestId, paperAddressId);
                         return ResponseEntity.badRequest().build();
                     }
+                });
+    }
+
+    @Override
+    public Mono<ResponseEntity<PaperAddressResponse>> createPaperAddress(String iun,
+                                                                         Mono<PaperAddressRequest> paperAddressRequest,
+                                                                         ServerWebExchange exchange) {
+        log.info("{} iun:{}", ENTER_LOG, iun);
+
+        return paperAddressRequest
+                .flatMap(paperAddress ->
+                        paperAddressService.createPaperAddress(iun, paperAddress)
+                )
+                .map(response -> {
+                    log.debug("{} paperRequestId:{} paperAddressId:{}", EXIT_LOG, response.getPaperRequestId(), response.getAddressId());
+                    return ResponseEntity.ok(ControllerMapper.createPaperAddressResponse(response));
                 });
     }
 }

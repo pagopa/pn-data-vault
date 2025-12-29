@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 @Service
 @CustomLog
 @Slf4j
@@ -86,5 +88,19 @@ public class PaperAddressService {
 
         return paperAddressDao.deletePaperAddress(paperRequestId, addressId)
                 .map(mappingsDao::toDto);
+    }
+
+    /**
+     * Crea un indirizzo analogico.
+     *
+     * @param iun iun della notifica
+     * @param paperAddress dati dell'indirizzo da salvare
+     * @return {@link Mono}
+     */
+    public Mono<PaperAddressEntity> createPaperAddress(String iun, it.pagopa.pn.datavault.generated.openapi.server.v1.dto.PaperAddressRequest paperAddress) {
+        log.debug("Saving paper address for iun: {}", iun);
+        String addressId = UUID.randomUUID().toString();
+        PaperAddressEntity entity = mappingsDao.toEntity(iun, addressId, paperAddress);
+        return paperAddressDao.updatePaperAddress(iun, addressId, entity);
     }
 }

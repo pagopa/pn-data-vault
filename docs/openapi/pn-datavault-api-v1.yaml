@@ -590,7 +590,7 @@ paths:
         required: true
         schema:
           $ref: '#/components/schemas/Iun'
-    put:
+    post:
       operationId: createPaperAddress
       summary: Inserisci un indirizzo
       tags:

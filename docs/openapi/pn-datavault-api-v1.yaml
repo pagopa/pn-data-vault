@@ -651,15 +651,15 @@ components:
     ###############################################################################################
     LocalizedContent:
       type: object
-      required: [ subject, body ]
+      required: [ subject, longBody ]
       properties:
         subject:
           type: string
           maxLength: 256
-        body:
+        longBody:
           type: string
           maxLength: 10000
-        abstract:
+        shortBody:
           type: string
           maxLength: 160
         language:

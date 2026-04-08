@@ -60,8 +60,8 @@ class MessagesRestControllerV1Test {
     @Test
     void createMessage_withPrimaryAndSecondaryContent_returnsNotImplemented() {
         // Arrange
-        LocalizedContent primary = buildLocalizedContent(LocalizedContent.LanguageEnum.FR, "Sujet test", "Corps du message");
-        LocalizedContent secondary = buildLocalizedContent(LocalizedContent.LanguageEnum.DE, "Testbetreff", "Nachrichtentext");
+        LocalizedContent primary = buildLocalizedContent(LocalizedContent.LanguageEnum.FR, "Sujet test", "Corps du message", "Resume court");
+        LocalizedContent secondary = buildLocalizedContent(LocalizedContent.LanguageEnum.DE, "Testbetreff", "Nachrichtentext", "Kurze Zusammenfassung");
 
         MessageRequestDto request = new MessageRequestDto();
         request.setSenderId(UUID.randomUUID().toString());
@@ -194,7 +194,8 @@ class MessagesRestControllerV1Test {
         LocalizedContent primary = buildLocalizedContent(
                 LocalizedContent.LanguageEnum.FR,
                 "Oggetto principale",
-                "Corpo del messaggio principale"
+                "Corpo del messaggio principale",
+                "Abstract principale"
         );
         MessageRequestDto dto = new MessageRequestDto();
         dto.setSenderId(UUID.randomUUID().toString());
@@ -202,11 +203,12 @@ class MessagesRestControllerV1Test {
         return dto;
     }
 
-    static LocalizedContent buildLocalizedContent(LocalizedContent.LanguageEnum language, String subject, String body) {
+    static LocalizedContent buildLocalizedContent(LocalizedContent.LanguageEnum language, String subject, String longBody, String shortBody) {
         LocalizedContent content = new LocalizedContent();
         content.setLanguage(language);
         content.setSubject(subject);
-        content.setBody(body);
+        content.setLongBody(longBody);
+        content.setShortBody(shortBody);
         return content;
     }
 }

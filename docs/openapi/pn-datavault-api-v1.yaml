@@ -200,7 +200,69 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  
+  ###############################################################################################
+  ###                           API MESSAGGI COMUNICAZIONE BONARIA                            ###
+  ###############################################################################################
+  /datavault-private/v1/messages:
+    post:
+      tags:
+        - Messages
+      summary: Crea un nuovo template di messaggio
+      description: |
+        Salva il contenuto confidenziale e le caratteristiche di un messaggio
+      operationId: createMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageRequestDto'
+      responses:
+        '201':
+          description: Messaggio creato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponseDto'
+        '400':
+          description: Validazione fallita
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+  /datavault-private/v1/messages/{messageId}:
+    get:
+      tags:
+        - Messages
+      summary: Recupera il contenuto di un messaggio
+      description: Recupera i dati confidenziali del messaggio.
+      operationId: getMessageById
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: senderId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Dettaglio del messaggio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponseDto'
+        '404':
+          description: Messaggio non trovato
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
 
   ###############################################################################################
   ###                           GESTIONE DATI CONFIDENZIALI DELEGHE                           ###
@@ -584,7 +646,48 @@ paths:
 
 components:
   schemas:
-
+    ###############################################################################################
+    ###                           DTO MESSAGGI COMUNICAZIONE BONARIA                            ###
+    ###############################################################################################
+    LocalizedContent:
+      type: object
+      required: [ language, subject, body ]
+      properties:
+        language:
+          type: string
+          enum: [ DE, SI, FR ]
+        subject:
+          type: string
+          maxLength: 256
+        body:
+          type: string
+          maxLength: 10000
+        abstract:
+          type: string
+          maxLength: 160
+    MessageRequestDto:
+      type: object
+      required: [ senderId, subject, body ]
+      properties:
+        senderId:
+          type: string
+          description: "Identificativo del mittente del messaggio"
+        primaryContent:
+          $ref: '#/components/schemas/LocalizedContent'
+        secondaryContent:
+          $ref: '#/components/schemas/LocalizedContent'
+    MessageResponseDto:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/MessageRequestDto'
+        - type: object
+          properties:
+            messageId:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
     ###############################################################################################
     ###                                     DTO DESTINATARI                                     ###
     ###############################################################################################

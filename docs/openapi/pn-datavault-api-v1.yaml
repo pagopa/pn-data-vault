@@ -651,11 +651,8 @@ components:
     ###############################################################################################
     LocalizedContent:
       type: object
-      required: [ language, subject, body ]
+      required: [ subject, body ]
       properties:
-        language:
-          type: string
-          enum: [ DE, SI, FR ]
         subject:
           type: string
           maxLength: 256
@@ -665,9 +662,12 @@ components:
         abstract:
           type: string
           maxLength: 160
+        language:
+          type: string
+          enum: [ IT, DE, SI, FR ]
     MessageRequestDto:
       type: object
-      required: [ senderId, subject, body ]
+      required: [ senderId, primaryContent ]
       properties:
         senderId:
           type: string

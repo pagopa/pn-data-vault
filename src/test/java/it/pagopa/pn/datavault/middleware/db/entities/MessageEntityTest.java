@@ -12,8 +12,8 @@ class MessageEntityTest {
     private MessageObjEntity buildPrimaryMessage() {
         MessageObjEntity obj = new MessageObjEntity();
         obj.setSubject("Oggetto principale");
-        obj.setBody("Corpo del messaggio principale");
-        obj.setAbstractText("Abstract principale");
+        obj.setLongBody("Corpo del messaggio principale");
+        obj.setShortBody("Abstract principale");
         obj.setLanguage("IT");
         return obj;
     }
@@ -21,8 +21,8 @@ class MessageEntityTest {
     private MessageObjEntity buildAdditionalMessage() {
         MessageObjEntity obj = new MessageObjEntity();
         obj.setSubject("Zusätzlicher Betreff");
-        obj.setBody("Zusätzlicher Nachrichtentext");
-        obj.setAbstractText("Zusätzliche Zusammenfassung");
+        obj.setLongBody("Zusätzlicher Nachrichtentext");
+        obj.setShortBody("Zusätzliche Zusammenfassung");
         obj.setLanguage("DE");
         return obj;
     }
@@ -43,8 +43,8 @@ class MessageEntityTest {
         Assertions.assertNotNull(entity.getPrimaryMessage());
         Assertions.assertEquals("IT", entity.getPrimaryMessage().getLanguage());
         Assertions.assertEquals("Oggetto principale", entity.getPrimaryMessage().getSubject());
-        Assertions.assertEquals("Corpo del messaggio principale", entity.getPrimaryMessage().getBody());
-        Assertions.assertEquals("Abstract principale", entity.getPrimaryMessage().getAbstractText());
+        Assertions.assertEquals("Corpo del messaggio principale", entity.getPrimaryMessage().getLongBody());
+        Assertions.assertEquals("Abstract principale", entity.getPrimaryMessage().getShortBody());
         Assertions.assertNotNull(entity.getAdditionalMessage());
         Assertions.assertEquals("DE", entity.getAdditionalMessage().getLanguage());
         Assertions.assertEquals("Zusätzlicher Betreff", entity.getAdditionalMessage().getSubject());
@@ -75,8 +75,8 @@ class MessageEntityTest {
         Map<String, AttributeValue> primaryMap = item.get(MessageEntity.COL_PRIMARY_MESSAGE).m();
         Assertions.assertEquals("IT", primaryMap.get(MessageObjEntity.COL_LANGUAGE).s());
         Assertions.assertEquals("Oggetto principale", primaryMap.get(MessageObjEntity.COL_SUBJECT).s());
-        Assertions.assertEquals("Corpo del messaggio principale", primaryMap.get(MessageObjEntity.COL_BODY).s());
-        Assertions.assertEquals("Abstract principale", primaryMap.get(MessageObjEntity.COL_ABSTRACT).s());
+        Assertions.assertEquals("Corpo del messaggio principale", primaryMap.get(MessageObjEntity.COL_LONG_BODY).s());
+        Assertions.assertEquals("Abstract principale", primaryMap.get(MessageObjEntity.COL_SHORT_BODY).s());
 
         // additionalMessage è mappato come Map in DynamoDB
         Map<String, AttributeValue> additionalMap = item.get(MessageEntity.COL_ADDITIONAL_MESSAGE).m();

@@ -109,7 +109,7 @@ Parameters:
 
   MessageExpiration:
     Type: String
-    Description: 'Expiration dei messaggi (epoch seconds)'
+    Description: 'Expiration dei messaggi'
 
   ConfidentialInfoLogsKinesisSourceStreamArn:
     Type: String

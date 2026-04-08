@@ -14,15 +14,15 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 public class MessageObjEntity {
 
     public static final String COL_SUBJECT = "subject";
-    public static final String COL_BODY = "body";
-    public static final String COL_ABSTRACT = "abstract";
+    public static final String COL_LONG_BODY = "longBody";
+    public static final String COL_SHORT_BODY = "shortBody";
     public static final String COL_LANGUAGE = "language";
 
     public static final String LANGUAGE_REGEX = "^(IT|DE|SI|FR)$";
 
     @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_SUBJECT)})) private String subject;
-    @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_BODY)})) private String body;
-    @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_ABSTRACT)})) private String abstractText;
+    @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_LONG_BODY)})) private String longBody;
+    @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_SHORT_BODY)})) private String shortBody;
     @Getter(onMethod = @__({@DynamoDbAttribute(COL_LANGUAGE)})) private String language;
 }
 

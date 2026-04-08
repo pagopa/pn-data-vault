@@ -79,7 +79,7 @@ class MessagesRestControllerV1Test {
     }
 
     @Test
-    void createMessage_withEmptyBody_returnsBadRequest() {
+    void createMessage_withEmptyBody_returnsNotImplemented() {
         webTestClient.post()
                 .uri(CREATE_MESSAGE_URL)
                 .contentType(MediaType.APPLICATION_JSON)

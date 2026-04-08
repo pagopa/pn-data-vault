@@ -107,6 +107,10 @@ Parameters:
     Type: String
     Description: 'Cache dimensione massima'
 
+  MessageExpiration:
+    Type: String
+    Description: 'Expiration dei messaggi (epoch seconds)'
+
   ConfidentialInfoLogsKinesisSourceStreamArn:
     Type: String
     Description: 'Kinesis stream that receive logs'
@@ -291,6 +295,7 @@ Resources:
         ContainerEnvEntry14: !Sub 'PN_DATA_VAULT_CLOUDWATCH_METRIC_CRON=${CloudWatchMetricCron}'
         ContainerEnvEntry15: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry16: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
+        ContainerEnvEntry17: !Sub 'messageExpiration=${MessageExpiration}'
         ContainerSecret1: !Sub 'PN_DATA_VAULT_TOKENIZER_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets-V1:TokenizerApiKeyForPF:AWSCURRENT:'
         ContainerSecret3: !Sub 'PN_DATA_VAULT_USERREGISTRY_API_KEY_PF=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets-V1:UserRegistryApiKeyForPF:AWSCURRENT:'
         ContainerSecret4: !Sub 'PN_DATA_VAULT_SELFCAREPG_API_KEY_PG=arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-PersonalDataVault-Secrets-V1:SelfcareApiKeyForPG:AWSCURRENT:'                

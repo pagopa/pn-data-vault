@@ -32,16 +32,16 @@ public class MessageDao extends BaseDao {
 
     public Mono<MessageEntity> writeMessage(MessageEntity entity) {
         MessageEntity preparedEntity = enrichExpiration(entity);
-        log.debug("writeMessage prepared entity messageId:{} sk:{} expiration:{}",
+        log.debug("writeMessage prepared entity messageId:{} senderId:{} expiration:{}",
                 preparedEntity.getMessageId(),
-                preparedEntity.getSk(),
+                preparedEntity.getSenderId(),
                 preparedEntity.getExpiration());
 
         return Mono.error(new UnsupportedOperationException("writeMessage not implemented yet"));
     }
 
     public Mono<MessageEntity> readMessage(String messageId, String senderId) {
-        log.debug("readMessage messageId:{} sk:{}", messageId, senderId);
+        log.debug("readMessage messageId:{} senderId:{}", messageId, senderId);
         return Mono.error(new UnsupportedOperationException("readMessage not implemented yet"));
     }
 

@@ -24,6 +24,8 @@ tags:
     description: Gestione deleghe
   - name: Notifications
     description: Gestione Notifiche
+  - name: Messages
+    description: Gestione messaggi comunicazione bonaria
 paths:
 
   ###############################################################################################

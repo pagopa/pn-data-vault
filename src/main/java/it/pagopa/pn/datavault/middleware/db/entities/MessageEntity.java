@@ -24,9 +24,9 @@ public class MessageEntity {
 
     public MessageEntity() {}
 
-    public MessageEntity(String senderId) {
+    public MessageEntity(String sk) {
         this.setMessageId(UUID.randomUUID().toString());
-        this.setSenderId(senderId);
+        this.setSk(sk);
     }
 
     @DynamoDbIgnore
@@ -45,7 +45,7 @@ public class MessageEntity {
     }
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute(COL_PK)})) private String pk;
-    @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)})) private String senderId;
+    @Getter(onMethod=@__({@DynamoDbSortKey, @DynamoDbAttribute(COL_SK)})) private String sk;
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_PRIMARY_MESSAGE)})) private MessageObjEntity primaryMessage;
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_ADDITIONAL_MESSAGE)})) private MessageObjEntity additionalMessage;
     @Getter(onMethod=@__({@DynamoDbAttribute(COL_CREATED_AT)})) private String createdAt;

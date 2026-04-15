@@ -1,10 +1,8 @@
 package it.pagopa.pn.datavault.middleware.db;
 
 import it.pagopa.pn.datavault.config.PnDatavaultConfig;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.LocalizedContent;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MessageRequestDto;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MessageResponseDto;
 import it.pagopa.pn.datavault.middleware.db.entities.MessageEntity;
+import it.pagopa.pn.datavault.middleware.db.entities.MessageObjEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -49,13 +47,13 @@ class MessageDaoTest {
     }
 
     @Test
-    void writeMessage_shouldPutItemAndReturnMappedResponse() {
-        MessageRequestDto request = buildMessageRequestDto();
-        Assertions.assertNotNull(request.getSecondaryContent());
-        Assertions.assertNotNull(request.getSecondaryContent().getLanguage());
+    void writeMessage_shouldPutItemAndReturnPersistedEntity() {
+        MessageEntity request = buildMessageEntity();
+        Assertions.assertNotNull(request.getAdditionalMessage());
+        Assertions.assertNotNull(request.getAdditionalMessage().getLanguage());
         when(messageTable.putItem(any(MessageEntity.class))).thenReturn(CompletableFuture.completedFuture(null));
 
-        MessageResponseDto response = messageDao.writeMessage(request).block();
+        MessageEntity response = messageDao.writeMessage(request).block();
         ArgumentCaptor<MessageEntity> entityCaptor = ArgumentCaptor.forClass(MessageEntity.class);
 
         verify(messageTable).putItem(entityCaptor.capture());
@@ -63,23 +61,23 @@ class MessageDaoTest {
 
         Assertions.assertNotNull(response);
         Assertions.assertNotNull(response.getMessageId());
-        Assertions.assertNotNull(response.getSecondaryContent());
-        Assertions.assertEquals(request.getSenderId(), response.getSenderId());
+        Assertions.assertNotNull(response.getAdditionalMessage());
+        Assertions.assertEquals(request.getSk(), response.getSk());
         Assertions.assertNotNull(response.getCreatedAt());
-        Assertions.assertEquals(request.getPrimaryContent().getSubject(), response.getPrimaryContent().getSubject());
-        Assertions.assertEquals(request.getSecondaryContent().getShortBody(), response.getSecondaryContent().getShortBody());
+        Assertions.assertEquals(request.getPrimaryMessage().getSubject(), response.getPrimaryMessage().getSubject());
+        Assertions.assertEquals(request.getAdditionalMessage().getShortBody(), response.getAdditionalMessage().getShortBody());
 
         Assertions.assertNotNull(persisted.getMessageId());
-        Assertions.assertEquals(request.getSenderId(), persisted.getSk());
-        Assertions.assertEquals(request.getPrimaryContent().getLongBody(), persisted.getPrimaryMessage().getLongBody());
-        Assertions.assertEquals(request.getSecondaryContent().getLanguage().getValue(), persisted.getAdditionalMessage().getLanguage());
+        Assertions.assertEquals(request.getSk(), persisted.getSk());
+        Assertions.assertEquals(request.getPrimaryMessage().getLongBody(), persisted.getPrimaryMessage().getLongBody());
+        Assertions.assertEquals(request.getAdditionalMessage().getLanguage(), persisted.getAdditionalMessage().getLanguage());
         Assertions.assertNotNull(persisted.getCreatedAt());
         Assertions.assertNotNull(persisted.getExpiration());
     }
 
     @Test
-    void writeMessage_shouldMapLocalizedContentAndExpiration() {
-        MessageRequestDto request = buildMessageRequestDto();
+    void writeMessage_shouldEnrichExpiration() {
+        MessageEntity request = buildMessageEntity();
         when(messageTable.putItem(any(MessageEntity.class))).thenReturn(CompletableFuture.completedFuture(null));
 
         messageDao.writeMessage(request).block();
@@ -98,19 +96,19 @@ class MessageDaoTest {
         Assertions.assertTrue(persisted.getExpiration() > Instant.now().getEpochSecond());
     }
 
-    private MessageRequestDto buildMessageRequestDto() {
-        MessageRequestDto dto = new MessageRequestDto();
-        dto.setSenderId(UUID.randomUUID().toString());
-        dto.setPrimaryContent(buildLocalizedContent(LocalizedContent.LanguageEnum.IT, "Oggetto principale", "Corpo principale", "Abstract principale"));
-        dto.setSecondaryContent(buildLocalizedContent(LocalizedContent.LanguageEnum.FR, "Sujet secondaire", "Corps secondaire", "Résumé secondaire"));
-        return dto;
+    private MessageEntity buildMessageEntity() {
+        MessageEntity entity = new MessageEntity(UUID.randomUUID().toString());
+        entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo principale", "Abstract principale"));
+        entity.setAdditionalMessage(buildMessageObjEntity("FR", "Sujet secondaire", "Corps secondaire", "Resume secondaire"));
+        entity.setCreatedAt(Instant.now().toString());
+        return entity;
     }
 
-    private LocalizedContent buildLocalizedContent(LocalizedContent.LanguageEnum language,
+    private MessageObjEntity buildMessageObjEntity(String language,
                                                    String subject,
                                                    String longBody,
                                                    String shortBody) {
-        LocalizedContent content = new LocalizedContent();
+        MessageObjEntity content = new MessageObjEntity();
         content.setLanguage(language);
         content.setSubject(subject);
         content.setLongBody(longBody);

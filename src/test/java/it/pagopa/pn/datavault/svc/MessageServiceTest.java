@@ -4,18 +4,22 @@ import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.LocalizedContent;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MessageRequestDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MessageResponseDto;
 import it.pagopa.pn.datavault.middleware.db.MessageDao;
+import it.pagopa.pn.datavault.middleware.db.entities.MessageEntity;
+import it.pagopa.pn.datavault.middleware.db.entities.MessageObjEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,15 +37,26 @@ class MessageServiceTest {
     @Test
     void createMessage() {
         MessageRequestDto request = buildMessageRequestDto();
-        MessageResponseDto expected = buildMessageResponseDto(request);
+        MessageEntity persisted = buildPersistedMessageEntity(request);
 
-        when(messageDao.writeMessage(request)).thenReturn(Mono.just(expected));
+        when(messageDao.writeMessage(any(MessageEntity.class))).thenReturn(Mono.just(persisted));
 
         MessageResponseDto result = messageService.createMessage(request).block(TIMEOUT);
+        ArgumentCaptor<MessageEntity> entityCaptor = ArgumentCaptor.forClass(MessageEntity.class);
 
         assertNotNull(result);
-        assertEquals(expected, result);
-        verify(messageDao).writeMessage(request);
+        assertEquals(UUID.fromString(persisted.getMessageId()), result.getMessageId());
+        assertEquals(request.getSenderId(), result.getSenderId());
+        assertNotNull(result.getCreatedAt());
+        assertEquals(request.getPrimaryContent().getSubject(), result.getPrimaryContent().getSubject());
+        assertEquals(request.getSecondaryContent().getLanguage(), result.getSecondaryContent().getLanguage());
+
+        verify(messageDao).writeMessage(entityCaptor.capture());
+        MessageEntity toPersist = entityCaptor.getValue();
+        assertEquals(request.getSenderId(), toPersist.getSk());
+        assertEquals(request.getPrimaryContent().getLongBody(), toPersist.getPrimaryMessage().getLongBody());
+        assertEquals(request.getSecondaryContent().getLanguage().getValue(), toPersist.getAdditionalMessage().getLanguage());
+        assertNotNull(toPersist.getCreatedAt());
     }
 
     private static MessageRequestDto buildMessageRequestDto() {
@@ -64,14 +79,23 @@ class MessageServiceTest {
         return dto;
     }
 
-    private static MessageResponseDto buildMessageResponseDto(MessageRequestDto request) {
-        MessageResponseDto response = new MessageResponseDto();
-        response.setMessageId(UUID.randomUUID());
-        response.setSenderId(request.getSenderId());
-        response.setPrimaryContent(request.getPrimaryContent());
-        response.setSecondaryContent(request.getSecondaryContent());
-        response.setCreatedAt(new Date());
-        return response;
+    private static MessageEntity buildPersistedMessageEntity(MessageRequestDto request) {
+        MessageEntity entity = new MessageEntity();
+        entity.setMessageId(UUID.randomUUID().toString());
+        entity.setSk(request.getSenderId());
+        entity.setPrimaryMessage(buildMessageObjEntity(request.getPrimaryContent()));
+        entity.setAdditionalMessage(buildMessageObjEntity(request.getSecondaryContent()));
+        entity.setCreatedAt(Instant.now().toString());
+        return entity;
+    }
+
+    private static MessageObjEntity buildMessageObjEntity(LocalizedContent content) {
+        MessageObjEntity entity = new MessageObjEntity();
+        entity.setSubject(content.getSubject());
+        entity.setLongBody(content.getLongBody());
+        entity.setShortBody(content.getShortBody());
+        entity.setLanguage(content.getLanguage() != null ? content.getLanguage().getValue() : null);
+        return entity;
     }
 }
 

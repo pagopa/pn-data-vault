@@ -24,6 +24,8 @@ tags:
     description: Gestione deleghe
   - name: Notifications
     description: Gestione Notifiche
+  - name: Messages
+    description: Gestione messaggi comunicazione bonaria
 paths:
 
   ###############################################################################################
@@ -200,7 +202,69 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  
+  ###############################################################################################
+  ###                           API MESSAGGI COMUNICAZIONE BONARIA                            ###
+  ###############################################################################################
+  /datavault-private/v1/messages:
+    post:
+      tags:
+        - Messages
+      summary: Crea un nuovo template di messaggio
+      description: |
+        Salva il contenuto confidenziale e le caratteristiche di un messaggio
+      operationId: createMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageRequestDto'
+      responses:
+        '201':
+          description: Messaggio creato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponseDto'
+        '400':
+          description: Validazione fallita
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+  /datavault-private/v1/messages/{messageId}:
+    get:
+      tags:
+        - Messages
+      summary: Recupera il contenuto di un messaggio
+      description: Recupera i dati confidenziali del messaggio.
+      operationId: getMessageById
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: senderId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Dettaglio del messaggio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponseDto'
+        '404':
+          description: Messaggio non trovato
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
 
   ###############################################################################################
   ###                           GESTIONE DATI CONFIDENZIALI DELEGHE                           ###
@@ -282,8 +346,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  
-  
+
+
 
 
   ###############################################################################################
@@ -380,7 +444,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  
+
   '/datavault-private/v1/notifications/{iun}/timeline':
     parameters:
       - name: iun
@@ -411,7 +475,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  
+
   '/datavault-private/v1/timelines':
     post:
       operationId: getNotificationTimelines
@@ -519,7 +583,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaperAddresses'
-                
+
   '/datavault-private/v1/paper-addresses/{paperRequestId}/{paperAddressId}':
     parameters:
       - name: paperRequestId
@@ -584,7 +648,48 @@ paths:
 
 components:
   schemas:
-
+    ###############################################################################################
+    ###                           DTO MESSAGGI COMUNICAZIONE BONARIA                            ###
+    ###############################################################################################
+    LocalizedContent:
+      type: object
+      required: [ subject, longBody ]
+      properties:
+        subject:
+          type: string
+          maxLength: 256
+        longBody:
+          type: string
+          maxLength: 10000
+        shortBody:
+          type: string
+          maxLength: 160
+        language:
+          type: string
+          enum: [ IT, DE, SI, FR ]
+    MessageRequestDto:
+      type: object
+      required: [ senderId, primaryContent ]
+      properties:
+        senderId:
+          type: string
+          description: "Identificativo del mittente del messaggio"
+        primaryContent:
+          $ref: '#/components/schemas/LocalizedContent'
+        secondaryContent:
+          $ref: '#/components/schemas/LocalizedContent'
+    MessageResponseDto:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/MessageRequestDto'
+        - type: object
+          properties:
+            messageId:
+              type: string
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
     ###############################################################################################
     ###                                     DTO DESTINATARI                                     ###
     ###############################################################################################

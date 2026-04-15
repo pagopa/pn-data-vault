@@ -1,9 +1,10 @@
 package it.pagopa.pn.datavault.svc;
 
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.LocalizedContent;
-import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MessageRequestDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.MessageResponseDto;
 import it.pagopa.pn.datavault.middleware.db.MessageDao;
+import it.pagopa.pn.datavault.middleware.db.entities.MessageEntity;
+import it.pagopa.pn.datavault.middleware.db.entities.MessageObjEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,7 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,16 +35,17 @@ class MessageServiceTest {
     void getMessageById() {
         UUID messageId = UUID.randomUUID();
         UUID senderId = UUID.randomUUID();
-        MessageResponseDto expected = buildMessageResponseDto(buildMessageRequestDto());
-        expected.setMessageId(messageId);
-        expected.setSenderId(senderId.toString());
+        MessageEntity expected = buildMessageEntity(messageId, senderId);
 
         when(messageDao.readMessage(messageId, senderId)).thenReturn(Mono.just(expected));
 
         MessageResponseDto result = messageService.getMessageById(messageId, senderId).block(TIMEOUT);
 
         assertNotNull(result);
-        assertEquals(expected, result);
+        assertEquals(messageId, result.getMessageId());
+        assertEquals(senderId.toString(), result.getSenderId());
+        assertEquals("Oggetto principale", result.getPrimaryContent().getSubject());
+        assertEquals("DE", result.getSecondaryContent().getLanguage().getValue());
         verify(messageDao).readMessage(messageId, senderId);
     }
 
@@ -60,34 +62,26 @@ class MessageServiceTest {
         verify(messageDao).readMessage(messageId, senderId);
     }
 
-    private static MessageRequestDto buildMessageRequestDto() {
-        LocalizedContent primary = new LocalizedContent();
-        primary.setLanguage(LocalizedContent.LanguageEnum.IT);
-        primary.setSubject("Oggetto principale");
-        primary.setLongBody("Corpo del messaggio principale");
-        primary.setShortBody("Abstract principale");
-
-        LocalizedContent secondary = new LocalizedContent();
-        secondary.setLanguage(LocalizedContent.LanguageEnum.DE);
-        secondary.setSubject("Zusätzlicher Betreff");
-        secondary.setLongBody("Zusätzlicher Nachrichtentext");
-        secondary.setShortBody("Kurzfassung");
-
-        MessageRequestDto dto = new MessageRequestDto();
-        dto.setSenderId(UUID.randomUUID().toString());
-        dto.setPrimaryContent(primary);
-        dto.setSecondaryContent(secondary);
-        return dto;
+    private static MessageEntity buildMessageEntity(UUID messageId, UUID senderId) {
+        MessageEntity entity = new MessageEntity();
+        entity.setMessageId(messageId.toString());
+        entity.setSenderId(senderId.toString());
+        entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo del messaggio principale", "Abstract principale"));
+        entity.setAdditionalMessage(buildMessageObjEntity("DE", "Additional subject", "Additional message body", "Summary"));
+        entity.setCreatedAt(Instant.now().toString());
+        return entity;
     }
 
-    private static MessageResponseDto buildMessageResponseDto(MessageRequestDto request) {
-        MessageResponseDto response = new MessageResponseDto();
-        response.setMessageId(UUID.randomUUID());
-        response.setSenderId(request.getSenderId());
-        response.setPrimaryContent(request.getPrimaryContent());
-        response.setSecondaryContent(request.getSecondaryContent());
-        response.setCreatedAt(new Date());
-        return response;
+    private static MessageObjEntity buildMessageObjEntity(String language,
+                                                          String subject,
+                                                          String longBody,
+                                                          String shortBody) {
+        MessageObjEntity entity = new MessageObjEntity();
+        entity.setLanguage(language);
+        entity.setSubject(subject);
+        entity.setLongBody(longBody);
+        entity.setShortBody(shortBody);
+        return entity;
     }
 }
 

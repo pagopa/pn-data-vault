@@ -67,6 +67,8 @@ class MessagesRestControllerV1Test {
                 .bodyValue(request)
                 .exchange()
                 .expectStatus().isBadRequest();
+
+        Mockito.verify(messageService, Mockito.never()).createMessage(Mockito.any(MessageRequestDto.class));
     }
 
     @Test
@@ -103,6 +105,8 @@ class MessagesRestControllerV1Test {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isBadRequest();
+
+        Mockito.verify(messageService, Mockito.never()).createMessage(Mockito.any(MessageRequestDto.class));
     }
 
     @Test

@@ -35,6 +35,24 @@ class MessageServiceTest {
     private MessageDao messageDao;
 
     @Test
+    void getMessageById() {
+        UUID messageId = UUID.randomUUID();
+        UUID senderId = UUID.randomUUID();
+        MessageEntity expected = buildMessageEntity(messageId, senderId);
+
+        when(messageDao.readMessage(messageId, senderId)).thenReturn(Mono.just(expected));
+
+        MessageResponseDto result = messageService.getMessageById(messageId, senderId).block(TIMEOUT);
+
+        assertNotNull(result);
+        assertEquals(messageId, result.getMessageId());
+        assertEquals(senderId.toString(), result.getSenderId());
+        assertEquals("Oggetto principale", result.getPrimaryContent().getSubject());
+        assertEquals("DE", result.getSecondaryContent().getLanguage().getValue());
+        verify(messageDao).readMessage(messageId, senderId);
+    }
+
+    @Test
     void createMessage() {
         MessageRequestDto request = buildMessageRequestDto();
         MessageEntity persisted = buildPersistedMessageEntity(request);
@@ -59,6 +77,19 @@ class MessageServiceTest {
         assertNotNull(toPersist.getCreatedAt());
     }
 
+    @Test
+    void getMessageById_notFound() {
+        UUID messageId = UUID.randomUUID();
+        UUID senderId = UUID.randomUUID();
+
+        when(messageDao.readMessage(messageId, senderId)).thenReturn(Mono.empty());
+
+        MessageResponseDto result = messageService.getMessageById(messageId, senderId).block(TIMEOUT);
+
+        assertNull(result);
+        verify(messageDao).readMessage(messageId, senderId);
+    }
+
     private static MessageRequestDto buildMessageRequestDto() {
         LocalizedContent primary = new LocalizedContent();
         primary.setLanguage(LocalizedContent.LanguageEnum.IT);
@@ -79,17 +110,20 @@ class MessageServiceTest {
         return dto;
     }
 
-    private static MessageEntity buildPersistedMessageEntity(MessageRequestDto request) {
+    private static MessageEntity buildMessageEntity(UUID messageId, UUID senderId) {
         MessageEntity entity = new MessageEntity();
         entity.setMessageId(UUID.randomUUID().toString());
-        entity.setSk(request.getSenderId());
-        entity.setPrimaryMessage(buildMessageObjEntity(request.getPrimaryContent()));
-        entity.setAdditionalMessage(buildMessageObjEntity(request.getSecondaryContent()));
+        entity.setSenderId(senderId.toString());
+        entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo del messaggio principale", "Abstract principale"));
+        entity.setAdditionalMessage(buildMessageObjEntity("DE", "Additional subject", "Additional message body", "Summary"));
         entity.setCreatedAt(Instant.now().toString());
         return entity;
     }
 
-    private static MessageObjEntity buildMessageObjEntity(LocalizedContent content) {
+    private static MessageObjEntity buildMessageObjEntity(String language,
+                                                          String subject,
+                                                          String longBody,
+                                                          String shortBody) {
         MessageObjEntity entity = new MessageObjEntity();
         entity.setSubject(content.getSubject());
         entity.setLongBody(content.getLongBody());

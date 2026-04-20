@@ -96,6 +96,42 @@ class MessageDaoTest {
         Assertions.assertTrue(persisted.getExpiration() > Instant.now().getEpochSecond());
     }
 
+    @Test
+    void readMessage_shouldReturnEntity() {
+        MessageEntity entity = new MessageEntity(UUID.randomUUID().toString());
+        entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo principale", "Abstract principale"));
+        entity.setAdditionalMessage(buildMessageObjEntity("FR", "Sujet secondaire", "Corps secondaire", "Resume secondaire"));
+        entity.setCreatedAt(Instant.now().toString());
+
+        UUID messageId = UUID.fromString(entity.getMessageId());
+        UUID senderId = UUID.fromString(entity.getSenderId());
+        when(messageTable.getItem(any(MessageEntity.class))).thenReturn(CompletableFuture.completedFuture(entity));
+
+        MessageEntity read = messageDao.readMessage(messageId, senderId).block();
+        ArgumentCaptor<MessageEntity> keyCaptor = ArgumentCaptor.forClass(MessageEntity.class);
+
+        verify(messageTable).getItem(keyCaptor.capture());
+        MessageEntity key = keyCaptor.getValue();
+
+        Assertions.assertNotNull(read);
+        Assertions.assertNotNull(read.getAdditionalMessage());
+        Assertions.assertEquals(messageId.toString(), read.getMessageId());
+        Assertions.assertEquals(senderId.toString(), read.getSenderId());
+        Assertions.assertEquals("Oggetto principale", read.getPrimaryMessage().getSubject());
+        Assertions.assertEquals("Abstract principale", read.getPrimaryMessage().getShortBody());
+        Assertions.assertEquals("Corps secondaire", read.getAdditionalMessage().getLongBody());
+        Assertions.assertEquals(MessageEntity.buildPk(messageId.toString()), key.getPk());
+        Assertions.assertEquals(senderId.toString(), key.getSenderId());
+    }
+
+    @Test
+    void readMessage_whenItemMissing_shouldReturnEmpty() {
+        when(messageTable.getItem(any(MessageEntity.class))).thenReturn(CompletableFuture.completedFuture(null));
+
+        MessageEntity read = messageDao.readMessage(UUID.randomUUID(), UUID.randomUUID()).block();
+        Assertions.assertNull(read);
+    }
+
     private MessageEntity buildMessageEntity() {
         MessageEntity entity = new MessageEntity(UUID.randomUUID().toString());
         entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo principale", "Abstract principale"));
@@ -108,12 +144,12 @@ class MessageDaoTest {
                                                    String subject,
                                                    String longBody,
                                                    String shortBody) {
-        MessageObjEntity content = new MessageObjEntity();
-        content.setLanguage(language);
-        content.setSubject(subject);
-        content.setLongBody(longBody);
-        content.setShortBody(shortBody);
-        return content;
+        MessageObjEntity entity = new MessageObjEntity();
+        entity.setSubject(subject);
+        entity.setLongBody(longBody);
+        entity.setShortBody(shortBody);
+        entity.setLanguage(language);
+        return entity;
     }
 
     private static final class MockitoHelper {

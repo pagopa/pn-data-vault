@@ -11,6 +11,7 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.UUID;
 
 @Repository
 @Slf4j
@@ -39,9 +40,14 @@ public class MessageDao extends BaseDao {
                 .thenReturn(preparedEntity);
     }
 
-    public Mono<MessageEntity> readMessage(String messageId, String senderId) {
+    public Mono<MessageEntity> readMessage(UUID messageId, UUID senderId) {
         log.debug("readMessage messageId:{} senderId:{}", messageId, senderId);
-        return Mono.error(new UnsupportedOperationException("readMessage not implemented yet"));
+
+        MessageEntity keyEntity = new MessageEntity();
+        keyEntity.setMessageId(messageId.toString());
+        keyEntity.setSk(senderId.toString());
+
+        return Mono.fromFuture(messageTable.getItem(keyEntity));
     }
 
     private MessageEntity enrichExpiration(MessageEntity entity) {

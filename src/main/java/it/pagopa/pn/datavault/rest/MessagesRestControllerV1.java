@@ -34,7 +34,9 @@ public class MessagesRestControllerV1 implements MessagesApi {
     @Override
     public Mono<ResponseEntity<MessageResponseDto>> getMessageById(UUID messageId, UUID senderId, ServerWebExchange exchange) {
         log.info("[enter] getMessageById messageId:{} senderId:{}", messageId, senderId);
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build());
+        return messageService.getMessageById(messageId, senderId)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 }
 

@@ -10,12 +10,10 @@ import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
-
 
 @Service
 @CustomLog
@@ -34,6 +32,11 @@ public class MessageService {
                 .map(this::toResponseDto);
     }
 
+    public Mono<MessageResponseDto> getMessageById(UUID messageId, UUID senderId) {
+        log.debug("Getting message messageId:{} senderId:{}", messageId, senderId);
+        return messageDao.readMessage(messageId, senderId)
+                .map(this::toResponseDto);
+    }
     private MessageEntity toEntity(MessageRequestDto dto) {
         Objects.requireNonNull(dto, "messageRequestDto is required");
 

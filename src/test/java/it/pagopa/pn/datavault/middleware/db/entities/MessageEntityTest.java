@@ -31,7 +31,7 @@ class MessageEntityTest {
     void shouldExposeNewMessageStructure() {
         MessageEntity entity = new MessageEntity();
         entity.setMessageId("message-id");
-        entity.setSenderId("sender-id");
+        entity.setSk("sender-id");
         entity.setPrimaryMessage(buildPrimaryMessage());
         entity.setAdditionalMessage(buildAdditionalMessage());
         entity.setCreatedAt("2026-04-08T10:15:30Z");
@@ -39,7 +39,7 @@ class MessageEntityTest {
 
         Assertions.assertEquals(MessageEntity.buildPk("message-id"), entity.getPk());
         Assertions.assertEquals("message-id", entity.getMessageId());
-        Assertions.assertEquals("sender-id", entity.getSenderId());
+        Assertions.assertEquals("sender-id", entity.getSk());
         Assertions.assertNotNull(entity.getPrimaryMessage());
         Assertions.assertEquals("IT", entity.getPrimaryMessage().getLanguage());
         Assertions.assertEquals("Oggetto principale", entity.getPrimaryMessage().getSubject());
@@ -56,7 +56,7 @@ class MessageEntityTest {
     void shouldMapNewAttributesToDynamoColumns() {
         MessageEntity entity = new MessageEntity();
         entity.setMessageId("message-id");
-        entity.setSenderId("sender-id");
+        entity.setSk("sender-id");
         entity.setPrimaryMessage(buildPrimaryMessage());
         entity.setAdditionalMessage(buildAdditionalMessage());
         entity.setCreatedAt("2026-04-08T10:15:30Z");
@@ -85,7 +85,7 @@ class MessageEntityTest {
 
         // verifica round-trip
         Assertions.assertEquals("message-id", mappedEntity.getMessageId());
-        Assertions.assertEquals("sender-id", mappedEntity.getSenderId());
+        Assertions.assertEquals("sender-id", mappedEntity.getSk());
         Assertions.assertEquals("IT", mappedEntity.getPrimaryMessage().getLanguage());
         Assertions.assertEquals("Oggetto principale", mappedEntity.getPrimaryMessage().getSubject());
         Assertions.assertEquals("DE", mappedEntity.getAdditionalMessage().getLanguage());

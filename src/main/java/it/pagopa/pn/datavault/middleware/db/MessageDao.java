@@ -17,7 +17,6 @@ import java.util.Objects;
 public class MessageDao extends BaseDao {
 
     private final DynamoDbAsyncTable<MessageEntity> messageTable;
-    private final DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
     private final Long messageExpirationSeconds;
 
     public MessageDao(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
@@ -26,18 +25,18 @@ public class MessageDao extends BaseDao {
                 pnDatavaultConfig.getDynamodbTableName(),
                 TableSchema.fromBean(MessageEntity.class)
         );
-        this.dynamoDbEnhancedAsyncClient = dynamoDbEnhancedAsyncClient;
         this.messageExpirationSeconds = pnDatavaultConfig.getMessageExpiration();
     }
 
     public Mono<MessageEntity> writeMessage(MessageEntity entity) {
         MessageEntity preparedEntity = enrichExpiration(entity);
-        log.debug("writeMessage prepared entity messageId:{} senderId:{} expiration:{}",
+        log.debug("writeMessage prepared entity messageId:{} sk:{} expiration:{}",
                 preparedEntity.getMessageId(),
-                preparedEntity.getSenderId(),
+                preparedEntity.getSk(),
                 preparedEntity.getExpiration());
 
-        return Mono.error(new UnsupportedOperationException("writeMessage not implemented yet"));
+        return Mono.fromFuture(messageTable.putItem(preparedEntity))
+                .thenReturn(preparedEntity);
     }
 
     public Mono<MessageEntity> readMessage(String messageId, String senderId) {
@@ -53,4 +52,5 @@ public class MessageDao extends BaseDao {
         }
         return entity;
     }
+
 }

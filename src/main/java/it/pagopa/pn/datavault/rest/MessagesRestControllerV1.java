@@ -26,7 +26,9 @@ public class MessagesRestControllerV1 implements MessagesApi {
     @Override
     public Mono<ResponseEntity<MessageResponseDto>> createMessage(Mono<MessageRequestDto> messageRequestDto, ServerWebExchange exchange) {
         log.info("[enter] createMessage");
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build());
+        return messageRequestDto
+                .flatMap(messageService::createMessage)
+                .map(body -> ResponseEntity.status(HttpStatus.CREATED).body(body));
     }
 
     @Override

@@ -31,9 +31,9 @@ public class MessageDao extends BaseDao {
 
     public Mono<MessageEntity> writeMessage(MessageEntity entity) {
         MessageEntity preparedEntity = enrichExpiration(entity);
-        log.debug("writeMessage prepared entity messageId:{} senderId:{} expiration:{}",
+        log.debug("writeMessage prepared entity messageId:{} sk:{} expiration:{}",
                 preparedEntity.getMessageId(),
-                preparedEntity.getSenderId(),
+                preparedEntity.getSk(),
                 preparedEntity.getExpiration());
 
         return Mono.fromFuture(messageTable.putItem(preparedEntity))

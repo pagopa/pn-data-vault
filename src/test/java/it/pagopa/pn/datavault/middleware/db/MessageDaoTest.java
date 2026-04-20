@@ -47,6 +47,56 @@ class MessageDaoTest {
     }
 
     @Test
+    void writeMessage_shouldPutItemAndReturnPersistedEntity() {
+        MessageEntity request = buildMessageEntity();
+        Assertions.assertNotNull(request.getAdditionalMessage());
+        Assertions.assertNotNull(request.getAdditionalMessage().getLanguage());
+        when(messageTable.putItem(any(MessageEntity.class))).thenReturn(CompletableFuture.completedFuture(null));
+
+        MessageEntity response = messageDao.writeMessage(request).block();
+        ArgumentCaptor<MessageEntity> entityCaptor = ArgumentCaptor.forClass(MessageEntity.class);
+
+        verify(messageTable).putItem(entityCaptor.capture());
+        MessageEntity persisted = entityCaptor.getValue();
+
+        Assertions.assertNotNull(response);
+        Assertions.assertNotNull(response.getMessageId());
+        Assertions.assertNotNull(response.getAdditionalMessage());
+        Assertions.assertEquals(request.getSk(), response.getSk());
+        Assertions.assertNotNull(response.getCreatedAt());
+        Assertions.assertEquals(request.getPrimaryMessage().getSubject(), response.getPrimaryMessage().getSubject());
+        Assertions.assertEquals(request.getAdditionalMessage().getShortBody(), response.getAdditionalMessage().getShortBody());
+
+        Assertions.assertNotNull(persisted.getMessageId());
+        Assertions.assertEquals(request.getSk(), persisted.getSk());
+        Assertions.assertEquals(request.getPrimaryMessage().getLongBody(), persisted.getPrimaryMessage().getLongBody());
+        Assertions.assertEquals(request.getAdditionalMessage().getLanguage(), persisted.getAdditionalMessage().getLanguage());
+        Assertions.assertNotNull(persisted.getCreatedAt());
+        Assertions.assertNotNull(persisted.getExpiration());
+    }
+
+    @Test
+    void writeMessage_shouldEnrichExpiration() {
+        MessageEntity request = buildMessageEntity();
+        when(messageTable.putItem(any(MessageEntity.class))).thenReturn(CompletableFuture.completedFuture(null));
+
+        messageDao.writeMessage(request).block();
+
+        ArgumentCaptor<MessageEntity> entityCaptor = ArgumentCaptor.forClass(MessageEntity.class);
+        verify(messageTable).putItem(entityCaptor.capture());
+        MessageEntity persisted = entityCaptor.getValue();
+
+        Assertions.assertEquals("Oggetto principale", persisted.getPrimaryMessage().getSubject());
+        Assertions.assertEquals("Corpo principale", persisted.getPrimaryMessage().getLongBody());
+        Assertions.assertEquals("Abstract principale", persisted.getPrimaryMessage().getShortBody());
+        Assertions.assertEquals("IT", persisted.getPrimaryMessage().getLanguage());
+        Assertions.assertEquals("Sujet secondaire", persisted.getAdditionalMessage().getSubject());
+        Assertions.assertEquals("FR", persisted.getAdditionalMessage().getLanguage());
+        Assertions.assertNotNull(persisted.getExpiration());
+        Assertions.assertTrue(persisted.getExpiration() > Instant.now().getEpochSecond());
+    }
+
+    @Test
     void readMessage_shouldReturnEntity() {
         MessageEntity entity = new MessageEntity(UUID.randomUUID().toString());
         entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo principale", "Abstract principale"));
@@ -80,6 +130,14 @@ class MessageDaoTest {
 
         MessageEntity read = messageDao.readMessage(UUID.randomUUID(), UUID.randomUUID()).block();
         Assertions.assertNull(read);
+    }
+
+    private MessageEntity buildMessageEntity() {
+        MessageEntity entity = new MessageEntity(UUID.randomUUID().toString());
+        entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo principale", "Abstract principale"));
+        entity.setAdditionalMessage(buildMessageObjEntity("FR", "Sujet secondaire", "Corps secondaire", "Resume secondaire"));
+        entity.setCreatedAt(Instant.now().toString());
+        return entity;
     }
 
     private MessageObjEntity buildMessageObjEntity(String language,

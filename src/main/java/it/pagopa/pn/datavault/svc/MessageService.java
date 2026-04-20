@@ -52,7 +52,7 @@ public class MessageService {
 
         MessageResponseDto dto = new MessageResponseDto();
         dto.setMessageId(UUID.fromString(entity.getMessageId()));
-        dto.setSenderId(entity.getSenderId());
+        dto.setSenderId(entity.getSk());
         dto.setPrimaryContent(toLocalizedContent(entity.getPrimaryMessage()));
         dto.setSecondaryContent(toLocalizedContent(entity.getAdditionalMessage()));
         if (entity.getCreatedAt() != null) {

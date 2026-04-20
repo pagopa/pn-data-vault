@@ -45,7 +45,7 @@ public class MessageDao extends BaseDao {
 
         MessageEntity keyEntity = new MessageEntity();
         keyEntity.setMessageId(messageId.toString());
-        keyEntity.setSenderId(senderId.toString());
+        keyEntity.setSk(senderId.toString());
 
         return Mono.fromFuture(messageTable.getItem(keyEntity));
     }

@@ -104,7 +104,7 @@ class MessageDaoTest {
         entity.setCreatedAt(Instant.now().toString());
 
         UUID messageId = UUID.fromString(entity.getMessageId());
-        UUID senderId = UUID.fromString(entity.getSenderId());
+        UUID senderId = UUID.fromString(entity.getSk());
         when(messageTable.getItem(any(MessageEntity.class))).thenReturn(CompletableFuture.completedFuture(entity));
 
         MessageEntity read = messageDao.readMessage(messageId, senderId).block();
@@ -116,12 +116,12 @@ class MessageDaoTest {
         Assertions.assertNotNull(read);
         Assertions.assertNotNull(read.getAdditionalMessage());
         Assertions.assertEquals(messageId.toString(), read.getMessageId());
-        Assertions.assertEquals(senderId.toString(), read.getSenderId());
+        Assertions.assertEquals(senderId.toString(), read.getSk());
         Assertions.assertEquals("Oggetto principale", read.getPrimaryMessage().getSubject());
         Assertions.assertEquals("Abstract principale", read.getPrimaryMessage().getShortBody());
         Assertions.assertEquals("Corps secondaire", read.getAdditionalMessage().getLongBody());
         Assertions.assertEquals(MessageEntity.buildPk(messageId.toString()), key.getPk());
-        Assertions.assertEquals(senderId.toString(), key.getSenderId());
+        Assertions.assertEquals(senderId.toString(), key.getSk());
     }
 
     @Test

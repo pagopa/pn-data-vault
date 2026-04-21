@@ -112,10 +112,30 @@ class MessageServiceTest {
 
     private static MessageEntity buildMessageEntity(UUID messageId, UUID senderId) {
         MessageEntity entity = new MessageEntity();
-        entity.setMessageId(UUID.randomUUID().toString());
-        entity.setSenderId(senderId.toString());
+        entity.setMessageId(messageId.toString());
+        entity.setSk(senderId.toString());
         entity.setPrimaryMessage(buildMessageObjEntity("IT", "Oggetto principale", "Corpo del messaggio principale", "Abstract principale"));
         entity.setAdditionalMessage(buildMessageObjEntity("DE", "Additional subject", "Additional message body", "Summary"));
+        entity.setCreatedAt(Instant.now().toString());
+        return entity;
+    }
+
+    private static MessageEntity buildPersistedMessageEntity(MessageRequestDto request) {
+        MessageEntity entity = new MessageEntity();
+        entity.setMessageId(UUID.randomUUID().toString());
+        entity.setSk(request.getSenderId());
+        entity.setPrimaryMessage(buildMessageObjEntity(
+                request.getPrimaryContent().getLanguage().getValue(),
+                request.getPrimaryContent().getSubject(),
+                request.getPrimaryContent().getLongBody(),
+                request.getPrimaryContent().getShortBody()
+        ));
+        entity.setAdditionalMessage(buildMessageObjEntity(
+                request.getSecondaryContent().getLanguage().getValue(),
+                request.getSecondaryContent().getSubject(),
+                request.getSecondaryContent().getLongBody(),
+                request.getSecondaryContent().getShortBody()
+        ));
         entity.setCreatedAt(Instant.now().toString());
         return entity;
     }
@@ -125,10 +145,10 @@ class MessageServiceTest {
                                                           String longBody,
                                                           String shortBody) {
         MessageObjEntity entity = new MessageObjEntity();
-        entity.setSubject(content.getSubject());
-        entity.setLongBody(content.getLongBody());
-        entity.setShortBody(content.getShortBody());
-        entity.setLanguage(content.getLanguage() != null ? content.getLanguage().getValue() : null);
+        entity.setSubject(subject);
+        entity.setLongBody(longBody);
+        entity.setShortBody(shortBody);
+        entity.setLanguage(language);
         return entity;
     }
 }

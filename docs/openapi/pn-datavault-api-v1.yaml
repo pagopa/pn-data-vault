@@ -653,7 +653,7 @@ components:
     ###############################################################################################
     LocalizedContent:
       type: object
-      required: [ subject, longBody ]
+      required: [ subject, longBody, language]
       properties:
         subject:
           type: string

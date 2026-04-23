@@ -673,7 +673,6 @@ components:
       properties:
         senderId:
           type: string
-          format: uuid
           description: "Identificativo del mittente del messaggio"
         primaryContent:
           $ref: '#/components/schemas/LocalizedContent'

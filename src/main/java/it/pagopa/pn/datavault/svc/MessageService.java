@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -70,7 +71,9 @@ public class MessageService {
         entity.setSubject(dto.getSubject());
         entity.setLongBody(dto.getLongBody());
         entity.setShortBody(dto.getShortBody());
-        entity.setLanguage(dto.getLanguage() != null ? dto.getLanguage().getValue() : null);
+        entity.setLanguage(Optional.ofNullable(dto.getLanguage())
+                .map(LocalizedContent.LanguageEnum::getValue)
+                .orElse(null));
         return entity;
     }
 
@@ -89,4 +92,3 @@ public class MessageService {
         return dto;
     }
 }
-

@@ -18,8 +18,6 @@ public class MessageObjEntity {
     public static final String COL_SHORT_BODY = "shortBody";
     public static final String COL_LANGUAGE = "language";
 
-    public static final String LANGUAGE_REGEX = "^(IT|DE|SI|FR)$";
-
     @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_SUBJECT)})) private String subject;
     @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_LONG_BODY)})) private String longBody;
     @ToString.Exclude @Getter(onMethod = @__({@DynamoDbAttribute(COL_SHORT_BODY)})) private String shortBody;

@@ -11,6 +11,7 @@
     "SelfcarePgRateLimiterTimeoutMillis": "10000",
     "CacheExpireMinutes": "600",
     "CacheMaxSize": "100000",
+    "MessageExpiration": "86400",
     "MinTasksNumber": "2",
     "MaxTasksNumber": "3",
     "AutoscalingThreshold": "51650",

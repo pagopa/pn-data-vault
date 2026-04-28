@@ -658,12 +658,18 @@ components:
         subject:
           type: string
           maxLength: 256
+          format: password # NO EXTERNAL
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         longBody:
           type: string
           maxLength: 10000
+          format: password # NO EXTERNAL
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         shortBody:
           type: string
           maxLength: 160
+          format: password # NO EXTERNAL
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         language:
           type: string
           enum: [ IT, DE, SI, FR ]

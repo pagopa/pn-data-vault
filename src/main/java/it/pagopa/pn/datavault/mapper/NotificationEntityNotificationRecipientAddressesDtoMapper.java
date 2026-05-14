@@ -76,13 +76,13 @@ public class NotificationEntityNotificationRecipientAddressesDtoMapper extends P
         return list;
     }
 
-    private static List<PhoneNumberDto> mapPhoneNumberEntityToDto(List<PhoneNumberEntity> phoneNumbersDto){
-        if(phoneNumbersDto == null || phoneNumbersDto.isEmpty()){
+    private static List<PhoneNumberDto> mapPhoneNumberEntityToDto(List<PhoneNumberEntity> phoneNumbers){
+        if(phoneNumbers == null || phoneNumbers.isEmpty()){
             return null;
         }
 
         List<PhoneNumberDto> list = new ArrayList<>();
-        for(PhoneNumberEntity phoneNumberEntity : phoneNumbersDto){
+        for(PhoneNumberEntity phoneNumberEntity : phoneNumbers){
             PhoneNumberDto phoneNumberDto = new PhoneNumberDto();
             phoneNumberDto.setValue(phoneNumberEntity.getValue());
             list.add(phoneNumberDto);

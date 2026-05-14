@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
+import java.util.List;
+
 /**
  * Entity Address
  */
@@ -21,6 +23,8 @@ public class NotificationEntity {
     public static final String COL_DIGITAL_ADDRESS = "digitalAddress";
     public static final String COL_PHYSICAL_ADDRESS = "physicalAddress";
     public static final String COL_NORMALIZED_ADDRESS = "normalizedAddress";
+    public static final String COL_EMAILS = "emails";
+    public static final String COL_PHONE_NUMBERS = "phoneNumbers";
 
     public NotificationEntity(){}
 
@@ -58,4 +62,6 @@ public class NotificationEntity {
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_DIGITAL_ADDRESS)})) private String digitalAddress;
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHYSICAL_ADDRESS)})) private PhysicalAddress physicalAddress;
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_NORMALIZED_ADDRESS)})) private Boolean normalizedAddress;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_EMAILS)})) private List<EmailEntity> emails;
+    @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_PHONE_NUMBERS)})) private List<PhoneNumberEntity> phoneNumbers;
 }

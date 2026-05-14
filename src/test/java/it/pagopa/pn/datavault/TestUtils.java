@@ -3,6 +3,8 @@ package it.pagopa.pn.datavault;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.ConfidentialTimelineElementId;
 import it.pagopa.pn.datavault.middleware.db.entities.*;
 
+import java.util.List;
+
 public abstract class TestUtils {
 
     private TestUtils() {}
@@ -42,6 +44,12 @@ public abstract class TestUtils {
         pa.setProvince("VE");
         pa.setState("Italia");
         ne.setPhysicalAddress(pa);
+        EmailEntity emailEntity = new EmailEntity();
+        emailEntity.setValue("nomecognome@mail.it");
+        PhoneNumberEntity phoneNumberEntity = new PhoneNumberEntity();
+        phoneNumberEntity.setValue("1234567890");
+        ne.setPhoneNumbers(List.of(phoneNumberEntity));
+        ne.setEmails(List.of(emailEntity));
         return ne;
     }
 

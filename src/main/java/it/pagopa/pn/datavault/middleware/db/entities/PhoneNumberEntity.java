@@ -7,7 +7,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttri
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 
 /**
- * Entity Email
+ * PhoneNumber object for NotificationEntity
  */
 @DynamoDbBean
 @Data

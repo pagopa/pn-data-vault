@@ -952,9 +952,34 @@ components:
           $ref: '#/components/schemas/AddressDto'
         physicalAddress:
           $ref: '#/components/schemas/AnalogDomicile'
+        emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailDto'
+        phoneNumbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumberDto'
         recIndex:
           type: integer
           example: 0
+
+    EmailDto:
+      type: object
+      properties:
+        value:
+          type: string
+          format: password # NO EXTERNAL
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          example: 'mario.rossi@libero.it'
+    PhoneNumberDto:
+      type: object
+      properties:
+        value:
+          type: string
+          format: password # NO EXTERNAL
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          example: '+39340123456'
 
     AnalogDomicile:
       title: dettagli di un domicilio analogico; ovvero un indirizzo fisico

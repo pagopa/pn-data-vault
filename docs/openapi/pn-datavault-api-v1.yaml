@@ -672,7 +672,7 @@ components:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
         language:
           type: string
-          enum: [ IT, DE, SI, FR ]
+          enum: [ IT, DE, SL, FR ]
     MessageRequestDto:
       type: object
       required: [ senderId, primaryContent ]

@@ -253,6 +253,12 @@ Parameters:
   LogAlarmStrategy:
     Type: String
     Default: 'FATAL'
+
+  ApplicativeEnvFileChecksum:
+    Type: String
+    Default: ''
+    Description: 'Applicative environment variable file checksum'
+
 Resources:
 
   # PN-DataVault microservice
@@ -311,6 +317,7 @@ Resources:
         TaskRoleManagedPolicyArn: !Ref DataVaultyMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
 
   # Grant operational rights to PN-Delivery microservice
   DataVaultyMicroserviceTaskManagedPolicy:

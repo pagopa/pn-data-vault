@@ -159,7 +159,7 @@ class MandateServiceTest {
         MandateEntity mandateEntity = TestUtils.newMandate(true);
 
 
-        when(objDao.deleteMandateId(Mockito.any())).thenReturn(Mono.just(mandateEntity));
+        when(objDao.setMandateExpiration(Mockito.any())).thenReturn(Mono.just(mandateEntity));
 
         //When
         assertDoesNotThrow(() -> {

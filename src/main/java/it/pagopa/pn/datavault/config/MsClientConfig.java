@@ -20,14 +20,14 @@ public class MsClientConfig {
 
         @Bean
         InstitutionsApi institutionsApi(PnDatavaultConfig pnDatavaultConfig) {
-            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg(), "SELFCARE-PG").build());
+            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg(), "SELFCARE-PG"));
             apiClient.setBasePath(pnDatavaultConfig.getClientSelfcarepgBasepath());
             return new InstitutionsApi(apiClient);
         }
 
         @Bean
         InstitutionsPnpgApi institutionsPnpgApi(PnDatavaultConfig pnDatavaultConfig) {
-            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg(), "SELFCARE-PG").build());
+            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg(), "SELFCARE-PG"));
             apiClient.setBasePath(pnDatavaultConfig.getClientSelfcarepgBasepath());
             return new InstitutionsPnpgApi(apiClient);
         }

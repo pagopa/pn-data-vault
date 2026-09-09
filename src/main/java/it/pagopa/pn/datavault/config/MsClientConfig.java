@@ -20,14 +20,14 @@ public class MsClientConfig {
 
         @Bean
         InstitutionsApi institutionsApi(PnDatavaultConfig pnDatavaultConfig) {
-            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg()), "SELFCARE-PG").build();
+            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg()), "SELFCARE-PG").build());
             apiClient.setBasePath(pnDatavaultConfig.getClientSelfcarepgBasepath());
             return new InstitutionsApi(apiClient);
         }
 
         @Bean
         InstitutionsPnpgApi institutionsPnpgApi(PnDatavaultConfig pnDatavaultConfig) {
-            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg()), "SELFCARE-PG").build();
+            var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getSelfcarepgApiKeyPg(), "SELFCARE-PG").build());
             apiClient.setBasePath(pnDatavaultConfig.getClientSelfcarepgBasepath());
             return new InstitutionsPnpgApi(apiClient);
         }
@@ -38,14 +38,14 @@ public class MsClientConfig {
 
         @Bean
         UserApi userClientPF(PnDatavaultConfig pnDatavaultConfig) {
-            var apiClient = new it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.ApiClient(initWebClient(it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getUserregistryApiKeyPf()), "PDV");
+            var apiClient = new it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.ApiClient(initWebClient(it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getUserregistryApiKeyPf(), "PDV"));
             apiClient.setBasePath(pnDatavaultConfig.getClientUserregistryBasepath());
             return new UserApi(apiClient);
         }
 
         @Bean
         TokenApi tokenApiPF(PnDatavaultConfig pnDatavaultConfig) {
-            var apiClient = new it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.ApiClient(initWebClient(it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getTokenizerApiKeyPf()), "PDV");
+            var apiClient = new it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.ApiClient(initWebClient(it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.ApiClient.buildWebClientBuilder(), pnDatavaultConfig.getTokenizerApiKeyPf(), "PDV"));
             apiClient.setBasePath(pnDatavaultConfig.getClientTokenizerBasepath());
             return new TokenApi(apiClient);
         }

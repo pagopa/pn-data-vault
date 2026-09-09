@@ -20,6 +20,7 @@
     "MemoryAmount": "4GB",
     "MountEfs": "false",
     "PnCronAnalyzer": "-",
-    "WireTapLogActivation": "false"
+    "WireTapLogActivation": "false",
+    "EnableDownstreamSubscriptionFilter": "true"
   }
 }

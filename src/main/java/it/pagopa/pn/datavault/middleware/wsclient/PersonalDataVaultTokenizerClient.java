@@ -51,7 +51,7 @@ public class PersonalDataVaultTokenizerClient {
         pii.setPii(taxId);
         return this.tokenApiPF.saveUsingPUT(pii)
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))
-                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, CommonBaseClient.elabExceptionMessage(e)))
+                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, CommonBaseClient.elabExceptionMessage(e), e))
                 .map(r -> {
                     if (r == null) {
                         log.error("Invalid empty response from tokenizer");
@@ -69,7 +69,7 @@ public class PersonalDataVaultTokenizerClient {
         log.info("[enter] findPii token={}", internalId);
         return this.tokenApiPF.findPiiUsingGET(internalId.internalId())
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))
-                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, CommonBaseClient.elabExceptionMessage(e)))
+                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, CommonBaseClient.elabExceptionMessage(e), e))
                 .map(r -> {
                     UserResourceDto brd = new UserResourceDto();
                     brd.setId(internalId.internalId());

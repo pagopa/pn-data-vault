@@ -21,6 +21,5 @@
     "MountEfs": "false",
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false"
-    
   }
 }

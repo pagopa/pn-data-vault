@@ -53,6 +53,6 @@ public class MandateService {
         if (! ValidationUtils.checkMandateId(mandateId))
             throw new PnInvalidInputException(ERROR_CODE_PN_GENERIC_INVALIDPARAMETER_REQUIRED, "mandateId");
 
-        return objDao.deleteMandateId(mandateId).map(r -> "OK");
+        return objDao.setMandateExpiration(mandateId).map(r -> "OK");
     }
 }

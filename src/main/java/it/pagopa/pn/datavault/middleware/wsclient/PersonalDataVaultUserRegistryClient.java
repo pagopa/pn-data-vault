@@ -80,7 +80,7 @@ public class PersonalDataVaultUserRegistryClient {
             return this.personalDataVaultTokenizerClient.findPii(uid);
         }
         else {
-            log.logInvokationResultDownstreamFailed(PDV_USER_REGISTRY, CommonBaseClient.elabExceptionMessage(ex));
+            log.logInvokationResultDownstreamFailed(PDV_USER_REGISTRY, CommonBaseClient.elabExceptionMessage(ex), ex);
             return Mono.error(ex);
         }
     }

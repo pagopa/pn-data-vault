@@ -56,7 +56,7 @@ public class SelfcarePGClient {
         CreatePnPgInstitutionDtoDto pii = new CreatePnPgInstitutionDtoDto();
         pii.setExternalId(taxId);
         return this.institutionsPnpgApi.addInstitutionUsingPOST(pii)
-                .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e)))
+                .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e), e))
                 .map(r -> {
                     if (r == null) {
                         log.error("Invalid empty response from addInstitutionUsingPOST");
@@ -82,7 +82,7 @@ public class SelfcarePGClient {
         log.debug("[enter] retrieveInstitutionByIdUsingGET internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(internalId -> this.institutionsApi.getInstitution(internalId.internalId())
-                        .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e)))
+                        .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e), e))
 
                         .transformDeferred(RateLimiterOperator.of(rateLimiter))
                         .map(r -> {

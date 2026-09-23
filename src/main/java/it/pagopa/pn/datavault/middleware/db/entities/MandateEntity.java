@@ -20,6 +20,7 @@ public class MandateEntity {
     public static final String COL_NAME = "name";
     public static final String COL_SURNAME = "surname";
     public static final String COL_BUSINESSNAME = "businessName";
+    public static final String COL_EXPIRATION = "expiration";
 
     public MandateEntity(){}
 
@@ -44,4 +45,6 @@ public class MandateEntity {
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_NAME)})) private String name;
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_SURNAME)})) private String surname;
     @ToString.Exclude @Getter(onMethod=@__({@DynamoDbAttribute(COL_BUSINESSNAME)})) private String businessName;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute(COL_EXPIRATION)})) private Long expiration;
 }

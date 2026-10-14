@@ -12,6 +12,10 @@
   <name>pn-data-vault</name>
   <description>Handle Confidential Information</description>
 
+  <properties>
+    <java.version>25</java.version>
+  </properties>
+
   <scm>
     <connection>${git.conn}</connection>
     <developerConnection>${git.devConn}</developerConnection>

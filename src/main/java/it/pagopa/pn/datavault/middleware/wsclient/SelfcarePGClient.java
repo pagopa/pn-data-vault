@@ -4,7 +4,6 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
-import it.pagopa.pn.commons.pnclients.CommonBaseClient;
 import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.exceptions.PnDatavaultRecipientNotFoundException;
 import it.pagopa.pn.datavault.generated.openapi.msclient.selfcarepg.v1.api.InstitutionsApi;
@@ -56,7 +55,7 @@ public class SelfcarePGClient {
         CreatePnPgInstitutionDtoDto pii = new CreatePnPgInstitutionDtoDto();
         pii.setExternalId(taxId);
         return this.institutionsPnpgApi.addInstitutionUsingPOST(pii)
-                .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e), e))
+                .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, e.getMessage(), e))
                 .map(r -> {
                     if (r == null) {
                         log.error("Invalid empty response from addInstitutionUsingPOST");
@@ -82,7 +81,7 @@ public class SelfcarePGClient {
         log.debug("[enter] retrieveInstitutionByIdUsingGET internalids:{}", internalIds);
         return Flux.fromIterable(internalIds)
                 .flatMap(internalId -> this.institutionsApi.getInstitution(internalId.internalId())
-                        .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, CommonBaseClient.elabExceptionMessage(e), e))
+                        .doOnError(e -> log.logInvokationResultDownstreamFailed(SELFCARE_PG, e.getMessage(), e))
 
                         .transformDeferred(RateLimiterOperator.of(rateLimiter))
                         .map(r -> {

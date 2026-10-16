@@ -328,7 +328,11 @@ Resources:
         TaskRoleManagedPolicyArn: !Ref DataVaultyMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
-        JavaToolOptions: !Ref JavaToolOptions
+        JavaToolOptions: !Join
+          - ' '
+          - - '--add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
+            - !Ref JavaToolOptions
+        JavaVersion: '25'
         CpuArchitecture: !Ref CpuArchitecture
 
   # Grant operational rights to PN-Delivery microservice

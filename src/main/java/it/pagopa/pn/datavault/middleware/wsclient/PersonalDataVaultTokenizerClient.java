@@ -4,7 +4,6 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
-import it.pagopa.pn.commons.pnclients.CommonBaseClient;
 import it.pagopa.pn.commons.utils.LogUtils;
 import it.pagopa.pn.datavault.exceptions.PnDatavaultRecipientNotFoundException;
 import it.pagopa.pn.datavault.generated.openapi.msclient.tokenizer.v1.api.TokenApi;
@@ -51,7 +50,7 @@ public class PersonalDataVaultTokenizerClient {
         pii.setPii(taxId);
         return this.tokenApiPF.saveUsingPUT(pii)
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))
-                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, CommonBaseClient.elabExceptionMessage(e)))
+                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, e.getMessage(), e))
                 .map(r -> {
                     if (r == null) {
                         log.error("Invalid empty response from tokenizer");
@@ -69,7 +68,7 @@ public class PersonalDataVaultTokenizerClient {
         log.info("[enter] findPii token={}", internalId);
         return this.tokenApiPF.findPiiUsingGET(internalId.internalId())
                 .transformDeferred(RateLimiterOperator.of(rateLimiter))
-                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, CommonBaseClient.elabExceptionMessage(e)))
+                .doOnError(e -> log.logInvokationResultDownstreamFailed(PDV_TOKENIZER, e.getMessage(), e))
                 .map(r -> {
                     UserResourceDto brd = new UserResourceDto();
                     brd.setId(internalId.internalId());

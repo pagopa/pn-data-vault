@@ -31,6 +31,7 @@ public class PnDatavaultConfig {
     private int cacheExpireAfterMinutes;
     private int cacheMaxSize;
     private Long messageExpiration;
+    private Long mandateExpiration;
 
 
     @Value("${pn.env.runtime}")

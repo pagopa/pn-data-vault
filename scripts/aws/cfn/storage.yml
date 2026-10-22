@@ -32,6 +32,14 @@ Parameters:
     Type: Number
     Default: 14
 
+  EnableDownstreamSubscriptionFilter:
+    Type: String
+    Default: false
+    Description: Enable downstream subscription filter
+    AllowedValues:
+      - true
+      - false
+
 Resources:
 
   PCKmsEncDecDynamoDataKey:
@@ -94,7 +102,7 @@ Resources:
         LogGroupName: !Sub '${ProjectName}-data-vault-sep'
         LogGroupRetention: !Ref LogRetention
         LogsKinesisSourceStreamArn: !Ref ConfidentialInfoLogsKinesisSourceStreamArn
-
+        LogEnableDownstreamSubscriptionFilter: !Ref EnableDownstreamSubscriptionFilter
 Outputs:
 
   PCKmsEncDecDynamoDataKeyARN:

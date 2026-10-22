@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -163,7 +164,7 @@ class MandateDaoTestIT {
 
 
     @Test
-    void deleteMandateId() {
+    void setMandateExpiration() {
         //Given
         MandateEntity mandateToInsert = TestUtils.newMandate(true);
 
@@ -175,13 +176,16 @@ class MandateDaoTestIT {
         }
 
         //When
-        mandateDao.deleteMandateId(mandateToInsert.getMandateId()).block(Duration.ofMillis(3000));
+        long beforeDelete = Instant.now().getEpochSecond();
+        mandateDao.setMandateExpiration(mandateToInsert.getMandateId()).block(Duration.ofMillis(3000));
 
         //Then
         try {
             MandateEntity elementFromDb = testDao.get(mandateToInsert.getPk(), mandateToInsert.getSk());
 
-            Assertions.assertNull( elementFromDb);
+            Assertions.assertNotNull(elementFromDb);
+            Assertions.assertNotNull(elementFromDb.getExpiration());
+            Assertions.assertTrue(elementFromDb.getExpiration() >= beforeDelete);
         } catch (Exception e) {
             fail(e);
         } finally {
@@ -191,6 +195,62 @@ class MandateDaoTestIT {
                 System.out.println("Nothing to remove");
             }
         }
+    }
+
+    @Test
+    void setMandateExpirationPreservesOtherFields() {
+        //Given
+        MandateEntity mandateToInsert = TestUtils.newMandate(true);
+
+        try {
+            testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
+            mandateDao.updateMandate(mandateToInsert).block(Duration.ofMillis(3000));
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        mandateDao.setMandateExpiration(mandateToInsert.getMandateId()).block(Duration.ofMillis(3000));
+
+        //Then
+        try {
+            MandateEntity elementFromDb = testDao.get(mandateToInsert.getPk(), mandateToInsert.getSk());
+
+            Assertions.assertNotNull(elementFromDb);
+            Assertions.assertEquals(mandateToInsert.getName(), elementFromDb.getName());
+            Assertions.assertEquals(mandateToInsert.getSurname(), elementFromDb.getSurname());
+            Assertions.assertEquals(mandateToInsert.getBusinessName(), elementFromDb.getBusinessName());
+        } catch (Exception e) {
+            fail(e);
+        } finally {
+            try {
+                testDao.delete(mandateToInsert.getPk(), mandateToInsert.getSk());
+            } catch (Exception e) {
+                System.out.println("Nothing to remove");
+            }
+        }
+    }
+
+    @Test
+    void setMandateIdWhenMandateDoesNotExist() throws ExecutionException, InterruptedException {
+        //Given
+        MandateEntity mandateNonExistent = TestUtils.newMandate(true);
+
+        try {
+            testDao.delete(mandateNonExistent.getPk(), mandateNonExistent.getSk());
+        } catch (Exception e) {
+            System.out.println("Nothing to remove");
+        }
+
+        //When
+        MandateEntity result = mandateDao.setMandateExpiration(mandateNonExistent.getMandateId())
+                .block(Duration.ofMillis(3000));
+
+        //Then
+        Assertions.assertNull(result, "Il metodo dovrebbe restituire Mono.empty() se il mandato non esiste");
+
+         MandateEntity elementFromDb = testDao.get(mandateNonExistent.getPk(), mandateNonExistent.getSk());
+         Assertions.assertNull(elementFromDb);
     }
 
 }

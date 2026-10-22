@@ -10,11 +10,9 @@ public abstract class BaseClient extends CommonBaseClient {
     protected  BaseClient( ){
     }
 
-    protected WebClient initWebClient(WebClient.Builder builder, String apiKey){
+    protected WebClient initWebClient(WebClient.Builder builder, String apiKey, String downstreamName){
 
-        return super.enrichBuilder(builder)
-                .defaultHeader(HEADER_API_KEY, apiKey)
-                .build();
+        return super.initWebClient(builder.defaultHeader(HEADER_API_KEY, apiKey), downstreamName);
     }
 
 }

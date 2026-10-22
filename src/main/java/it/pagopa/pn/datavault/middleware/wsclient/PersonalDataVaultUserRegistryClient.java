@@ -4,7 +4,6 @@ package it.pagopa.pn.datavault.middleware.wsclient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
-import it.pagopa.pn.commons.pnclients.CommonBaseClient;
 import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.api.UserApi;
 import it.pagopa.pn.datavault.generated.openapi.msclient.userregistry.v1.dto.UserResourceDto;
 import it.pagopa.pn.datavault.generated.openapi.server.v1.dto.BaseRecipientDto;
@@ -80,7 +79,7 @@ public class PersonalDataVaultUserRegistryClient {
             return this.personalDataVaultTokenizerClient.findPii(uid);
         }
         else {
-            log.logInvokationResultDownstreamFailed(PDV_USER_REGISTRY, CommonBaseClient.elabExceptionMessage(ex));
+            log.logInvokationResultDownstreamFailed(PDV_USER_REGISTRY, ex.getMessage(), ex);
             return Mono.error(ex);
         }
     }
